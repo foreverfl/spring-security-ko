@@ -43,8 +43,7 @@ urls:
   redirect_facility: httpd
 ui:
   bundle:
-    # url: ../ui-bundle.zip
-    url: https://github.com/foreverfl/spring-security-ko/blob/main/ui-bundle.zip
+    url: ../ui-bundle.zip
     snapshot: true
 runtime:
   log:
