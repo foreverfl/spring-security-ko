@@ -45,7 +45,7 @@ urls:
 ui:
   bundle:
     url: ./ui-bundle.zip
-    snapshot: true
+    # snapshot: true
 runtime:
   log:
     failure_level: warn
