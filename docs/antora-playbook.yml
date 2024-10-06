@@ -45,7 +45,6 @@ urls:
 ui:
   bundle:
     url: ../ui-bundle.zip
-    # url: https://github.com/spring-io/antora-ui-spring/releases/download/v0.4.16/ui-bundle.zip
     snapshot: true
 runtime:
   log:
