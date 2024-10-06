@@ -4,8 +4,7 @@
 #       root_component_name: "security"
 site:
   title: Spring Security
-  # url: https://docs.spring.io/spring-security/reference
-  url: https://spring-security.mogumogu.dev
+  url: https://spring-security-ko.mogumogu.dev
   robots: allow
 git:
   ensure_git_suffix: false
