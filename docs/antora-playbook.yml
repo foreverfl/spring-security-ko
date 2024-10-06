@@ -5,7 +5,7 @@
 site:
   title: Spring Security
   # url: https://docs.spring.io/spring-security/reference
-  url: /
+  url: https://spring-security.mogumogu.dev
   robots: allow
 git:
   ensure_git_suffix: false
@@ -13,9 +13,7 @@ content:
   sources:
     - url: ../../spring-security-ko
       branches: ["6.3.x"]
-      tags: [
-          "6.3.{0..99}", # 6.3.x 버전만 가져오기 위한 태그 패턴
-        ]
+      tags: ["6.3.{3}"]
       # branches: [main, "5.{{6..9},{1..9}+({0..9})}.x", "6.+({0..9}).x"]
       # tags:
       #   [
@@ -45,7 +43,7 @@ urls:
   redirect_facility: httpd
 ui:
   bundle:
-    url: ../../ui-bundle.zip
+    url: ../ui-bundle.zip
     snapshot: true
 runtime:
   log:
