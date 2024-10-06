@@ -43,7 +43,7 @@ urls:
   redirect_facility: httpd
 ui:
   bundle:
-    url: ../ui-bundle.zip
+    url: ./ui-bundle.zip
     snapshot: true
 runtime:
   log:
