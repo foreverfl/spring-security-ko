@@ -1,36 +1,36 @@
 [[servlet-authentication-architecture]]
-= Servlet Authentication Architecture
+= 서블릿 인증 아키텍처
 :figures: servlet/authentication/architecture
 
-This discussion expands on xref:servlet/architecture.adoc#servlet-architecture[Servlet Security: The Big Picture] to describe the main architectural components of Spring Security's used in Servlet authentication.
-If you need concrete flows that explain how these pieces fit together, look at the xref:servlet/authentication/index.adoc#servlet-authentication-mechanisms[Authentication Mechanism] specific sections.
+이 논의는 xref:servlet/architecture.adoc#servlet-architecture[서블릿 보안: 전체 그림]을 확장하여 서블릿 인증에 사용되는 Spring Security의 주요 아키텍처 구성 요소를 설명합니다.
+이러한 요소들이 어떻게 조합되는지에 대한 구체적인 흐름이 필요하다면, xref:servlet/authentication/index.adoc#servlet-authentication-mechanisms[인증 메커니즘] 특정 섹션을 참조하세요.
 
-* <<servlet-authentication-securitycontextholder>> - The `SecurityContextHolder` is where Spring Security stores the details of who is xref:features/authentication/index.adoc#authentication[authenticated].
-* <<servlet-authentication-securitycontext>> - is obtained from the `SecurityContextHolder` and contains the `Authentication` of the currently authenticated user.
-* <<servlet-authentication-authentication>> - Can be the input to `AuthenticationManager` to provide the credentials a user has provided to authenticate or the current user from the `SecurityContext`.
-* <<servlet-authentication-granted-authority>> - An authority that is granted to the principal on the `Authentication` (i.e. roles, scopes, etc.)
-* <<servlet-authentication-authenticationmanager>> -  the API that defines how Spring Security's Filters perform  xref:features/authentication/index.adoc#authentication[authentication].
-* <<servlet-authentication-providermanager>> -  the most common implementation of `AuthenticationManager`.
-* <<servlet-authentication-authenticationprovider>> - used by `ProviderManager` to perform a specific type of authentication.
-* <<servlet-authentication-authenticationentrypoint>> - used for requesting credentials from a client (i.e. redirecting to a log in page, sending a `WWW-Authenticate` response, etc.)
-* <<servlet-authentication-abstractprocessingfilter>> - a base `Filter` used for authentication.
-This also gives a good idea of the high level flow of authentication and how pieces work together.
+* <<servlet-authentication-securitycontextholder>> - ``SecurityContextHolder``는 Spring Security가 xref:features/authentication/index.adoc#authentication[인증된] 사용자의 세부 정보를 저장하는 곳입니다.
+* <<servlet-authentication-securitycontext>> - ``SecurityContextHolder``에서 얻으며 현재 인증된 사용자의 ``Authentication``을 포함합니다.
+* <<servlet-authentication-authentication>> - 사용자가 인증을 위해 제공한 자격 증명을 ``AuthenticationManager``에 입력하거나 ``SecurityContext``에서 현재 사용자를 나타낼 수 있습니다.
+* <<servlet-authentication-granted-authority>> - ``Authentication``의 주체에게 부여된 권한입니다(예: 역할, 범위 등).
+* <<servlet-authentication-authenticationmanager>> - Spring Security의 필터가 xref:features/authentication/index.adoc#authentication[인증]을 수행하는 방법을 정의하는 API입니다.
+* <<servlet-authentication-providermanager>> - ``AuthenticationManager``의 가장 일반적인 구현입니다.
+* <<servlet-authentication-authenticationprovider>> - ``ProviderManager``가 특정 유형의 인증을 수행하는 데 사용합니다.
+* <<servlet-authentication-authenticationentrypoint>> - 클라이언트에게 자격 증명을 요청하는 데 사용됩니다(예: 로그인 페이지로 리다이렉트, `WWW-Authenticate` 응답 전송 등).
+* <<servlet-authentication-abstractprocessingfilter>> - 인증에 사용되는 기본 ``Filter``입니다.
+이는 인증의 상위 수준 흐름과 각 요소가 어떻게 협력하는지에 대한 좋은 아이디어를 제공합니다.
 
 [[servlet-authentication-securitycontextholder]]
 == SecurityContextHolder
 
-At the heart of Spring Security's authentication model is the `SecurityContextHolder`.
-It contains the <<servlet-authentication-securitycontext>>.
+Spring Security 인증 모델의 핵심은 ``SecurityContextHolder``입니다.
+이는 <<servlet-authentication-securitycontext>>를 포함합니다.
 
 image::{figures}/securitycontextholder.png[]
 
-The `SecurityContextHolder` is where Spring Security stores the details of who is xref:features/authentication/index.adoc#authentication[authenticated].
-Spring Security does not care how the `SecurityContextHolder` is populated.
-If it contains a value, it is used as the currently authenticated user.
+``SecurityContextHolder``는 Spring Security가 xref:features/authentication/index.adoc#authentication[인증된] 사용자의 세부 정보를 저장하는 곳입니다.
+Spring Security는 ``SecurityContextHolder``가 어떻게 채워지는지 신경 쓰지 않습니다.
+값이 포함되어 있으면 현재 인증된 사용자로 사용됩니다.
 
-The simplest way to indicate a user is authenticated is to set the `SecurityContextHolder` directly:
+사용자가 인증되었음을 나타내는 가장 간단한 방법은 ``SecurityContextHolder``를 직접 설정하는 것입니다:
 
-.Setting `SecurityContextHolder`
+.`SecurityContextHolder` 설정하기
 
 [tabs]
 ======
@@ -58,19 +58,18 @@ SecurityContextHolder.setContext(context) // <3>
 ----
 ======
 
-<1> We start by creating an empty `SecurityContext`.
-You should create a new `SecurityContext` instance instead of using `SecurityContextHolder.getContext().setAuthentication(authentication)` to avoid race conditions across multiple threads.
-<2> Next, we create a new <<servlet-authentication-authentication,`Authentication`>> object.
-Spring Security does not care what type of `Authentication` implementation is set on the `SecurityContext`.
-Here, we use `TestingAuthenticationToken`, because it is very simple.
-A more common production scenario is `UsernamePasswordAuthenticationToken(userDetails, password, authorities)`.
-<3> Finally, we set the `SecurityContext` on the `SecurityContextHolder`.
-Spring Security uses this information for xref:servlet/authorization/index.adoc#servlet-authorization[authorization].
+<1> 먼저 빈 ``SecurityContext``를 생성합니다.
+여러 스레드 간의 경쟁 조건을 피하기 위해 `SecurityContextHolder.getContext().setAuthentication(authentication)` 대신 새 `SecurityContext` 인스턴스를 생성해야 합니다.
+<2> 다음으로, 새로운 <<servlet-authentication-authentication,`Authentication`>> 객체를 생성합니다.
+Spring Security는 ``SecurityContext``에 설정된 `Authentication` 구현의 유형을 신경 쓰지 않습니다.
+여기서는 매우 간단하기 때문에 ``TestingAuthenticationToken``을 사용합니다.
+더 일반적으로 배포를 할 경우에는 ``UsernamePasswordAuthenticationToken(userDetails, password, authorities)``를 사용합니다.
+<3> 마지막으로, ``SecurityContextHolder``에 ``SecurityContext``를 설정합니다.
+Spring Security는 이 정보를 xref:servlet/authorization/index.adoc#servlet-authorization[권한 부여]에 사용합니다.
 
+인증된 주체에 대한 정보를 얻으려면 ``SecurityContextHolder``을 확인하세요.
 
-To obtain information about the authenticated principal, access the `SecurityContextHolder`.
-
-.Access Currently Authenticated User
+.현재 인증된 사용자 접근하기
 [tabs]
 ======
 Java::
@@ -96,175 +95,153 @@ val authorities = authentication.authorities
 ----
 ======
 
-// FIXME: Add links to and relevant description of HttpServletRequest.getRemoteUser() and @CurrentSecurityContext @AuthenticationPrincipal
+기본적으로 ``SecurityContextHolder``는 ``ThreadLocal``을 사용하여 이러한 세부 정보를 저장합니다. 이는 ``SecurityContext``가 명시적으로 메서드 인자로 전달되지 않더라도 같은 스레드의 메서드에서 항상 사용 가능함을 의미합니다.
+현재 주체의 요청이 처리된 후 스레드를 정리하는 데 주의를 기울인다면 이러한 방식으로 ``ThreadLocal``을 사용하는 것은 매우 안전합니다.
+Spring Security의 xref:servlet/architecture.adoc#servlet-filterchainproxy[FilterChainProxy]는 ``SecurityContext``가 항상 지워지도록 보장합니다.
 
-By default, `SecurityContextHolder` uses a `ThreadLocal` to store these details, which means that the `SecurityContext` is always available to methods in the same thread, even if the `SecurityContext` is not explicitly passed around as an argument to those methods.
-Using a `ThreadLocal` in this way is quite safe if you take care to clear the thread after the present principal's request is processed.
-Spring Security's xref:servlet/architecture.adoc#servlet-filterchainproxy[FilterChainProxy] ensures that the `SecurityContext` is always cleared.
-
-Some applications are not entirely suitable for using a `ThreadLocal`, because of the specific way they work with threads.
-For example, a Swing client might want all threads in a Java Virtual Machine to use the same security context.
-You can configure `SecurityContextHolder` with a strategy on startup to specify how you would like the context to be stored.
-For a standalone application, you would use the `SecurityContextHolder.MODE_GLOBAL` strategy.
-Other applications might want to have threads spawned by the secure thread also assume the same security identity.
-You can achieve this by using `SecurityContextHolder.MODE_INHERITABLETHREADLOCAL`.
-You can change the mode from the default `SecurityContextHolder.MODE_THREADLOCAL` in two ways.
-The first is to set a system property.
-The second is to call a static method on `SecurityContextHolder`.
-Most applications need not change from the default.
-However, if you do, take a look at the JavaDoc for `SecurityContextHolder` to learn more.
+일부 애플리케이션은 스레드를 다루는 특정 방식 때문에 ``ThreadLocal``을 사용하기에 완전히 적합하지 않습니다.
+예를 들어, Swing 클라이언트는 Java 가상 머신의 모든 스레드가 동일한 보안 컨텍스트를 사용하기를 원할 수 있습니다.
+``SecurityContextHolder``를 시작할 때 전략을 구성하여 컨텍스트를 저장하는 방법을 지정할 수 있습니다.
+독립 실행형 애플리케이션의 경우 ``SecurityContextHolder.MODE_GLOBAL`` 전략을 사용할 수 있습니다.
+다른 애플리케이션은 보안 스레드에 의해 생성된 스레드도 동일한 보안 ID를 가정하기를 원할 수 있습니다.
+이는 ``SecurityContextHolder.MODE_INHERITABLETHREADLOCAL``을 사용하여 달성할 수 있습니다.
+기본값인 ``SecurityContextHolder.MODE_THREADLOCAL``에서 모드를 변경하는 방법은 두 가지입니다.
+첫 번째는 시스템 속성을 설정하는 것이고, 두 번째는 ``SecurityContextHolder``에서 정적 메서드를 호출하는 것입니다.
+대부분의 애플리케이션은 기본값을 변경할 필요가 없습니다.
+그러나 변경해야 한다면 ``SecurityContextHolder``의 JavaDoc을 참조하여 자세히 알아보세요.
 
 [[servlet-authentication-securitycontext]]
 == SecurityContext
 
-The {security-api-url}org/springframework/security/core/context/SecurityContext.html[`SecurityContext`] is obtained from the <<servlet-authentication-securitycontextholder>>.
-The `SecurityContext` contains an <<servlet-authentication-authentication>> object.
+{security-api-url}org/springframework/security/core/context/SecurityContext.html[`SecurityContext`]는 <<servlet-authentication-securitycontextholder>>에서 얻습니다.
+``SecurityContext``는 <<servlet-authentication-authentication>> 객체를 포함합니다.
 
 [[servlet-authentication-authentication]]
 == Authentication
 
-The {security-api-url}org/springframework/security/core/Authentication.html[`Authentication`] interface serves two main purposes within Spring Security:
+{security-api-url}org/springframework/security/core/Authentication.html[`Authentication`] 인터페이스는 Spring Security 내에서 두 가지 주요 목적을 수행합니다:
 
-* An input to <<servlet-authentication-authenticationmanager,`AuthenticationManager`>> to provide the credentials a user has provided to authenticate.
-When used in this scenario, `isAuthenticated()` returns `false`.
-* Represent the currently authenticated user.
-You can obtain the current `Authentication` from the <<servlet-authentication-securitycontext>>.
+* 사용자가 인증을 위해 제공한 자격 증명의 입력으로 <<servlet-authentication-authenticationmanager,`AuthenticationManager`>>에 제공됩니다.
+이 시나리오에서 사용될 때 ``isAuthenticated()``는 ``false``를 반환합니다.
+* 현재 인증된 사용자를 나타냅니다.
+현재 `Authentication`은 <<servlet-authentication-securitycontext>>에서 얻을 수 있습니다.
 
-The `Authentication` contains:
+``Authentication``은 다음을 포함합니다:
 
-* `principal`: Identifies the user.
-When authenticating with a username/password this is often an instance of xref:servlet/authentication/passwords/user-details.adoc#servlet-authentication-userdetails[`UserDetails`].
-* `credentials`: Often a password.
-In many cases, this is cleared after the user is authenticated, to ensure that it is not leaked.
-* `authorities`: The <<servlet-authentication-granted-authority,`GrantedAuthority`>> instances are high-level permissions the user is granted.
-Two examples are roles and scopes.
+* ``principal``: 사용자를 식별합니다.
+사용자 이름/비밀번호로 인증할 때 이는 종종 xref:servlet/authentication/passwords/user-details.adoc#servlet-authentication-userdetails[`UserDetails`]의 인스턴스입니다.
+* ``credentials``: 주로 비밀번호입니다.
+많은 경우, 사용자가 인증된 후 누출을 방지하기 위해 이 정보가 지워집니다.
+* ``authorities``: 사용자에게 부여된 <<servlet-authentication-granted-authority,`GrantedAuthority`>> 인스턴스입니다.
+두 가지 예로는 역할과 범위가 있습니다.
 
 [[servlet-authentication-granted-authority]]
 == GrantedAuthority
-{security-api-url}org/springframework/security/core/GrantedAuthority.html[`GrantedAuthority`] instances are high-level permissions that the user is granted.
-Two examples are roles and scopes.
+{security-api-url}org/springframework/security/core/GrantedAuthority.html[`GrantedAuthority`] 인스턴스는 사용자에게 부여된 높은 수준의 권한입니다.
+두 가지 예로는 역할과 범위가 있습니다.
 
-You can obtain `GrantedAuthority` instances from the <<servlet-authentication-authentication,`Authentication.getAuthorities()`>> method.
-This method provides a `Collection` of `GrantedAuthority` objects.
-A `GrantedAuthority` is, not surprisingly, an authority that is granted to the principal.
-Such authorities are usually "`roles`", such as `ROLE_ADMINISTRATOR` or `ROLE_HR_SUPERVISOR`.
-These roles are later configured for web authorization, method authorization, and domain object authorization.
-Other parts of Spring Security interpret these authorities and expect them to be present.
-When using username/password based authentication `GrantedAuthority` instances are usually loaded by the xref:servlet/authentication/passwords/user-details-service.adoc#servlet-authentication-userdetailsservice[`UserDetailsService`].
+<<servlet-authentication-authentication,`Authentication.getAuthorities()`>> 메서드에서 `GrantedAuthority` 인스턴스를 얻을 수 있습니다.
+이 메서드는 `GrantedAuthority` 객체의 ``Collection``을 제공합니다.
+``GrantedAuthority``는 주체에게 부여된 권한입니다.
+이러한 권한은 일반적으로 `ROLE_ADMINISTRATOR` 또는 ``ROLE_HR_SUPERVISOR``와 같은 "역할"입니다.
+이러한 역할은 나중에 웹 인가, 메서드 인가 및 도메인 객체 인가를 위해 구성됩니다.
+Spring Security의 다른 부분들은 이러한 권한을 해석하고 존재를 기대합니다.
+사용자 이름/비밀번호 기반 인증을 사용할 때 `GrantedAuthority` 인스턴스는 일반적으로 xref:servlet/authentication/passwords/user-details-service.adoc#servlet-authentication-userdetailsservice[`UserDetailsService`]에 의해 로드됩니다.
 
-Usually, the `GrantedAuthority` objects are application-wide permissions.
-They are not specific to a given domain object.
-Thus, you would not likely have a `GrantedAuthority` to represent a permission to `Employee` object number 54, because if there are thousands of such authorities you would quickly run out of memory (or, at the very least, cause the application to take a long time to authenticate a user).
-Of course, Spring Security is expressly designed to handle this common requirement, but you should instead use the project's domain object security capabilities for this purpose.
+일반적으로 `GrantedAuthority` 객체는 애플리케이션 전체의 권한입니다.
+특정 도메인 객체에 특화되지 않습니다.
+따라서 직원 객체 번호 54에 대한 권한을 나타내는 ``GrantedAuthority``를 가질 가능성은 낮습니다. 이는 수천 개의 이러한 권한이 있다면 메모리가 빠르게 소진되거나(또는 최소한 사용자 인증에 오랜 시간이 걸릴 것이기 때문입니다).
+물론 Spring Security는 이러한 일반적인 요구 사항을 명시적으로 처리하도록 설계되었지만, 이 목적을 위해서는 프로젝트의 도메인 객체 보안 기능을 대신 사용해야 합니다.
 
 [[servlet-authentication-authenticationmanager]]
 == AuthenticationManager
 
-{security-api-url}org/springframework/security/authentication/AuthenticationManager.html[`AuthenticationManager`] is the API that defines how Spring Security's Filters perform  xref:features/authentication/index.adoc#authentication[authentication].
-The <<servlet-authentication-authentication,`Authentication`>> that is returned is then set on the <<servlet-authentication-securitycontextholder>> by the controller (that is, by xref:servlet/architecture.adoc#servlet-security-filters[Spring Security's `Filters` instances]) that invoked the `AuthenticationManager`.
-If you are not integrating with Spring Security's `Filters` instances, you can set the `SecurityContextHolder` directly and are not required to use an `AuthenticationManager`.
+{security-api-url}org/springframework/security/authentication/AuthenticationManager.html[`AuthenticationManager`]는 Spring Security의 필터가 xref:features/authentication/index.adoc#authentication[인증]을 수행하는 방법을 정의하는 API입니다.
+반환된 <<servlet-authentication-authentication,`Authentication`>>은 ``AuthenticationManager``를 호출한 컨트롤러(즉, Spring Security의 xref:servlet/architecture.adoc#servlet-security-filters[`Filters` 인스턴스])에 의해 <<servlet-authentication-securitycontextholder>>에 설정됩니다.
+Spring Security의 `Filters` 인스턴스와 통합하지 않는 경우, ``SecurityContextHolder``를 직접 설정할 수 있으며 ``AuthenticationManager``를 사용할 필요가 없습니다.
 
-While the implementation of `AuthenticationManager` could be anything, the most common implementation is <<servlet-authentication-providermanager,`ProviderManager`>>.
-// FIXME: add configuration
+``AuthenticationManager``의 구현은 무엇이든 될 수 있지만, 가장 일반적인 구현은 <<servlet-authentication-providermanager,`ProviderManager`>>입니다.
 
 [[servlet-authentication-providermanager]]
 == ProviderManager
 
-{security-api-url}org/springframework/security/authentication/ProviderManager.html[`ProviderManager`] is the most commonly used implementation of <<servlet-authentication-authenticationmanager,`AuthenticationManager`>>.
-`ProviderManager` delegates to a `List` of <<servlet-authentication-authenticationprovider,`AuthenticationProvider`>> instances.
-Each `AuthenticationProvider` has an opportunity to indicate that authentication should be successful, fail, or indicate it cannot make a decision and allow a downstream `AuthenticationProvider` to decide.
-If none of the configured `AuthenticationProvider` instances can authenticate, authentication fails with a `ProviderNotFoundException`, which is a special `AuthenticationException` that indicates that the `ProviderManager` was not configured to support the type of `Authentication` that was passed into it.
+{security-api-url}org/springframework/security/authentication/ProviderManager.html[`ProviderManager`]는 <<servlet-authentication-authenticationmanager,`AuthenticationManager`>>의 가장 일반적으로 사용되는 구현입니다.
+``ProviderManager``는 <<servlet-authentication-authenticationprovider,`AuthenticationProvider`>> 인스턴스의 ``List``에 위임합니다.
+각 ``AuthenticationProvider``는 인증이 성공해야 하는지, 실패해야 하는지, 또는 결정을 내릴 수 없어 다운스트림 ``AuthenticationProvider``가 결정하도록 할지 나타낼 기회를 가집니다.
+구성된 ``AuthenticationProvider`` 인스턴스 중 어느 것도 인증할 수 없다면, 인증은 ``ProviderNotFoundException``과 함께 실패합니다. 이는 ``ProviderManager``가 전달된 `Authentication` 유형을 지원하도록 구성되지 않았음을 나타내는 특별한 ``AuthenticationException``입니다.
 
 image::{figures}/providermanager.png[]
 
-In practice each `AuthenticationProvider` knows how to perform a specific type of authentication.
-For example, one `AuthenticationProvider` might be able to validate a username/password, while another might be able to authenticate a SAML assertion.
-This lets each `AuthenticationProvider` do a very specific type of authentication while supporting multiple types of authentication and expose only a single `AuthenticationManager` bean.
+실제로 각 ``AuthenticationProvider``는 특정 유형의 인증을 수행하는 방법을 알고 있습니다.
+예를 들어, 한 ``AuthenticationProvider``는 사용자 이름/비밀번호를 검증할 수 있고, 다른 ``AuthenticationProvider``는 SAML 토큰을 인증할 수 있습니다.
+이를 통해 각 ``AuthenticationProvider``가 매우 특정한 유형의 인증을 수행하면서 여러 유형의 인증을 지원하고 단일 ``AuthenticationManager`` 빈만 노출할 수 있습니다.
 
-`ProviderManager` also allows configuring an optional parent `AuthenticationManager`, which is consulted in the event that no `AuthenticationProvider` can perform authentication.
-The parent can be any type of `AuthenticationManager`, but it is often an instance of `ProviderManager`.
+``ProviderManager``는 또한 선택적인 부모 ``AuthenticationManager``를 구성할 수 있게 합니다. 이는 ``AuthenticationProvider``가 인증을 수행할 수 없는 경우 consulted됩니다.
+부모는 어떤 유형의 ``AuthenticationManager``도 될 수 있지만, 일반적으로 ``ProviderManager``의 인스턴스입니다.
 
 image::{figures}/providermanager-parent.png[]
 
-In fact, multiple `ProviderManager` instances might share the same parent `AuthenticationManager`.
-This is somewhat common in scenarios where there are multiple xref:servlet/architecture.adoc#servlet-securityfilterchain[`SecurityFilterChain`] instances that have some authentication in common (the shared parent `AuthenticationManager`), but also different authentication mechanisms (the different `ProviderManager` instances).
+사실, 여러 ``ProviderManager`` 인스턴스가 동일한 부모 ``AuthenticationManager``를 공유할 수 있습니다.
+이는 일부 공통 인증(공유된 부모 `AuthenticationManager`)을 가지지만 다른 인증 메커니즘(서로 다른 `ProviderManager` 인스턴스)도 가진 여러 xref:servlet/architecture.adoc#servlet-securityfilterchain[`SecurityFilterChain`] 인스턴스가 있는 시나리오에서 다소 일반적입니다.
 
 image::{figures}/providermanagers-parent.png[]
 
 [[servlet-authentication-providermanager-erasing-credentials]]
-By default, `ProviderManager` tries to clear any sensitive credentials information from the `Authentication` object that is returned by a successful authentication request.
-This prevents information, such as passwords, being retained longer than necessary in the `HttpSession`.
+기본적으로 ``ProviderManager``는 성공적인 인증 요청에 의해 반환된 ``Authentication`` 객체에서 민감한 자격 증명 정보를 지우려고 시도합니다.
+이는 비밀번호와 같은 정보가 ``HttpSession``에 필요 이상으로 오래 보관되는 것을 방지합니다.
 
-This may cause issues when you use a cache of user objects, for example, to improve performance in a stateless application.
-If the `Authentication` contains a reference to an object in the cache (such as a `UserDetails` instance) and this has its credentials removed, it is no longer possible to authenticate against the cached value.
-You need to take this into account if you use a cache.
-An obvious solution is to first make a copy of the object, either in the cache implementation or in the `AuthenticationProvider` that creates the returned `Authentication` object.
-Alternatively, you can disable the `eraseCredentialsAfterAuthentication` property on `ProviderManager`.
-See the Javadoc for the {security-api-url}org/springframework/security/authentication/ProviderManager.html[ProviderManager] class.
+이는 상태 비저장 애플리케이션에서 성능을 향상시키기 위해 사용자 객체의 캐시를 사용할 때 문제를 일으킬 수 있습니다.
+``Authentication``이 캐시의 객체(예: `UserDetails` 인스턴스)에 대한 참조를 포함하고 이 객체의 자격 증명이 제거되면, 캐시된 값에 대해 더 이상 인증할 수 없게 됩니다.
+캐시를 사용하는 경우 이를 고려해야 합니다.
+명백한 해결책은 캐시 구현에서 또는 반환된 ``Authentication`` 객체를 생성하는 ``AuthenticationProvider``에서 객체의 복사본을 먼저 만드는 것입니다.
+또는 ``ProviderManager``의 `eraseCredentialsAfterAuthentication` 속성을 비활성화할 수 있습니다.
+자세한 내용은 {security-api-url}org/springframework/security/authentication/ProviderManager.html[ProviderManager] 클래스의 Javadoc을 참조하세요.
 
 [[servlet-authentication-authenticationprovider]]
 == AuthenticationProvider
 
-You can inject multiple {security-api-url}org/springframework/security/authentication/AuthenticationProvider.html[``AuthenticationProvider``s] instances into <<servlet-authentication-providermanager,`ProviderManager`>>.
-Each `AuthenticationProvider` performs a specific type of authentication.
-For example, xref:servlet/authentication/passwords/dao-authentication-provider.adoc#servlet-authentication-daoauthenticationprovider[`DaoAuthenticationProvider`] supports username/password-based authentication, while `JwtAuthenticationProvider` supports authenticating a JWT token.
+여러 {security-api-url}org/springframework/security/authentication/AuthenticationProvider.html[`AuthenticationProvider`] 인스턴스를 <<servlet-authentication-providermanager,`ProviderManager`>>에 주입할 수 있습니다.
+각 ``AuthenticationProvider``는 특정 유형의 인증을 수행합니다.
+예를 들어, xref:servlet/authentication/passwords/dao-authentication-provider.adoc#servlet-authentication-daoauthenticationprovider[`DaoAuthenticationProvider`]는 사용자 이름/비밀번호 기반 인증을 지원하고, ``JwtAuthenticationProvider``는 JWT 토큰을 인증합니다.
 
 [[servlet-authentication-authenticationentrypoint]]
-== Request Credentials with `AuthenticationEntryPoint`
+== ``AuthenticationEntryPoint``로 자격 증명 요청하기
 
-{security-api-url}org/springframework/security/web/AuthenticationEntryPoint.html[`AuthenticationEntryPoint`] is used to send an HTTP response that requests credentials from a client.
+{security-api-url}org/springframework/security/web/AuthenticationEntryPoint.html[`AuthenticationEntryPoint`]는 클라이언트에게 자격 증명을 요청하는 HTTP 응답을 보내는 데 사용됩니다.
 
-Sometimes, a client proactively includes credentials (such as a username and password) to request a resource.
-In these cases, Spring Security does not need to provide an HTTP response that requests credentials from the client, since they are already included.
+때때로 클라이언트는 리소스를 요청할 때 사전에 자격 증명(예: 사용자 이름과 비밀번호)을 포함합니다.
+이러한 경우, Spring Security는 클라이언트에게 자격 증명을 요청하는 HTTP 응답을 제공할 필요가 없습니다. 이미 포함되어 있기 때문입니다.
 
-In other cases, a client makes an unauthenticated request to a resource that they are not authorized to access.
-In this case, an implementation of `AuthenticationEntryPoint` is used to request credentials from the client.
-The `AuthenticationEntryPoint` implementation might perform a xref:servlet/authentication/passwords/form.adoc#servlet-authentication-form[redirect to a log in page], respond with an xref:servlet/authentication/passwords/basic.adoc#servlet-authentication-basic[WWW-Authenticate] header, or take other action.
-
-
-
-// FIXME: authenticationsuccesshandler
-// FIXME: authenticationfailurehandler
+다른 경우, 클라이언트는 접근 권한이 없는 리소스에 대해 인증되지 않은 요청을 합니다.
+이 경우 `AuthenticationEntryPoint` 구현이 클라이언트에게 자격 증명을 요청하는 데 사용됩니다.
+`AuthenticationEntryPoint` 구현은 xref:servlet/authentication/passwords/form.adoc#servlet-authentication-form[로그인 페이지로 리다이렉트]하거나, xref:servlet/authentication/passwords/basic.adoc#servlet-authentication-basic[WWW-Authenticate] 헤더로 응답하거나, 다른 작업을 수행할 수 있습니다.
 
 [[servlet-authentication-abstractprocessingfilter]]
 == AbstractAuthenticationProcessingFilter
 
-{security-api-url}org/springframework/security/web/authentication/AbstractAuthenticationProcessingFilter.html[`AbstractAuthenticationProcessingFilter`] is used as a base `Filter` for authenticating a user's credentials.
-Before the credentials can be authenticated, Spring Security typically requests the credentials by using <<servlet-authentication-authenticationentrypoint,`AuthenticationEntryPoint`>>.
+{security-api-url}org/springframework/security/web/authentication/AbstractAuthenticationProcessingFilter.html[`AbstractAuthenticationProcessingFilter`]는 사용자의 자격 증명을 인증하기 위한 기본 ``Filter``로 사용됩니다.
+자격 증명을 인증하기 전에, Spring Security는 일반적으로 <<servlet-authentication-authenticationentrypoint,`AuthenticationEntryPoint`>>를 사용하여 자격 증명을 요청합니다.
 
-Next, the `AbstractAuthenticationProcessingFilter` can authenticate any authentication requests that are submitted to it.
+그 다음, ``AbstractAuthenticationProcessingFilter``는 제출된 모든 인증 요청을 인증할 수 있습니다.
 
 image::{figures}/abstractauthenticationprocessingfilter.png[]
 
-image:{icondir}/number_1.png[] When the user submits their credentials, the `AbstractAuthenticationProcessingFilter` creates an <<servlet-authentication-authentication,`Authentication`>> from the `HttpServletRequest` to be authenticated.
-The type of `Authentication` created depends on the subclass of `AbstractAuthenticationProcessingFilter`.
-For example, xref:servlet/authentication/passwords/form.adoc#servlet-authentication-usernamepasswordauthenticationfilter[`UsernamePasswordAuthenticationFilter`] creates a `UsernamePasswordAuthenticationToken` from a __username__ and __password__ that are submitted in the `HttpServletRequest`.
+image:{icondir}/number_1.png[] 사용자가 자격 증명을 제출하면, ``AbstractAuthenticationProcessingFilter``는 인증될 ``HttpServletRequest``에서 <<servlet-authentication-authentication,`Authentication`>>을 생성합니다.
+생성된 ``Authentication``의 유형은 ``AbstractAuthenticationProcessingFilter``의 하위 클래스에 따라 다릅니다.
+예를 들어, xref:servlet/authentication/passwords/form.adoc#servlet-authentication-usernamepasswordauthenticationfilter[`UsernamePasswordAuthenticationFilter`]는 ``HttpServletRequest``에서 제출된 __사용자 이름__과 __비밀번호__로 ``UsernamePasswordAuthenticationToken``을 생성합니다.
 
-image:{icondir}/number_2.png[] Next, the <<servlet-authentication-authentication,`Authentication`>> is passed into the <<servlet-authentication-authenticationmanager,`AuthenticationManager`>> to be authenticated.
+image:{icondir}/number_2.png[] 다음으로, <<servlet-authentication-authentication,`Authentication`>>이 <<servlet-authentication-authenticationmanager,`AuthenticationManager`>>에 전달되어 인증됩니다.
 
-image:{icondir}/number_3.png[] If authentication fails, then __Failure__.
+image:{icondir}/number_3.png[] 인증이 실패하면, __실패__.
 
-* The <<servlet-authentication-securitycontextholder>> is cleared out.
-* `RememberMeServices.loginFail` is invoked.
-If remember me is not configured, this is a no-op.
-See the {security-api-url}org/springframework/security/web/authentication/rememberme/package-frame.html[`rememberme`] package.
-* `AuthenticationFailureHandler` is invoked.
-See the {security-api-url}org/springframework/security/web/authentication/AuthenticationFailureHandler.html[`AuthenticationFailureHandler`] interface.
+* <<servlet-authentication-securitycontextholder>>가 지워집니다.
+* ``RememberMeServices.loginFail``이 호출됩니다. 자동 로그인이 구성되지 않았다면 이는 아무 작업도 하지 않습니다. {security-api-url}org/springframework/security/web/authentication/rememberme/package-frame.html[`rememberme`] 패키지를 참조하세요.
+* ``AuthenticationFailureHandler``가 호출됩니다. {security-api-url}org/springframework/security/web/authentication/AuthenticationFailureHandler.html[`AuthenticationFailureHandler`] 인터페이스를 참조하세요.
 
-image:{icondir}/number_4.png[] If authentication is successful, then __Success__.
+image:{icondir}/number_4.png[] 인증이 성공하면, __성공__.
 
-* `SessionAuthenticationStrategy` is notified of a new login.
-See the {security-api-url}org/springframework/security/web/authentication/session/SessionAuthenticationStrategy.html[`SessionAuthenticationStrategy`] interface.
-* The <<servlet-authentication-authentication>> is set on the <<servlet-authentication-securitycontextholder>>.
-Later, if you need to save the `SecurityContext` so that it can be automatically set on future requests, `SecurityContextRepository#saveContext` must be explicitly invoked.
-See the {security-api-url}org/springframework/security/web/context/SecurityContextHolderFilter.html[`SecurityContextHolderFilter`] class.
-
-* `RememberMeServices.loginSuccess` is invoked.
-If remember me is not configured, this is a no-op.
-See the {security-api-url}org/springframework/security/web/authentication/rememberme/package-frame.html[`rememberme`] package.
-* `ApplicationEventPublisher` publishes an `InteractiveAuthenticationSuccessEvent`.
-* `AuthenticationSuccessHandler` is invoked.
-See the {security-api-url}org/springframework/security/web/authentication/AuthenticationSuccessHandler.html[`AuthenticationSuccessHandler`] interface.
-
-
-// daoauthenticationprovider (goes in username/password)
+* ``SessionAuthenticationStrategy``에 새 로그인이 알려집니다. {security-api-url}org/springframework/security/web/authentication/session/SessionAuthenticationStrategy.html[`SessionAuthenticationStrategy`] 인터페이스를 참조하세요.
+* <<servlet-authentication-authentication>>이 <<servlet-authentication-securitycontextholder>>에 설정됩니다. 나중에 ``SecurityContext``를 저장하여 향후 요청에서 자동으로 설정되도록 해야 한다면, ``SecurityContextRepository#saveContext``를 명시적으로 호출해야 합니다. {security-api-url}org/springframework/security/web/context/SecurityContextHolderFilter.html[`SecurityContextHolderFilter`] 클래스를 참조하세요.
+* ``RememberMeServices.loginSuccess``가 호출됩니다. 자동 로그인이 구성되지 않았다면 이는 아무 작업도 하지 않습니다. {security-api-url}org/springframework/security/web/authentication/rememberme/package-frame.html[`rememberme`] 패키지를 참조하세요.
+* ``ApplicationEventPublisher``가 ``InteractiveAuthenticationSuccessEvent``를 발행합니다.
+* ``AuthenticationSuccessHandler``가 호출됩니다. {security-api-url}org/springframework/security/web/authentication/AuthenticationSuccessHandler.html[`AuthenticationSuccessHandler`] 인터페이스를 참조하세요.

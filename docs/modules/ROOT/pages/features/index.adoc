@@ -1,7 +1,6 @@
 [[features]]
-= Features
+= 기능
 :page-section-summary-toc: 1
 
-Spring Security provides comprehensive support for xref:features/authentication/index.adoc[authentication], xref:features/authorization/index.adoc[authorization], and protection against xref:features/exploits/index.adoc#exploits[common exploits].
-It also provides integration with other libraries to simplify its usage.
-
+Spring Security는 xref:features/authentication/index.adoc[인증], xref:features/authorization/index.adoc[권한 부여], 그리고 xref:features/exploits/index.adoc#exploits[일반적인 보안 취약점]에 대한 보호를 위한 포괄적인 지원을 제공합니다.
+또한 다른 라이브러리와의 통합을 통해 사용을 간소화합니다.

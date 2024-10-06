@@ -1,12 +1,12 @@
 [[prerequisites]]
-= Prerequisites
+= 요구 사항
 
-Spring Security requires a Java 17 or higher Runtime Environment.
+Spring Security는 Java 17 이상의 런타임 환경이 필요합니다.
 
-As Spring Security aims to operate in a self-contained manner, you do not need to place any special configuration files in your Java Runtime Environment.
-In particular, you need not configure a special Java Authentication and Authorization Service (JAAS) policy file or place Spring Security into common classpath locations.
+Spring Security는 독립적으로 작동하도록 설계되었기 때문에, Java 런타임 환경에 특별한 설정 파일을 추가할 필요가 없습니다.
+특히, 특별한 Java 인증 및 권한 부여 서비스(JAAS) 정책 파일을 구성하거나 Spring Security를 공통 클래스패스 위치에 배치할 필요가 없습니다.
 
-Similarly, if you use an EJB Container or Servlet Container, you need not put any special configuration files anywhere nor include Spring Security in a server classloader.
-All the required files are contained within your application.
+마찬가지로, EJB 컨테이너나 서블릿 컨테이너를 사용하는 경우에도 특별한 설정 파일을 어디에도 두지 않아도 되며, 서버 클래스로더에 Spring Security를 포함시킬 필요가 없습니다.
+필요한 모든 파일은 애플리케이션 내에 포함되어 있습니다.
 
-This design offers maximum deployment time flexibility, as you can copy your target artifact (be it a JAR, WAR, or EAR) from one system to another and it immediately works.
+이러한 설계는 최대한의 배포 유연성을 제공합니다. 대상 아티팩트(JAR, WAR 또는 EAR)를 한 시스템에서 다른 시스템으로 복사하기만 하면 즉시 작동합니다.

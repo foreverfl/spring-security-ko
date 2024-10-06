@@ -1,5 +1,5 @@
 [[servlet-applications]]
-= Servlet Applications
+= 서블릿 애플리케이션
 :page-section-summary-toc: 1
 
-Spring Security integrates with the Servlet Container by using a standard Servlet `Filter`. This means it works with any application that runs in a Servlet Container. More concretely, you do not need to use Spring in your Servlet-based application to take advantage of Spring Security.
+Spring Security는 표준 서블릿 ``Filter``를 사용하여 서블릿 컨테이너와 통합됩니다. 이는 서블릿 컨테이너에서 실행되는 모든 애플리케이션에서 작동한다는 것을 의미합니다. 더 구체적으로, Spring Security의 이점을 활용하기 위해 서블릿 기반 애플리케이션에서 Spring을 사용할 필요가 없습니다.

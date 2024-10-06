@@ -1,33 +1,32 @@
 [[servlet-architecture]]
-= Architecture
+= 아키텍처
 :figures: servlet/architecture
 
-This section discusses Spring Security's high-level architecture within Servlet based applications.
-We build on this high-level understanding within the xref:servlet/authentication/index.adoc#servlet-authentication[Authentication], xref:servlet/authorization/index.adoc#servlet-authorization[Authorization], and xref:servlet/exploits/index.adoc#servlet-exploits[Protection Against Exploits] sections of the reference.
-// FIXME: Add links to other sections of architecture
+이 섹션에서는 서블릿 기반 애플리케이션에서의 Spring Security의 고수준 아키텍처에 대해 설명합니다.
+우리는 이 고수준 이해를 바탕으로 참조 문서의 xref:servlet/authentication/index.adoc#servlet-authentication[인증], xref:servlet/authorization/index.adoc#servlet-authorization[권한 부여], 그리고 xref:servlet/exploits/index.adoc#servlet-exploits[공격 방어] 섹션에서 더 자세히 다룰 것입니다.
 
 [[servlet-filters-review]]
-== A Review of Filters
+== 필터 개요
 
-Spring Security's Servlet support is based on Servlet Filters, so it is helpful to look at the role of Filters generally first.
-The following image shows the typical layering of the handlers for a single HTTP request.
+Spring Security의 서블릿 지원은 서블릿 필터를 기반으로 하므로, 먼저 필터의 역할을 전반적으로 살펴보는 것이 도움이 됩니다.
+다음 이미지는 단일 HTTP 요청에 대한 핸들러의 일반적인 계층을 보여줍니다.
 
 .FilterChain
 [[servlet-filterchain-figure]]
 image::{figures}/filterchain.png[]
 
-The client sends a request to the application, and the container creates a `FilterChain`, which contains the `Filter` instances and `Servlet` that should process the `HttpServletRequest`, based on the path of the request URI.
-In a Spring MVC application, the `Servlet` is an instance of {spring-framework-reference-url}web.html#mvc-servlet[`DispatcherServlet`].
-At most, one `Servlet` can handle a single `HttpServletRequest` and `HttpServletResponse`.
-However, more than one `Filter` can be used to:
+클라이언트가 애플리케이션에 요청을 보내면, 컨테이너는 요청 URI의 경로를 기반으로 ``HttpServletRequest``를 처리해야 하는 `Filter` 인스턴스와 ``Servlet``을 포함하는 ``FilterChain``을 생성합니다.
+Spring MVC 애플리케이션에서 ``Servlet``은 {spring-framework-reference-url}web.html#mvc-servlet[`DispatcherServlet`]의 인스턴스입니다.
+하나의 ``HttpServletRequest``와 ``HttpServletResponse``를 처리할 수 있는 ``Servlet``은 최대 하나입니다.
+그러나 여러 개의 ``Filter``를 사용하여 다음과 같은 작업을 수행할 수 있습니다:
 
-* Prevent downstream `Filter` instances or the `Servlet` from being invoked.
-In this case, the `Filter` typically writes the `HttpServletResponse`.
-* Modify the `HttpServletRequest` or `HttpServletResponse` used by the downstream `Filter` instances and the `Servlet`.
+* 다운스트림 ``Filter`` 인스턴스나 ``Servlet``이 호출되는 것을 방지합니다.
+이 경우 ``Filter``는 일반적으로 ``HttpServletResponse``를 작성합니다.
+* 다운스트림 ``Filter`` 인스턴스와 ``Servlet``이 사용하는 ``HttpServletRequest`` 또는 ``HttpServletResponse``를 수정합니다.
 
-The power of the `Filter` comes from the `FilterChain` that is passed into it.
+``Filter``의 강력한 기능은 전달받은 ``FilterChain``에서 비롯됩니다.
 
-.`FilterChain` Usage Example
+.`FilterChain` 사용 예시
 [tabs]
 ======
 Java::
@@ -35,9 +34,9 @@ Java::
 [source,java,role="primary"]
 ----
 public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
-	// do something before the rest of the application
-    chain.doFilter(request, response); // invoke the rest of the application
-    // do something after the rest of the application
+	// 애플리케이션의 나머지 부분 실행 전에 수행할 작업
+    chain.doFilter(request, response); // 애플리케이션의 나머지 부분 호출
+    // 애플리케이션의 나머지 부분 실행 후에 수행할 작업
 }
 ----
 
@@ -46,32 +45,32 @@ Kotlin::
 [source,kotlin,role="secondary"]
 ----
 fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
-    // do something before the rest of the application
-    chain.doFilter(request, response) // invoke the rest of the application
-    // do something after the rest of the application
+    // 애플리케이션의 나머지 부분 실행 전에 수행할 작업
+    chain.doFilter(request, response) // 애플리케이션의 나머지 부분 호출
+    // 애플리케이션의 나머지 부분 실행 후에 수행할 작업
 }
 ----
 ======
 
-Since a `Filter` impacts only downstream `Filter` instances and the `Servlet`, the order in which each `Filter` is invoked is extremely important.
+``Filter``는 다운스트림 ``Filter`` 인스턴스와 ``Servlet``에만 영향을 미치므로, 각 ``Filter``가 호출되는 순서가 매우 중요합니다.
 
 [[servlet-delegatingfilterproxy]]
 == DelegatingFilterProxy
 
-Spring provides a `Filter` implementation named {spring-framework-api-url}org/springframework/web/filter/DelegatingFilterProxy.html[`DelegatingFilterProxy`] that allows bridging between the Servlet container's lifecycle and Spring's `ApplicationContext`.
-The Servlet container allows registering `Filter` instances by using its own standards, but it is not aware of Spring-defined Beans.
-You can register `DelegatingFilterProxy` through the standard Servlet container mechanisms but delegate all the work to a Spring Bean that implements `Filter`.
+Spring은 서블릿 컨테이너의 생명주기와 Spring의 `ApplicationContext` 사이의 연결을 가능하게 하는 {spring-framework-api-url}org/springframework/web/filter/DelegatingFilterProxy.html[`DelegatingFilterProxy`]라는 `Filter` 구현을 제공합니다.
+서블릿 컨테이너는 자체 표준을 사용하여 `Filter` 인스턴스를 등록할 수 있지만, Spring에서 정의한 빈(Bean)을 인식하지 못합니다.
+``DelegatingFilterProxy``를 표준 서블릿 컨테이너 메커니즘을 통해 등록할 수 있지만, 모든 작업을 ``Filter``를 구현하는 Spring 빈에 위임할 수 있습니다.
 
-Here is a picture of how `DelegatingFilterProxy` fits into the <<servlet-filters-review,`Filter` instances and the `FilterChain`>>.
+다음은 ``DelegatingFilterProxy``가 <<servlet-filters-review,``Filter`` 인스턴스와 ``FilterChain``>>에 어떻게 들어맞는지 보여주는 그림입니다.
 
 .DelegatingFilterProxy
 [[servlet-delegatingfilterproxy-figure]]
 image::{figures}/delegatingfilterproxy.png[]
 
-`DelegatingFilterProxy` looks up __Bean Filter~0~__ from the `ApplicationContext` and then invokes __Bean Filter~0~__.
-The following listing shows pseudo code of `DelegatingFilterProxy`:
+``DelegatingFilterProxy``는 ``ApplicationContext``에서 __Bean Filter~0~__를 찾아 __Bean Filter~0~__를 호출합니다.
+다음은 ``DelegatingFilterProxy``의 의사 코드입니다:
 
-.`DelegatingFilterProxy` Pseudo Code
+.`DelegatingFilterProxy` 의사 코드
 [tabs]
 ======
 Java::
@@ -94,22 +93,22 @@ fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterCh
 }
 ----
 ======
-<1> Lazily get Filter that was registered as a Spring Bean.
-For the example in <<servlet-delegatingfilterproxy-figure>> `delegate` is an instance of __Bean Filter~0~__.
-<2> Delegate work to the Spring Bean.
+<1> Spring 빈으로 등록된 Filter를 지연 로딩합니다.
+<<servlet-delegatingfilterproxy-figure>> 예시에서 ``delegate``는 __Bean Filter~0~__의 인스턴스입니다.
+<2> 작업을 Spring 빈에 위임합니다.
 
-Another benefit of `DelegatingFilterProxy` is that it allows delaying looking up `Filter` bean instances.
-This is important because the container needs to register the `Filter` instances before the container can start up.
-However, Spring typically uses a `ContextLoaderListener` to load the Spring Beans, which is not done until after the `Filter` instances need to be registered.
+``DelegatingFilterProxy``의 또 다른 이점은 `Filter` 빈 인스턴스 조회를 지연시킬 수 있다는 것입니다.
+이는 컨테이너가 시작되기 전에 `Filter` 인스턴스를 등록해야 하기 때문에 중요합니다.
+그러나 Spring은 일반적으로 ``ContextLoaderListener``를 사용하여 Spring 빈을 로드하며, 이는 ``Filter`` 인스턴스를 등록해야 할 때까지 완료되지 않습니다.
 
 [[servlet-filterchainproxy]]
 == FilterChainProxy
 
-Spring Security's Servlet support is contained within `FilterChainProxy`.
-`FilterChainProxy` is a special `Filter` provided by Spring Security that allows delegating to many `Filter` instances through <<servlet-securityfilterchain,`SecurityFilterChain`>>.
-Since `FilterChainProxy` is a Bean, it is typically wrapped in a <<servlet-delegatingfilterproxy>>.
+Spring Security의 서블릿 지원은 `FilterChainProxy` 내에 포함되어 있습니다.
+``FilterChainProxy``는 Spring Security가 제공하는 특별한 ``Filter``로, <<servlet-securityfilterchain,`SecurityFilterChain`>>을 통해 여러 `Filter` 인스턴스에 위임할 수 있게 합니다.
+``FilterChainProxy``는 빈이므로 일반적으로 <<servlet-delegatingfilterproxy>>로 래핑됩니다.
 
-The following image shows the role of `FilterChainProxy`.
+다음 이미지는 ``FilterChainProxy``의 역할을 보여줍니다.
 
 .FilterChainProxy
 [[servlet-filterchainproxy-figure]]
@@ -118,58 +117,54 @@ image::{figures}/filterchainproxy.png[]
 [[servlet-securityfilterchain]]
 == SecurityFilterChain
 
-{security-api-url}org/springframework/security/web/SecurityFilterChain.html[`SecurityFilterChain`]  is used by <<servlet-filterchainproxy>> to determine which Spring Security `Filter` instances should be invoked for the current request.
+{security-api-url}org/springframework/security/web/SecurityFilterChain.html[`SecurityFilterChain`]은 <<servlet-filterchainproxy>>에 의해 사용되어 현재 요청에 대해 어떤 Spring Security `Filter` 인스턴스를 호출해야 하는지 결정합니다.
 
-The following image shows the role of `SecurityFilterChain`.
+다음 이미지는 ``SecurityFilterChain``의 역할을 보여줍니다.
 
 .SecurityFilterChain
 [[servlet-securityfilterchain-figure]]
 image::{figures}/securityfilterchain.png[]
 
-The <<servlet-security-filters,Security Filters>> in `SecurityFilterChain` are typically Beans, but they are registered with `FilterChainProxy` instead of <<servlet-delegatingfilterproxy>>.
-`FilterChainProxy` provides a number of advantages to registering directly with the Servlet container or <<servlet-delegatingfilterproxy>>.
-First, it provides a starting point for all of Spring Security's Servlet support.
-For that reason, if you try to troubleshoot Spring Security's Servlet support, adding a debug point in `FilterChainProxy` is a great place to start.
+``SecurityFilterChain``의 <<servlet-security-filters,Security Filters>>는 일반적으로 빈이지만, <<servlet-delegatingfilterproxy>> 대신 ``FilterChainProxy``에 등록됩니다.
+``FilterChainProxy``는 서블릿 컨테이너나 <<servlet-delegatingfilterproxy>>에 직접 등록하는 것보다 여러 가지 이점을 제공합니다.
+첫째, Spring Security의 모든 서블릿 지원에 대한 시작점을 제공합니다.
+따라서 Spring Security의 서블릿 지원을 디버깅하려고 할 때 ``FilterChainProxy``에 중단점을 추가하는 것이 좋은 시작점이 됩니다.
 
-Second, since `FilterChainProxy` is central to Spring Security usage, it can perform tasks that are not viewed as optional.
-// FIXME: Add a link to SecurityContext
-For example, it clears out the `SecurityContext` to avoid memory leaks.
-It also applies Spring Security's xref:servlet/exploits/firewall.adoc#servlet-httpfirewall[`HttpFirewall`] to protect applications against certain types of attacks.
+둘째, ``FilterChainProxy``는 Spring Security 사용의 중심이기 때문에 선택적으로 간주되지 않는 작업을 수행할 수 있습니다.
+예를 들어, 메모리 누수를 방지하기 위해 ``SecurityContext``를 지웁니다.
+또한 Spring Security의 xref:servlet/exploits/firewall.adoc#servlet-httpfirewall[`HttpFirewall`]을 적용하여 특정 유형의 공격으로부터 애플리케이션을 보호합니다.
 
-In addition, it provides more flexibility in determining when a `SecurityFilterChain` should be invoked.
-In a Servlet container, `Filter` instances are invoked based upon the URL alone.
-// FIXME: Link to RequestMatcher
-However, `FilterChainProxy` can determine invocation based upon anything in the `HttpServletRequest` by using the `RequestMatcher` interface.
+또한 ``SecurityFilterChain``이 호출되어야 하는 시기를 결정하는 데 있어 더 많은 유연성을 제공합니다.
+서블릿 컨테이너에서 `Filter` 인스턴스는 URL만을 기반으로 호출됩니다.
+그러나 ``FilterChainProxy``는 `RequestMatcher` 인터페이스를 사용하여 ``HttpServletRequest``의 모든 항목을 기반으로 호출을 결정할 수 있습니다.
 
-The following image shows multiple `SecurityFilterChain` instances:
+다음 이미지는 여러 `SecurityFilterChain` 인스턴스를 보여줍니다:
 
 .Multiple SecurityFilterChain
 [[servlet-multi-securityfilterchain-figure]]
 image::{figures}/multi-securityfilterchain.png[]
 
-In the <<servlet-multi-securityfilterchain-figure>> figure, `FilterChainProxy` decides which `SecurityFilterChain` should be used.
-Only the first `SecurityFilterChain` that matches is invoked.
-If a URL of `/api/messages/` is requested, it first matches on the `SecurityFilterChain~0~` pattern of `+/api/**+`, so only `SecurityFilterChain~0~` is invoked, even though it also matches on ``SecurityFilterChain~n~``.
-If a URL of `/messages/` is requested, it does not match on the `SecurityFilterChain~0~` pattern of `+/api/**+`, so `FilterChainProxy` continues trying each `SecurityFilterChain`.
-Assuming that no other `SecurityFilterChain` instances match, `SecurityFilterChain~n~` is invoked.
-// FIXME: add link to pattern matching
+<<servlet-multi-securityfilterchain-figure>> 그림에서 ``FilterChainProxy``는 어떤 ``SecurityFilterChain``을 사용해야 할지 결정합니다.
+일치하는 첫 번째 ``SecurityFilterChain``만 호출됩니다.
+`/api/messages/` URL이 요청되면, 먼저 ``SecurityFilterChain~0~``의 ``+/api/**+`` 패턴과 일치하므로 ``SecurityFilterChain~0~``만 호출됩니다. 이는 ``SecurityFilterChain~n~``과도 일치하더라도 마찬가지입니다.
+`/messages/` URL이 요청되면, ``SecurityFilterChain~0~``의 ``+/api/**+`` 패턴과 일치하지 않으므로 ``FilterChainProxy``는 계속해서 각 ``SecurityFilterChain``을 시도합니다.
+다른 ``SecurityFilterChain`` 인스턴스가 일치하지 않는다고 가정하면, ``SecurityFilterChain~n~``이 호출됩니다.
 
-Notice that `SecurityFilterChain~0~` has only three security `Filter` instances configured.
-However, `SecurityFilterChain~n~` has four security `Filter` instances configured.
-It is important to note that each `SecurityFilterChain` can be unique and can be configured in isolation.
-In fact, a `SecurityFilterChain` might have zero security `Filter` instances if the application wants Spring Security to ignore certain requests.
-// FIXME: add link to configuring multiple `SecurityFilterChain` instances
+``SecurityFilterChain~0~``에는 세 개의 보안 `Filter` 인스턴스만 구성되어 있습니다.
+그러나 ```SecurityFilterChain~n~```에는 네 개의 보안 `Filter` 인스턴스가 구성되어 있습니다.
+각 ``SecurityFilterChain``이 고유하며 독립적으로 구성될 수 있다는 점을 주목해야 합니다.
+실제로 애플리케이션이 특정 요청을 Spring Security가 무시하기를 원한다면 ``SecurityFilterChain``에 보안 `Filter` 인스턴스가 없을 수도 있습니다.
 
 [[servlet-security-filters]]
 == Security Filters
 
-The Security Filters are inserted into the <<servlet-filterchainproxy>> with the <<servlet-securityfilterchain>> API.
-Those filters can be used for a number of different purposes, like xref:servlet/authentication/index.adoc[authentication], xref:servlet/authorization/index.adoc[authorization], xref:servlet/exploits/index.adoc[exploit protection], and more.
-The filters are executed in a specific order to guarantee that they are invoked at the right time, for example, the `Filter` that performs authentication should be invoked before the `Filter` that performs authorization.
-It is typically not necessary to know the ordering of Spring Security's ``Filter``s.
-However, there are times that it is beneficial to know the ordering, if you want to know them, you can check the {gh-url}/config/src/main/java/org/springframework/security/config/annotation/web/builders/FilterOrderRegistration.java[`FilterOrderRegistration` code].
+Security Filters는 <<servlet-securityfilterchain>> API를 통해 <<servlet-filterchainproxy>>에 삽입됩니다.
+이러한 필터들은 xref:servlet/authentication/index.adoc[인증], xref:servlet/authorization/index.adoc[권한 부여], xref:servlet/exploits/index.adoc[공격 방어] 등 다양한 목적으로 사용될 수 있습니다.
+필터들은 적절한 시기에 호출되도록 특정 순서로 실행됩니다. 예를 들어, 인증을 수행하는 ``Filter``는 권한 부여를 수행하는 ``Filter`` 이전에 호출되어야 합니다.
+일반적으로 Spring Security ``Filter``의 순서를 알 필요는 없습니다.
+그러나 순서를 알아야 할 때가 있다면, {gh-url}/config/src/main/java/org/springframework/security/config/annotation/web/builders/FilterOrderRegistration.java[`FilterOrderRegistration` 코드]를 확인할 수 있습니다.
 
-To exemplify the above paragraph, let's consider the following security configuration:
+위 내용을 예시로 들기 위해, 다음과 같은 보안 설정을 고려해 봅시다:
 
 [tabs]
 ======
@@ -223,34 +218,34 @@ class SecurityConfig {
 ----
 ======
 
-The above configuration will result in the following `Filter` ordering:
+위의 구성은 다음과 같은 `Filter` 순서를 만들어냅니다:
 
 [cols="1,1", options="header"]
 |====
-| Filter | Added by
+| 필터 | 추가된 위치
 | xref:servlet/exploits/csrf.adoc[CsrfFilter] | `HttpSecurity#csrf`
 | xref:servlet/authentication/passwords/form.adoc#servlet-authentication-form[UsernamePasswordAuthenticationFilter] | `HttpSecurity#formLogin`
 | xref:servlet/authentication/passwords/basic.adoc[BasicAuthenticationFilter] | `HttpSecurity#httpBasic`
 | xref:servlet/authorization/authorize-http-requests.adoc[AuthorizationFilter] | `HttpSecurity#authorizeHttpRequests`
 |====
 
-1. First, the `CsrfFilter` is invoked to protect against xref:servlet/exploits/csrf.adoc[CSRF attacks].
-2. Second, the authentication filters are invoked to authenticate the request.
-3. Third, the `AuthorizationFilter` is invoked to authorize the request.
+1. 먼저, ``CsrfFilter``가 호출되어 xref:servlet/exploits/csrf.adoc[CSRF 공격]으로부터 보호합니다.
+2. 둘째, 인증 필터들이 호출되어 요청을 인증합니다.
+3. 셋째, ``AuthorizationFilter``가 호출되어 요청을 승인합니다.
 
 [NOTE]
 ====
-There might be other `Filter` instances that are not listed above.
-If you want to see the list of filters invoked for a particular request, you can <<servlet-print-filters,print them>>.
+위에 나열되지 않은 다른 `Filter` 인스턴스가 있을 수 있습니다.
+특정 요청에 대해 호출되는 필터 목록을 보고 싶다면, <<servlet-print-filters,필터를 출력>>할 수 있습니다.
 ====
 
 [[servlet-print-filters]]
-=== Printing the Security Filters
+=== 보안 필터 출력하기
 
-Often times, it is useful to see the list of security ``Filter``s that are invoked for a particular request.
-For example, you want to make sure that the <<adding-custom-filter,filter you have added>> is in the list of the security filters.
+종종 특정 요청에 대해 호출되는 보안 `Filter` 목록을 보는 것이 유용할 수 있습니다.
+예를 들어, <<adding-custom-filter,추가한 필터>>가 보안 필터 목록에 있는지 확인하고 싶을 수 있습니다.
 
-The list of filters is printed at INFO level on the application startup, so you can see something like the following on the console output for example:
+필터 목록은 애플리케이션 시작 시 INFO 레벨로 출력되므로, 콘솔 출력에서 다음과 같은 내용을 볼 수 있습니다:
 
 [source,text,role="terminal"]
 ----
@@ -272,22 +267,22 @@ org.springframework.security.web.access.ExceptionTranslationFilter@77681ce4,
 org.springframework.security.web.access.intercept.AuthorizationFilter@169268a7]
 ----
 
-And that will give a pretty good idea of the security filters that are configured for <<servlet-securityfilterchain,each filter chain>>.
+이는 <<servlet-securityfilterchain,각 필터 체인>>에 대해 구성된 보안 필터에 대한 좋은 아이디어를 제공합니다.
 
-But that is not all, you can also configure your application to print the invocation of each individual filter for each request.
-That is helpful to see if the filter you have added is invoked for a particular request or to check where an exception is coming from.
-To do that, you can configure your application to <<servlet-logging,log the security events>>.
+그러나 이것이 전부는 아닙니다. 각 요청에 대해 개별 필터의 호출을 출력하도록 애플리케이션을 구성할 수도 있습니다.
+이는 추가한 필터가 특정 요청에 대해 호출되는지 확인하거나 예외가 어디서 발생하는지 확인하는 데 도움이 됩니다.
+이를 위해 <<servlet-logging,보안 이벤트를 로깅>>하도록 애플리케이션을 구성할 수 있습니다.
 
 [[adding-custom-filter]]
-=== Adding a Custom Filter to the Filter Chain
+=== 필터 체인에 사용자 정의 필터 추가하기
 
-Most of the time, the default security filters are enough to provide security to your application.
-However, there might be times that you want to add a custom `Filter` to the security filter chain.
+대부분의 경우, 기본 보안 필터만으로도 애플리케이션의 보안을 제공하기에 충분합니다.
+그러나 보안 필터 체인에 사용자 정의 ``Filter``를 추가해야 할 때가 있을 수 있습니다.
 
-For example, let's say that you want to add a `Filter` that gets a tenant id header and check if the current user has access to that tenant.
-The previous description already gives us a clue on where to add the filter, since we need to know the current user, we need to add it after the authentication filters.
+예를 들어, 테넌트 ID 헤더를 가져와서 현재 사용자가 해당 테넌트에 접근할 수 있는지 확인하는 ``Filter``를 추가하고 싶다고 가정해 봅시다.
+이 설명은 이미 필터를 어디에 추가해야 할지에 대한 힌트를 제공합니다. 현재 사용자를 알아야 하므로 인증 필터 이후에 추가해야 합니다.
 
-First, let's create the `Filter`:
+먼저 ``Filter``를 만들어 봅시다:
 
 [source,java]
 ----
@@ -316,26 +311,26 @@ public class TenantFilter implements Filter {
             filterChain.doFilter(request, response); <3>
             return;
         }
-        throw new AccessDeniedException("Access denied"); <4>
+        throw new AccessDeniedException("접근 거부"); <4>
     }
 
 }
 
 ----
 
-The sample code above does the following:
+위의 샘플 코드는 다음과 같은 작업을 수행합니다:
 
-<1> Get the tenant id from the request header.
-<2> Check if the current user has access to the tenant id.
-<3> If the user has access, then invoke the rest of the filters in the chain.
-<4> If the user does not have access, then throw an `AccessDeniedException`.
+<1> 요청 헤더에서 테넌트 ID를 가져옵니다.
+<2> 현재 사용자가 테넌트 ID에 접근할 수 있는지 확인합니다.
+<3> 사용자가 접근 권한이 있다면 체인의 나머지 필터들을 호출합니다.
+<4> 사용자가 접근 권한이 없다면 `AccessDeniedException`을 던집니다.
 
 [TIP]
 ====
-Instead of implementing `Filter`, you can extend from {spring-framework-api-url}org/springframework/web/filter/OncePerRequestFilter.html[OncePerRequestFilter] which is a base class for filters that are only invoked once per request and provides a `doFilterInternal` method with the `HttpServletRequest` and `HttpServletResponse` parameters.
+``Filter``를 구현하는 대신 {spring-framework-api-url}org/springframework/web/filter/OncePerRequestFilter.html[OncePerRequestFilter]를 확장할 수 있습니다. 이는 요청당 한 번만 호출되는 필터의 기본 클래스이며 `doFilterInternal` 메서드를 제공하여 ``HttpServletRequest``와 ``HttpServletResponse`` 파라미터를 사용할 수 있습니다.
 ====
 
-Now, we need to add the filter to the security filter chain.
+이제 이 필터를 보안 필터 체인에 추가해야 합니다.
 [tabs]
 ======
 Java::
@@ -365,17 +360,17 @@ fun filterChain(http: HttpSecurity): SecurityFilterChain {
 ----
 ======
 
-<1> Use `HttpSecurity#addFilterBefore` to add the `TenantFilter` before the `AuthorizationFilter`.
+<1> ``HttpSecurity#addFilterBefore``를 사용하여 ``TenantFilter``를 ``AuthorizationFilter`` 이전에 추가합니다.
 
-By adding the filter before the `AuthorizationFilter` we are making sure that the `TenantFilter` is invoked after the authentication filters.
-You can also use `HttpSecurity#addFilterAfter` to add the filter after a particular filter or `HttpSecurity#addFilterAt` to add the filter at a particular filter position in the filter chain.
+``TenantFilter``를 ``AuthorizationFilter`` 이전에 추가함으로써 인증 필터 이후에 ``TenantFilter``가 호출되도록 보장합니다.
+``HttpSecurity#addFilterAfter``를 사용하여 특정 필터 이후에 필터를 추가하거나 ``HttpSecurity#addFilterAt``을 사용하여 필터 체인의 특정 위치에 필터를 추가할 수도 있습니다.
 
-And that's it, now the `TenantFilter` will be invoked in the filter chain and will check if the current user has access to the tenant id.
+이제 ``TenantFilter``가 필터 체인에서 호출되어 현재 사용자가 테넌트 ID에 접근할 수 있는지 확인합니다.
 
-Be careful when you declare your filter as a Spring bean, either by annotating it with `@Component` or by declaring it as a bean in your configuration, because Spring Boot will automatically {spring-boot-reference-url}web.html#web.servlet.embedded-container.servlets-filters-listeners.beans[register it with the embedded container].
-That may cause the filter to be invoked twice, once by the container and once by Spring Security and in a different order.
+필터를 ``@Component``로 주석을 달거나 구성에서 빈으로 선언하여 Spring 빈으로 선언할 때 주의해야 합니다. Spring Boot는 자동으로 {spring-boot-reference-url}web.html#web.servlet.embedded-container.servlets-filters-listeners.beans[내장 컨테이너에 등록]하기 때문입니다.
+이로 인해 필터가 컨테이너에 의해 한 번, Spring Security에 의해 한 번, 총 두 번 호출될 수 있으며 순서도 다를 수 있습니다.
 
-If you still want to declare your filter as a Spring bean to take advantage of dependency injection for example, and avoid the duplicate invocation, you can tell Spring Boot to not register it with the container by declaring a `FilterRegistrationBean` bean and setting its `enabled` property to `false`:
+필터를 Spring 빈으로 선언하여 의존성 주입 등의 이점을 활용하면서도 중복 호출을 피하고 싶다면, `FilterRegistrationBean` 빈을 선언하고 `enabled` 속성을 ``false``로 설정하여 컨테이너에 등록되지 않도록 할 수 있습니다:
 
 [source,java]
 ----
@@ -389,38 +384,35 @@ public FilterRegistrationBean<TenantFilter> tenantFilterRegistration(TenantFilte
 
 
 [[servlet-exceptiontranslationfilter]]
-== Handling Security Exceptions
+== 보안 예외 처리
 
 
-The {security-api-url}org/springframework/security/web/access/ExceptionTranslationFilter.html[`ExceptionTranslationFilter`] allows translation of {security-api-url}org/springframework/security/access/AccessDeniedException.html[`AccessDeniedException`] and {security-api-url}/org/springframework/security/core/AuthenticationException.html[`AuthenticationException`] into HTTP responses.
+{security-api-url}org/springframework/security/web/access/ExceptionTranslationFilter.html[`ExceptionTranslationFilter`]는 {security-api-url}org/springframework/security/access/AccessDeniedException.html[`AccessDeniedException`]과 {security-api-url}/org/springframework/security/core/AuthenticationException.html[`AuthenticationException`]을 HTTP 응답으로 변환할 수 있게 합니다.
 
-`ExceptionTranslationFilter` is inserted into the <<servlet-filterchainproxy>> as one of the <<servlet-security-filters>>.
+``ExceptionTranslationFilter``는 <<servlet-filterchainproxy>>에 <<servlet-security-filters>> 중 하나로 삽입됩니다.
 
-The following image shows the relationship of `ExceptionTranslationFilter` to other components:
+다음 이미지는 ``ExceptionTranslationFilter``와 다른 컴포넌트들 간의 관계를 보여줍니다:
 
 image::{figures}/exceptiontranslationfilter.png[]
 
 
-* image:{icondir}/number_1.png[] First, the `ExceptionTranslationFilter` invokes `FilterChain.doFilter(request, response)` to invoke the rest of the application.
-* image:{icondir}/number_2.png[] If the user is not authenticated or it is an `AuthenticationException`, then __Start Authentication__.
-** The xref:servlet/authentication/architecture.adoc#servlet-authentication-securitycontextholder[SecurityContextHolder] is cleared out.
-** The `HttpServletRequest` is <<savedrequests,saved>> so that it can be used to replay the original request once authentication is successful.
-// FIXME: add link to authentication success
-** The `AuthenticationEntryPoint` is used to request credentials from the client.
-For example, it might redirect to a log in page or send a `WWW-Authenticate` header.
-// FIXME: link to AuthenticationEntryPoint
-* image:{icondir}/number_3.png[] Otherwise, if it is an `AccessDeniedException`, then __Access Denied__.
-The `AccessDeniedHandler` is invoked to handle access denied.
-// FIXME: link to AccessDeniedHandler
+* image:{icondir}/number_1.png[] 먼저, ``ExceptionTranslationFilter``는 ``FilterChain.doFilter(request, response)``를 호출하여 애플리케이션의 나머지 부분을 실행합니다.
+* image:{icondir}/number_2.png[] 사용자가 인증되지 않았거나 ``AuthenticationException``인 경우, __인증 시작__.
+** xref:servlet/authentication/architecture.adoc#servlet-authentication-securitycontextholder[SecurityContextHolder]가 지워집니다.
+** ``HttpServletRequest``가 <<savedrequests,저장>>되어 인증이 성공한 후 원래 요청을 재실행하는 데 사용될 수 있습니다.
+** ``AuthenticationEntryPoint``는 클라이언트에 자격 증명을 요청하는 데 사용됩니다.
+예를 들어, 로그인 페이지로 리다이렉트하거나 ``WWW-Authenticate`` 헤더를 보낼 수 있습니다.
+* image:{icondir}/number_3.png[] 그렇지 않고 ``AccessDeniedException``인 경우, __접근 거부__.
+`AccessDeniedHandler`가 호출되어 접근 거부를 처리합니다.
 
 [NOTE]
 ====
-If the application does not throw an `AccessDeniedException` or an `AuthenticationException`, then `ExceptionTranslationFilter` does not do anything.
+애플리케이션이 ``AccessDeniedException``이나 ``AuthenticationException``을 던지지 않으면 ``ExceptionTranslationFilter``는 아무 작업도 수행하지 않습니다.
 ====
 
-The pseudocode for `ExceptionTranslationFilter` looks something like this:
+``ExceptionTranslationFilter``의 의사 코드는 다음과 같습니다:
 
-.ExceptionTranslationFilter pseudocode
+.ExceptionTranslationFilter 의사 코드
 [source,java]
 ----
 try {
@@ -433,39 +425,38 @@ try {
 	}
 }
 ----
-<1> As described in <<servlet-filters-review>>, invoking `FilterChain.doFilter(request, response)` is the equivalent of invoking the rest of the application.
-This means that if another part of the application, (<<servlet-authorization-filtersecurityinterceptor,`FilterSecurityInterceptor`>> or method security) throws an `AuthenticationException` or `AccessDeniedException` it is caught and handled here.
-<2> If the user is not authenticated or it is an `AuthenticationException`, __Start Authentication__.
-<3> Otherwise, __Access Denied__
+<1> <<servlet-filters-review>>에서 설명한 대로, ``FilterChain.doFilter(request, response)``를 호출하는 것은 애플리케이션의 나머지 부분을 호출하는 것과 같습니다.
+이는 애플리케이션의 다른 부분(<<servlet-authorization-filtersecurityinterceptor,`FilterSecurityInterceptor`>> 또는 메서드 보안)이 ``AuthenticationException``이나 `AccessDeniedException`을 던지면 여기서 잡아서 처리된다는 것을 의미합니다.
+<2> 사용자가 인증되지 않았거나 ``AuthenticationException``인 경우, __인증 시작__.
+<3> 그렇지 않으면, __접근 거부__.
 
 [[savedrequests]]
-== Saving Requests Between Authentication
+== 인증 간 요청 저장하기
 
-As illustrated in <<servlet-exceptiontranslationfilter>>, when a request has no authentication and is for a resource that requires authentication, there is a need to save the request for the authenticated resource to re-request after authentication is successful.
-In Spring Security this is done by saving the `HttpServletRequest` using a <<requestcache,`RequestCache`>> implementation.
+<<servlet-exceptiontranslationfilter>>에서 설명한 대로, 인증되지 않은 요청이 인증이 필요한 리소스에 대한 것일 때, 인증이 성공한 후 인증된 리소스에 대한 요청을 다시 요청할 필요가 있습니다. Spring Security에서는 이를 <<requestcache,`RequestCache`>> 구현을 사용하여 ``HttpServletRequest``를 저장함으로써 수행합니다.
 
 [[requestcache]]
 === RequestCache
 
-The `HttpServletRequest` is saved in the {security-api-url}org/springframework/security/web/savedrequest/RequestCache.html[`RequestCache`].
-When the user successfully authenticates, the `RequestCache` is used to replay the original request.
-The <<requestcacheawarefilter,`RequestCacheAwareFilter`>> uses the `RequestCache` to get the saved `HttpServletRequest` after the user authenticates, while the `ExceptionTranslationFilter` uses the `RequestCache` to save the `HttpServletRequest` after it detects `AuthenticationException`, before redirecting the user to the login endpoint.
+``HttpServletRequest``는 {security-api-url}org/springframework/security/web/savedrequest/RequestCache.html[`RequestCache`]에 저장됩니다.
+사용자가 성공적으로 인증하면, ``RequestCache``를 사용하여 원래 요청을 재실행합니다.
+<<requestcacheawarefilter,`RequestCacheAwareFilter`>>는 사용자 인증 후 저장된 ``HttpServletRequest``를 가져오기 위해 ``RequestCache``를 사용하며, ``ExceptionTranslationFilter``는 ``AuthenticationException``을 감지한 후 사용자를 로그인 엔드포인트로 리다이렉트하기 전에 ``HttpServletRequest``를 저장하기 위해 `RequestCache`를 사용합니다.
 
-By default, an `HttpSessionRequestCache` is used.
-The code below demonstrates how to customize the `RequestCache` implementation that is used to check the `HttpSession` for a saved request if the parameter named `continue` is present.
+기본적으로 ``HttpSessionRequestCache``가 사용됩니다.
+아래 코드는 `continue` 매개변수가 존재할 때 저장된 요청에 대해 `HttpSession`을 확인하는 데 사용되는 ``RequestCache`` 구현을 어떻게 사용자 정의할 수 있는지 보여줍니다.
 
 include::partial$servlet/architecture/request-cache-continue.adoc[]
 
 [[requestcache-prevent-saved-request]]
-==== Prevent the Request From Being Saved
+==== 요청 저장 방지하기
 
-There are a number of reasons you may want to not store the user's unauthenticated request in the session.
-You may want to offload that storage onto the user's browser or store it in a database.
-Or you may want to shut off this feature since you always want to redirect the user to the home page instead of the page they tried to visit before login.
+사용자의 인증되지 않은 요청을 세션에 저장하고 싶지 않은 이유가 여러 가지 있을 수 있습니다.
+그 저장을 사용자의 브라우저로 옮기거나 데이터베이스에 저장하고 싶을 수 있습니다.
+또는 사용자를 항상 로그인 전에 방문하려고 했던 페이지 대신 홈페이지로 리다이렉트하고 싶어서 이 기능을 끄고 싶을 수 있습니다.
 
-To do that, you can use {security-api-url}org/springframework/security/web/savedrequest/NullRequestCache.html[the `NullRequestCache` implementation].
+이를 위해 {security-api-url}org/springframework/security/web/savedrequest/NullRequestCache.html[`NullRequestCache` 구현]을 사용할 수 있습니다.
 
-.Prevent the Request From Being Saved
+.요청 저장 방지하기
 [tabs]
 ======
 Java::
@@ -517,18 +508,18 @@ XML::
 [[requestcacheawarefilter]]
 === RequestCacheAwareFilter
 
-The {security-api-url}org/springframework/security/web/savedrequest/RequestCacheAwareFilter.html[`RequestCacheAwareFilter`] uses the <<requestcache,`RequestCache`>> to replay the original request.
+{security-api-url}org/springframework/security/web/savedrequest/RequestCacheAwareFilter.html[`RequestCacheAwareFilter`]는 <<requestcache,`RequestCache`>>를 사용하여 원래 요청을 재실행합니다.
 
 [[servlet-logging]]
-== Logging
+== 로깅
 
-Spring Security provides comprehensive logging of all security related events at the DEBUG and TRACE level.
-This can be very useful when debugging your application because for security measures Spring Security does not add any detail of why a request has been rejected to the response body.
-If you come across a 401 or 403 error, it is very likely that you will find a log message that will help you understand what is going on.
+Spring Security는 모든 보안 관련 이벤트에 대해 DEBUG 및 TRACE 레벨에서 포괄적인 로깅을 제공합니다.
+이는 애플리케이션을 디버깅할 때 매우 유용할 수 있습니다. 보안 조치를 위해 Spring Security는 요청이 거부된 이유에 대한 세부 정보를 응답 본문에 추가하지 않기 때문입니다.
+401이나 403 오류를 만나면, 무슨 일이 일어나고 있는지 이해하는 데 도움이 되는 로그 메시지를 찾을 가능성이 높습니다.
 
-Let's consider an example where a user tries to make a `POST` request to a resource that has xref:servlet/exploits/csrf.adoc[CSRF protection] enabled without the CSRF token.
-With no logs, the user will see a 403 error with no explanation of why the request was rejected.
-However, if you enable logging for Spring Security, you will see a log message like this:
+xref:servlet/exploits/csrf.adoc[CSRF 보호]가 활성화된 리소스에 CSRF 토큰 없이 `POST` 요청을 시도하는 사용자의 예를 살펴보겠습니다.
+로그 없이는 사용자는 요청이 거부된 이유에 대한 설명 없이 403 오류만 보게 됩니다.
+그러나 Spring Security에 대한 로깅을 활성화하면 다음과 같은 로그 메시지를 볼 수 있습니다:
 
 [source,text]
 ----
@@ -539,16 +530,16 @@ However, if you enable logging for Spring Security, you will see a log message l
 2023-06-14T09:44:25.801-03:00 TRACE 76975 --- [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Invoking HeaderWriterFilter (4/15)
 2023-06-14T09:44:25.802-03:00 TRACE 76975 --- [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Invoking CsrfFilter (5/15)
 2023-06-14T09:44:25.814-03:00 DEBUG 76975 --- [nio-8080-exec-1] o.s.security.web.csrf.CsrfFilter         : Invalid CSRF token found for http://localhost:8080/hello
-2023-06-14T09:44:25.814-03:00 DEBUG 76975 --- [nio-8080-exec-1] o.s.s.w.access.AccessDeniedHandlerImpl   : Responding with 403 status code
+2023-06-14T09:44:25.814-03:00 DEBUG 76975 --- [nio-8080-exec-1] o.s.s.w.access.AccessDeniedException   : Responding with 403 status code
 2023-06-14T09:44:25.814-03:00 TRACE 76975 --- [nio-8080-exec-1] o.s.s.w.header.writers.HstsHeaderWriter  : Not injecting HSTS header since it did not match request to [Is Secure]
 ----
 
-It becomes clear that the CSRF token is missing and that is why the request is being denied.
+CSRF 토큰이 누락되어 요청이 거부되고 있다는 것이 명확해집니다.
 
-To configure your application to log all the security events, you can add the following to your application:
+애플리케이션이 모든 보안 이벤트를 로깅하도록 구성하려면 다음을 애플리케이션에 추가할 수 있습니다:
 
 ====
-.application.properties in Spring Boot
+.Spring Boot의 application.properties
 [source,properties,role="primary"]
 ----
 logging.level.org.springframework.security=TRACE

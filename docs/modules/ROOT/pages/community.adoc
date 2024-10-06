@@ -1,37 +1,36 @@
 [[community]]
-= Spring Security Community
+= Spring Security 커뮤니티
 
-Welcome to the Spring Security Community!
-This section discusses how you can make the most of our vast community.
-
+Spring Security 커뮤니티에 오신 것을 환영합니다!
+이 섹션에서는 우리의 광범위한 커뮤니티를 최대한 활용하는 방법을 설명합니다.
 
 [[community-help]]
-== Getting Help
-If you need help with Spring Security, we are here to help.
-The following are some of the best ways to get help:
+== 도움 받기
+Spring Security에 대해 도움이 필요하다면 우리가 도와드리겠습니다.
+다음은 도움을 받을 수 있는 가장 좋은 방법들입니다:
 
-* Read through this documentation.
-* Try one of our many xref:samples.adoc#samples[sample applications].
-* Ask a question on https://stackoverflow.com/questions/tagged/spring-security[https://stackoverflow.com] with the `spring-security` tag.
-* Report bugs and enhancement requests at https://github.com/spring-projects/spring-security/issues
+* 이 문서를 꼼꼼히 읽어보세요.
+* xref:samples.adoc#samples[샘플 애플리케이션] 중 하나를 시도해 보세요.
+* https://stackoverflow.com/questions/tagged/spring-security[https://stackoverflow.com]에서 `spring-security` 태그를 사용하여 질문하세요.
+* 버그와 개선 요청은 https://github.com/spring-projects/spring-security/issues에 보고해 주세요.
 
 [[community-becoming-involved]]
-== Becoming Involved
-We welcome your involvement in the Spring Security project.
-There are many ways to contribute, including answering questions on Stack Overflow, writing new code, improving existing code, assisting with documentation, developing samples or tutorials, reporting bugs, or simply making suggestions.
-For more information, see our https://github.com/spring-projects/spring-security/blob/main/CONTRIBUTING.adoc[Contributing] documentation.
+== 참여하기
+Spring Security 프로젝트에 여러분의 참여를 환영합니다.
+기여할 수 있는 방법은 많습니다. Stack Overflow에서 질문에 답변하기, 새로운 코드 작성하기, 기존 코드 개선하기, 문서 작업 돕기, 샘플이나 튜토리얼 개발하기, 버그 보고하기, 또는 단순히 제안을 하는 것 등이 있습니다.
+자세한 내용은 우리의 https://github.com/spring-projects/spring-security/blob/main/CONTRIBUTING.adoc[기여 가이드] 문서를 참조하세요.
 
 [[community-source]]
-== Source Code
+== 소스 코드
 
-You can find Spring Security's source code on GitHub at https://github.com/spring-projects/spring-security/
+Spring Security의 소스 코드는 GitHub link:[https://github.com/spring-projects/spring-security/]에서 찾을 수 있습니다.
 
 [[community-license]]
-== Apache 2 License
+== Apache 2 라이선스
 
-Spring Security is Open Source software released under the https://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].
+Spring Security는 https://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 라이선스]에 따라 배포되는 오픈 소스 소프트웨어입니다.
 
-== Social Media
+== 소셜 미디어
 
-You can follow https://twitter.com/SpringSecurity[@SpringSecurity] and the https://twitter.com/SpringSecurity/lists/team[Spring Security team] on Twitter to stay up to date with the latest news.
-You can also follow https://twitter.com/SpringCentral[@SpringCentral] to keep up to date with the entire Spring portfolio.
+최신 소식을 접하려면 Twitter에서 https://twitter.com/SpringSecurity[@SpringSecurity]와 https://twitter.com/SpringSecurity/lists/team[Spring Security 팀]을 팔로우하세요.
+전체 Spring 포트폴리오의 최신 정보를 얻으려면 https://twitter.com/SpringCentral[@SpringCentral]도 팔로우할 수 있습니다.

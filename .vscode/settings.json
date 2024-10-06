@@ -1,3 +1,7 @@
 {
-	"java.import.gradle.enabled": false
+  "java.import.gradle.enabled": false,
+  "asciidoc.enableIncludeWarning": false, // 경고 무시 설정
+  "asciidoc.attributes": {
+    "showTitle": true
+  }
 }

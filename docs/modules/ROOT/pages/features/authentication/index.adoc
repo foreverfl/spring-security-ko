@@ -1,11 +1,11 @@
 [[authentication]]
-= Authentication
+= 인증
 
-Spring Security provides comprehensive support for https://en.wikipedia.org/wiki/Authentication[authentication].
-Authentication is how we verify the identity of who is trying to access a particular resource.
-A common way to authenticate users is by requiring the user to enter a username and password.
-Once authentication is performed we know the identity and can perform authorization.
+Spring Security는 https://en.wikipedia.org/wiki/Authentication[인증]에 대한 포괄적인 지원을 제공합니다.
+인증은 특정 리소스에 접근하려는 사용자의 신원을 확인하는 방법입니다.
+일반적인 사용자 인증 방식은 사용자에게 아이디와 비밀번호를 입력하도록 요구하는 것입니다.
+인증이 완료되면 사용자의 신원을 확인할 수 있고, 이를 바탕으로 권한 부여를 수행할 수 있습니다.
 
-Spring Security provides built-in support for authenticating users.
-This section is dedicated to generic authentication support that applies in both Servlet and WebFlux environments.
-Refer to the sections on authentication for xref:servlet/authentication/index.adoc#servlet-authentication[Servlet] and xref:servlet/authentication/index.adoc[WebFlux] for details on what is supported for each stack.
+Spring Security는 사용자 인증을 위한 내장 지원을 제공합니다.
+이 섹션은 Servlet과 WebFlux 환경 모두에 적용되는 일반적인 인증 지원에 대해 다룹니다.
+각 스택에서 지원되는 세부 사항은 xref:servlet/authentication/index.adoc#servlet-authentication[Servlet]과 xref:servlet/authentication/index.adoc[WebFlux]의 인증 섹션을 참조하세요.

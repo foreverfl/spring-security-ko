@@ -1,16 +1,16 @@
 [[authorization]]
-= Authorization
+= 권한 부여
 
-Spring Security provides comprehensive support for https://en.wikipedia.org/wiki/Authorization[authorization].
-Authorization is determining who is allowed to access a particular resource.
-Spring Security provides https://en.wikipedia.org/wiki/Defense_in_depth_(computing)[defense in depth] by allowing for request based authorization and method based authorization.
+Spring Security는 https://en.wikipedia.org/wiki/Authorization[권한 부여]에 대한 포괄적인 지원을 제공합니다.
+권한 부여는 특정 리소스에 누가 접근할 수 있는지 결정하는 것입니다.
+Spring Security는 요청 기반 권한 부여와 메소드 기반 권한 부여를 허용함으로써 https://en.wikipedia.org/wiki/Defense_in_depth_(computing)[다층 방어]를 제공합니다.
 
 [[authorization-request]]
-== Request Based Authorization
+== 요청 기반 권한 부여
 
-Spring Security provides authorization based upon the request for both xref:servlet/authorization/authorize-http-requests.adoc[Servlet] and xref:reactive/authorization/authorize-http-requests.adoc[WebFlux] environments.
+Spring Security는 xref:servlet/authorization/authorize-http-requests.adoc[서블릿]과 xref:reactive/authorization/authorize-http-requests.adoc[WebFlux] 환경 모두에서 요청을 기반으로 한 권한 부여를 제공합니다.
 
 [[authorization-method]]
-== Method Based Authorization
+== 메소드 기반 권한 부여
 
-Spring Security provides authorization based on the method invocation for both xref:servlet/authorization/method-security.adoc[Servlet] and xref:reactive/authorization/method.adoc[WebFlux] environments.
+Spring Security는 xref:servlet/authorization/method-security.adoc[서블릿]과 xref:reactive/authorization/method.adoc[WebFlux] 환경 모두에서 메소드 호출을 기반으로 한 권한 부여를 제공합니다.

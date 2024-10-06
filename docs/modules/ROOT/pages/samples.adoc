@@ -1,10 +1,9 @@
 [[samples]]
-= Samples
+= 샘플
 
-Spring Security includes many {gh-samples-url}[samples] applications.
+Spring Security는 다수의 {gh-samples-url}[샘플] 애플리케이션을 포함하고 있습니다.
 
 [NOTE]
 ====
-These samples are being migrated to a separate project, however, you can still find
-the not migrated samples in an older branch of the {gh-old-samples-url}[Spring Security repository].
+이 샘플들은 별도의 프로젝트로 이전되고 있습니다. 하지만 아직 이전되지 않은 샘플들은 {gh-old-samples-url}[Spring Security 저장소]의 이전 브랜치에서 찾아볼 수 있습니다.
 ====
