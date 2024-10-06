@@ -1,15 +1,14 @@
 = Spring Security
 
-Spring Security is a framework that provides xref:features/authentication/index.adoc[authentication], xref:features/authorization/index.adoc[authorization], and xref:features/exploits/index.adoc[protection against common attacks].
-With first class support for securing both xref:servlet/index.adoc[imperative] and xref:reactive/index.adoc[reactive] applications, it is the de-facto standard for securing Spring-based applications.
+Spring Security는 xref:features/authentication/index.adoc[인증], xref:features/authorization/index.adoc[권한 부여], 그리고 xref:features/exploits/index.adoc[일반적인 공격에 대한 보호]를 제공하는 프레임워크입니다.
+xref:servlet/index.adoc[명령형]과 xref:reactive/index.adoc[리액티브] 애플리케이션 모두를 위한 최고 수준의 보안 지원으로, Spring 기반 애플리케이션 보안의 사실상 표준입니다.
 
-For a complete list of features, see the xref:features/index.adoc[Features] section of the reference.
+전체 기능 목록은 레퍼런스의 xref:features/index.adoc[기능] 섹션을 참조하세요.
 
-== Getting Started
+== 시작하기
 
-If you are ready to start securing an application see the Getting Started sections for xref:servlet/getting-started.adoc[servlet] and xref:reactive/getting-started.adoc[reactive]. These sections will walk you through creating your first Spring Security applications.
+애플리케이션 보안 구현을 시작할 준비가 되었다면 xref:servlet/getting-started.adoc[서블릿]과 xref:reactive/getting-started.adoc[리액티브]를 위한 시작하기 섹션을 참조하세요. 이 섹션들은 첫 번째 Spring Security 애플리케이션을 만드는 과정을 안내합니다.
 
-If you want to understand how Spring Security works, you can refer to the xref:servlet/architecture.adoc[Architecture] section.
-// FIXME add link to reactive architecture
+Spring Security의 작동 방식을 이해하고 싶다면 xref:servlet/architecture.adoc[아키텍처] 섹션을 참조할 수 있습니다.
 
-If you have any questions, there is a wonderful xref:community.adoc[community] that would love to help you!
+질문이 있다면 도움을 드릴 수 있는 훌륭한 xref:community.adoc[커뮤니티]가 있습니다!
