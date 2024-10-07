@@ -37,13 +37,12 @@ asciidoc:
     - "@asciidoctor/tabs"
     - "@springio/asciidoctor-extensions"
     - "@springio/asciidoctor-extensions/javadoc-extension"
-# urls:
-#   latest_version_segment_strategy: redirect:to
-#   latest_version_segment: ""
-#   redirect_facility: httpd
+urls:
+  latest_version_segment_strategy: redirect:to
+  latest_version_segment: ""
+  redirect_facility: httpd
 ui:
   bundle:
-    # url: https://github.com/spring-io/antora-ui-spring/releases/download/v0.4.16/ui-bundle.zip
     url: https://blog_workers.forever-fl.workers.dev/spring-ui-bundle.zip
     snapshot: true
 runtime:
