@@ -1,34 +1,34 @@
 [[servlet-authentication-jdbc]]
-= JDBC Authentication
+= JDBC 인증
 
-Spring Security's `JdbcDaoImpl` implements xref:servlet/authentication/passwords/user-details-service.adoc#servlet-authentication-userdetailsservice[`UserDetailsService`] to provide support for username-and-password-based authentication that is retrieved by using JDBC.
-`JdbcUserDetailsManager` extends `JdbcDaoImpl` to provide management of `UserDetails` through the `UserDetailsManager` interface.
-`UserDetails`-based authentication is used by Spring Security when it is configured to xref:servlet/authentication/passwords/index.adoc#servlet-authentication-unpwd-input[accept a username/password] for authentication.
+Spring Security의 ``JdbcDaoImpl``은 JDBC를 사용하여 검색된 사용자 이름과 비밀번호 기반 인증을 지원하기 위해 ``UserDetailsService``를 구현합니다.
+``JdbcUserDetailsManager``는 ``JdbcDaoImpl``을 확장하여 ``UserDetailsManager`` 인터페이스를 통해 ``UserDetails``의 관리를 제공합니다.
+`UserDetails` 기반 인증은 Spring Security가 인증을 위해 사용자 이름/비밀번호를 받도록 구성된 경우 사용됩니다.
 
-In the following sections, we discuss:
+다음 섹션에서는 아래 내용을 다룹니다:
 
-* The <<servlet-authentication-jdbc-schema>> used by Spring Security JDBC Authentication
+* Spring Security JDBC 인증에서 사용하는 <<servlet-authentication-jdbc-schema>>
 * <<servlet-authentication-jdbc-datasource>>
 * <<servlet-authentication-jdbc-bean>>
 
 [[servlet-authentication-jdbc-schema]]
-== Default Schema
+== 기본 스키마
 
-Spring Security provides default queries for JDBC-based authentication.
-This section provides the corresponding default schemas used with the default queries.
-You need to adjust the schema to match any customizations to the queries and the database dialect you use.
+Spring Security는 JDBC 기반 인증을 위한 기본 쿼리를 제공합니다.
+이 섹션에서는 기본 쿼리와 함께 사용되는 해당 기본 스키마를 제공합니다.
+사용하는 데이터베이스 방언과 쿼리의 사용자 정의에 맞게 스키마를 조정해야 합니다.
 
 [[servlet-authentication-jdbc-schema-user]]
-=== User Schema
+=== 사용자 스키마
 
-`JdbcDaoImpl` requires tables to load the password, account status (enabled or disabled) and a list of authorities (roles) for the user.
+``JdbcDaoImpl``은 사용자의 비밀번호, 계정 상태(활성화 또는 비활성화) 및 권한(역할) 목록을 로드하기 위한 테이블이 필요합니다.
 
 [NOTE]
 ====
-The default schema is also exposed as a classpath resource named `org/springframework/security/core/userdetails/jdbc/users.ddl`.
+기본 스키마는 ``org/springframework/security/core/userdetails/jdbc/users.ddl``이라는 이름의 클래스패스 리소스로도 제공됩니다.
 ====
 
-.Default User Schema
+.기본 사용자 스키마
 [source,sql]
 ----
 create table users(
@@ -45,9 +45,9 @@ create table authorities (
 create unique index ix_auth_username on authorities (username,authority);
 ----
 
-Oracle is a popular database choice but requires a slightly different schema:
+Oracle은 인기 있는 데이터베이스 선택이지만 약간 다른 스키마가 필요합니다:
 
-.Default User Schema for Oracle Databases
+.Oracle 데이터베이스용 기본 사용자 스키마
 [source,sql]
 ----
 CREATE TABLE USERS (
@@ -66,11 +66,11 @@ ALTER TABLE AUTHORITIES ADD CONSTRAINT AUTHORITIES_FK1 FOREIGN KEY (USERNAME) RE
 ----
 
 [[servlet-authentication-jdbc-schema-group]]
-=== Group Schema
+=== 그룹 스키마
 
-If your application uses groups, you need to provide the groups schema:
+애플리케이션에서 그룹을 사용하는 경우 그룹 스키마를 제공해야 합니다:
 
-.Default Group Schema
+.기본 그룹 스키마
 [source,sql]
 ----
 create table groups (
@@ -93,12 +93,12 @@ create table group_members (
 ----
 
 [[servlet-authentication-jdbc-datasource]]
-== Setting up a DataSource
+== DataSource 설정
 
-Before we configure `JdbcUserDetailsManager`, we must create a `DataSource`.
-In our example, we set up an https://docs.spring.io/spring-framework/docs/current/spring-framework-reference/data-access.html#jdbc-embedded-database-support[embedded DataSource] that is initialized with the <<servlet-authentication-jdbc-schema,default user schema>>.
+``JdbcUserDetailsManager``를 구성하기 전에 ``DataSource``를 생성해야 합니다.
+이 예제에서는 <<servlet-authentication-jdbc-schema,기본 사용자 스키마>>로 초기화된 내장 DataSource를 설정합니다.
 
-.Embedded Data Source
+.내장 Data Source
 [tabs]
 ======
 Java::
@@ -137,13 +137,13 @@ fun dataSource(): DataSource {
 ----
 ======
 
-In a production environment, you want to ensure that you set up a connection to an external database.
+운영 환경에서는 외부 데이터베이스에 대한 연결을 설정해야 합니다.
 
 [[servlet-authentication-jdbc-bean]]
-== JdbcUserDetailsManager Bean
+== JdbcUserDetailsManager 빈
 
-In this sample, we use xref:features/authentication/password-storage.adoc#authentication-password-storage-boot-cli[Spring Boot CLI] to encode a password value of `password` and get the encoded password of `+{bcrypt}$2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNSJZ.0FxO/BTk76klW+`.
-See the xref:features/authentication/password-storage.adoc#authentication-password-storage[PasswordEncoder] section for more details about how to store passwords.
+이 예제에서는 Spring Boot CLI를 사용하여 'password'라는 비밀번호 값을 인코딩하고, 인코딩된 비밀번호 ``+{bcrypt}$2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNSJZ.0FxO/BTk76klW+``를 얻습니다.
+비밀번호 저장 방법에 대한 자세한 내용은 PasswordEncoder 섹션을 참조하세요.
 
 .JdbcUserDetailsManager
 

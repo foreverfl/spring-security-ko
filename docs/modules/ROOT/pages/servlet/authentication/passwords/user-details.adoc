@@ -1,5 +1,5 @@
 [[servlet-authentication-userdetails]]
 = UserDetails
 
-{security-api-url}org/springframework/security/core/userdetails/UserDetails.html[`UserDetails`] is returned by the xref:servlet/authentication/passwords/user-details-service.adoc#servlet-authentication-userdetailsservice[`UserDetailsService`].
-The xref:servlet/authentication/passwords/dao-authentication-provider.adoc#servlet-authentication-daoauthenticationprovider[`DaoAuthenticationProvider`] validates the `UserDetails` and then returns an xref:servlet/authentication/architecture.adoc#servlet-authentication-authentication[`Authentication`] that has a principal that is the `UserDetails` returned by the configured `UserDetailsService`.
+{security-api-url}org/springframework/security/core/userdetails/UserDetails.html[`UserDetails`]는 xref:servlet/authentication/passwords/user-details-service.adoc#servlet-authentication-userdetailsservice[`UserDetailsService`]에 의해 반환됩니다.
+xref:servlet/authentication/passwords/dao-authentication-provider.adoc#servlet-authentication-daoauthenticationprovider[`DaoAuthenticationProvider`]는 ``UserDetails``를 검증한 후, 구성된 ``UserDetailsService``가 반환한 ``UserDetails``를 주체로 하는 xref:servlet/authentication/architecture.adoc#servlet-authentication-authentication[`Authentication`]을 반환합니다.

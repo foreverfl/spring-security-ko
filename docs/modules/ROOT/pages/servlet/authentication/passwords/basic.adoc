@@ -1,65 +1,57 @@
 [[servlet-authentication-basic]]
-= Basic Authentication
+= 기본 인증
 :figures: servlet/authentication/unpwd
 
-This section provides details on how Spring Security provides support for https://tools.ietf.org/html/rfc7617[Basic HTTP Authentication] for servlet-based applications.
-// FIXME: describe authenticationentrypoint, authenticationfailurehandler, authenticationsuccesshandler
+이 섹션에서는 Spring Security가 서블릿 기반 애플리케이션을 위한 기본 HTTP 인증을 어떻게 지원하는지 자세히 설명합니다.
 
-This section describes how HTTP Basic Authentication works within Spring Security.
-First, we see the https://tools.ietf.org/html/rfc7235#section-4.1[WWW-Authenticate] header is sent back to an unauthenticated client:
+이 섹션에서는 Spring Security 내에서 HTTP 기본 인증이 어떻게 작동하는지 설명합니다.
+먼저, 인증되지 않은 클라이언트에게 WWW-Authenticate 헤더가 어떻게 전송되는지 살펴보겠습니다:
 
-.Sending WWW-Authenticate Header
+.WWW-Authenticate 헤더 전송
 image::{figures}/basicauthenticationentrypoint.png[]
 
-The preceding figure builds off our xref:servlet/architecture.adoc#servlet-securityfilterchain[`SecurityFilterChain`] diagram.
+위 그림은 `SecurityFilterChain` 다이어그램을 기반으로 합니다.
 
-image:{icondir}/number_1.png[] First, a user makes an unauthenticated request to the resource `/private` for which it is not authorized.
+image:{icondir}/number_1.png[] 먼저, 사용자가 권한이 없는 리소스 ``/private``에 대해 인증되지 않은 요청을 합니다.
 
-image:{icondir}/number_2.png[] Spring Security's xref:servlet/authorization/authorize-http-requests.adoc[`AuthorizationFilter`] indicates that the unauthenticated request is __Denied__ by throwing an `AccessDeniedException`.
+image:{icondir}/number_2.png[] Spring Security의 ``AuthorizationFilter``가 인증되지 않은 요청이 거부되었음을 ``AccessDeniedException``을 던져 표시합니다.
 
-image:{icondir}/number_3.png[] Since the user is not authenticated, xref:servlet/architecture.adoc#servlet-exceptiontranslationfilter[`ExceptionTranslationFilter`] initiates __Start Authentication__.
-The configured xref:servlet/authentication/architecture.adoc#servlet-authentication-authenticationentrypoint[`AuthenticationEntryPoint`] is an instance of {security-api-url}org/springframework/security/web/authentication/www/BasicAuthenticationEntryPoint.html[`BasicAuthenticationEntryPoint`], which sends a WWW-Authenticate header.
-The `RequestCache` is typically a `NullRequestCache` that does not save the request since the client is capable of replaying the requests it originally requested.
+image:{icondir}/number_3.png[] 사용자가 인증되지 않았으므로, ``ExceptionTranslationFilter``가 인증 시작을 초기화합니다.
+구성된 ``AuthenticationEntryPoint``는 ``BasicAuthenticationEntryPoint``의 인스턴스로, WWW-Authenticate 헤더를 전송합니다.
+``RequestCache``는 일반적으로 ``NullRequestCache``로, 클라이언트가 원래 요청한 요청을 재생할 수 있기 때문에 요청을 저장하지 않습니다.
 
-When a client receives the `WWW-Authenticate` header, it knows it should retry with a username and password.
-The following image shows the flow for the username and password being processed:
+클라이언트가 `WWW-Authenticate` 헤더를 받으면 사용자 이름과 비밀번호로 다시 시도해야 한다는 것을 알게 됩니다.
+다음 이미지는 사용자 이름과 비밀번호가 처리되는 흐름을 보여줍니다:
 
 [[servlet-authentication-basicauthenticationfilter]]
-.Authenticating Username and Password
+.사용자 이름과 비밀번호 인증
 image::{figures}/basicauthenticationfilter.png[]
 
-The preceding figure builds off our xref:servlet/architecture.adoc#servlet-securityfilterchain[`SecurityFilterChain`] diagram.
+위 그림은 `SecurityFilterChain` 다이어그램을 기반으로 합니다.
 
+image:{icondir}/number_1.png[] 사용자가 사용자 이름과 비밀번호를 제출하면, ``BasicAuthenticationFilter``가 ``HttpServletRequest``에서 사용자 이름과 비밀번호를 추출하여 ``UsernamePasswordAuthenticationToken``을 생성합니다. 이는 ``Authentication``의 한 유형입니다.
 
-image:{icondir}/number_1.png[] When the user submits their username and password, the `BasicAuthenticationFilter` creates a `UsernamePasswordAuthenticationToken`, which is a type of xref:servlet/authentication/architecture.adoc#servlet-authentication-authentication[`Authentication`] by extracting the username and password from the `HttpServletRequest`.
+image:{icondir}/number_2.png[] 다음으로, ``UsernamePasswordAuthenticationToken``이 인증을 위해 ``AuthenticationManager``로 전달됩니다.
+``AuthenticationManager``의 구체적인 모습은 사용자 정보가 어떻게 저장되어 있는지에 따라 다릅니다.
 
-image:{icondir}/number_2.png[] Next, the `UsernamePasswordAuthenticationToken` is passed into the `AuthenticationManager` to be authenticated.
-The details of what `AuthenticationManager` looks like depend on how the xref:servlet/authentication/passwords/index.adoc#servlet-authentication-unpwd-storage[user information is stored].
+image:{icondir}/number_3.png[] 인증이 실패하면 다음과 같은 실패 처리가 이루어집니다.
 
-image:{icondir}/number_3.png[] If authentication fails, then __Failure__.
+. ``SecurityContextHolder``가 초기화됩니다.
+. ``RememberMeServices.loginFail``이 호출됩니다. Remember me가 구성되지 않았다면 이는 아무 작업도 하지 않습니다.
+. ``AuthenticationEntryPoint``가 호출되어 WWW-Authenticate가 다시 전송되도록 트리거됩니다.
 
-. The xref:servlet/authentication/architecture.adoc#servlet-authentication-securitycontextholder[SecurityContextHolder] is cleared out.
-. `RememberMeServices.loginFail` is invoked.
-If remember me is not configured, this is a no-op.
-See the {security-api-url}org/springframework/security/web/authentication/RememberMeServices.html[`RememberMeServices`] interface in the Javadoc.
-. `AuthenticationEntryPoint` is invoked to trigger the WWW-Authenticate to be sent again.
-See the {security-api-url}org/springframework/security/web/AuthenticationEntryPoint.html[`AuthenticationEntryPoint`] interface in the Javadoc.
+image:{icondir}/number_4.png[] 인증이 성공하면 다음과 같은 성공 처리가 이루어집니다.
 
-image:{icondir}/number_4.png[] If authentication is successful, then __Success__.
+. ``Authentication``이 ``SecurityContextHolder``에 설정됩니다.
+. ``RememberMeServices.loginSuccess``가 호출됩니다. Remember me가 구성되지 않았다면 이는 아무 작업도 하지 않습니다.
+. ``BasicAuthenticationFilter``가 ``FilterChain.doFilter(request,response)``를 호출하여 나머지 애플리케이션 로직을 계속 진행합니다.
 
-. The xref:servlet/authentication/architecture.adoc#servlet-authentication-authentication[Authentication] is set on the xref:servlet/authentication/architecture.adoc#servlet-authentication-securitycontextholder[SecurityContextHolder].
-. `RememberMeServices.loginSuccess` is invoked.
-If remember me is not configured, this is a no-op.
-See the {security-api-url}org/springframework/security/web/authentication/RememberMeServices.html[`RememberMeServices`] interface in the Javadoc.
-. The `BasicAuthenticationFilter` invokes `FilterChain.doFilter(request,response)` to continue with the rest of the application logic.
-See the {security-api-url}org/springframework/security/web/authentication/www/BasicAuthenticationFilter.html[`BasicAuthenticationFilter`] Class in the Javadoc
+기본적으로 Spring Security의 HTTP 기본 인증 지원은 활성화되어 있습니다.
+그러나 서블릿 기반 구성이 제공되는 즉시 HTTP 기본 인증을 명시적으로 제공해야 합니다.
 
-By default, Spring Security's HTTP Basic Authentication support is enabled.
-However, as soon as any servlet based configuration is provided, HTTP Basic must be explicitly provided.
+다음 예제는 최소한의 명시적 구성을 보여줍니다:
 
-The following example shows a minimal, explicit configuration:
-
-.Explicit HTTP Basic Configuration
+.명시적 HTTP 기본 구성
 [tabs]
 ======
 Java::

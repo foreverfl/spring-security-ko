@@ -1,11 +1,11 @@
 [[servlet-authentication-unpwd-storage]]
-= Storage Mechanisms
+= 저장 메커니즘
 :page-section-summary-toc: 1
 
-Each of the supported mechanisms for reading a username and password can use any of the supported storage mechanisms:
+사용자 이름과 비밀번호를 읽는 각 지원 메커니즘은 다음과 같은 지원되는 저장 메커니즘을 사용할 수 있습니다:
 
-* Simple Storage with xref:servlet/authentication/passwords/in-memory.adoc#servlet-authentication-inmemory[In-Memory Authentication]
-* Relational Databases with xref:servlet/authentication/passwords/jdbc.adoc#servlet-authentication-jdbc[JDBC Authentication]
-* Custom data stores with xref:servlet/authentication/passwords/user-details-service.adoc#servlet-authentication-userdetailsservice[UserDetailsService]
-* LDAP storage with xref:servlet/authentication/passwords/ldap.adoc#servlet-authentication-ldap[LDAP Authentication]
+* xref:servlet/authentication/passwords/in-memory.adoc#servlet-authentication-inmemory[인메모리 인증]을 통한 간단한 저장소
+* xref:servlet/authentication/passwords/jdbc.adoc#servlet-authentication-jdbc[JDBC 인증]을 이용한 관계형 데이터베이스
+* xref:servlet/authentication/passwords/user-details-service.adoc#servlet-authentication-userdetailsservice[UserDetailsService]를 활용한 맞춤형 데이터 저장소
+* xref:servlet/authentication/passwords/ldap.adoc#servlet-authentication-ldap[LDAP 인증]을 통한 LDAP 저장소
 

@@ -1,15 +1,15 @@
 [[servlet-authentication-unpwd]]
-= Username/Password Authentication
+= 사용자 이름/비밀번호 인증
 :page-section-summary-toc: 1
 :figures: images/servlet/authentication/unpwd
 :icondir: images/icons
 
-One of the most common ways to authenticate a user is by validating a username and password.
-Spring Security provides comprehensive support for authenticating with a username and password.
+사용자를 인증하는 가장 일반적인 방법 중 하나는 사용자 이름과 비밀번호를 검증하는 것입니다.
+Spring Security는 사용자 이름과 비밀번호를 사용한 인증에 대해 포괄적인 지원을 제공합니다.
 
-You can configure username and password authentication using the following:
+다음과 같이 사용자 이름과 비밀번호 인증을 구성할 수 있습니다:
 
-.Simple Username/Password Example
+.간단한 사용자 이름/비밀번호 예제
 [tabs]
 =====
 Java::
@@ -101,28 +101,28 @@ class SecurityConfig {
 ----
 =====
 
-The preceding configuration automatically registers an xref:servlet/authentication/passwords/in-memory.adoc[in-memory `UserDetailsService`] with the `SecurityFilterChain`, registers the xref:servlet/authentication/passwords/dao-authentication-provider.adoc[`DaoAuthenticationProvider`] with the default xref:servlet/authentication/architecture.adoc#servlet-authentication-authenticationmanager[`AuthenticationManager`], and enables xref:servlet/authentication/passwords/form.adoc[Form Login] and xref:servlet/authentication/passwords/basic.adoc[HTTP Basic] authentication.
+위의 구성은 자동으로 인메모리 ``UserDetailsService``를 ``SecurityFilterChain``에 등록하고, 기본 ``AuthenticationManager``에 ``DaoAuthenticationProvider``를 등록하며, 폼 로그인과 HTTP 기본 인증을 활성화합니다.
 
-To learn more about username/password authentication, consider the following use cases:
+사용자 이름/비밀번호 인증에 대해 더 자세히 알아보려면 다음 사용 사례를 참고하세요:
 
-* I want to xref:servlet/authentication/passwords/form.adoc[learn how Form Login works]
-* I want to xref:servlet/authentication/passwords/basic.adoc[learn how HTTP Basic authentication works]
-* I want to xref:servlet/authentication/passwords/dao-authentication-provider.adoc[learn how `DaoAuthenticationProvider` works]
-* I want to xref:servlet/authentication/passwords/in-memory.adoc[manage users in memory]
-* I want to xref:servlet/authentication/passwords/jdbc.adoc[manage users in a database]
-* I want to xref:servlet/authentication/passwords/ldap.adoc#servlet-authentication-ldap-authentication[manage users in LDAP]
-* I want to <<publish-authentication-manager-bean,publish an `AuthenticationManager` bean>> for custom authentication
-* I want to <<customize-global-authentication-manager,customize the global `AuthenticationManager`>>
+* 폼 로그인의 작동 방식 이해하기
+* HTTP 기본 인증의 작동 방식 이해하기
+* ``DaoAuthenticationProvider``의 작동 방식 이해하기
+* 메모리 내 사용자 관리하기
+* 데이터베이스에서 사용자 관리하기
+* LDAP에서 사용자 관리하기
+* 사용자 정의 인증을 위한 ``AuthenticationManager`` 빈 게시하기
+* 전역 ``AuthenticationManager`` 사용자 정의하기
 
 [[publish-authentication-manager-bean]]
-== Publish an `AuthenticationManager` bean
+== ``AuthenticationManager`` 빈 게시하기
 
-A fairly common requirement is publishing an `AuthenticationManager` bean to allow for custom authentication, such as in a `@Service` or Spring MVC `@Controller`.
-For example, you may want to authenticate users via a REST API instead of using xref:servlet/authentication/passwords/form.adoc[Form Login].
+``@Service``나 Spring MVC ``@Controller``에서 사용자 정의 인증을 허용하기 위해 ``AuthenticationManager`` 빈을 게시하는 것은 상당히 일반적인 일입니다.
+예를 들어, 폼 로그인 대신 REST API를 통해 사용자를 인증하고 싶을 수 있습니다.
 
-You can publish such an `AuthenticationManager` for custom authentication scenarios using the following configuration:
+다음과 같은 구성을 사용하여 사용자 정의 인증 시나리오를 위한 ``AuthenticationManager``를 게시할 수 있습니다:
 
-.Publish `AuthenticationManager` bean for Custom Authentication
+.사용자 정의 인증을 위한 `AuthenticationManager` 빈 게시
 [tabs]
 =====
 Java::
@@ -256,10 +256,9 @@ class SecurityConfig {
 ----
 =====
 
-With the preceding configuration in place, you can create a `@RestController` that uses the `AuthenticationManager` as follows:
+위의 구성을 사용하면 다음과 같이 ``AuthenticationManager``를 사용하는 ``@RestController``를 만들 수 있습니다:
 
-
-.Create a `@RestController` for Authentication
+.인증을 위한 `@RestController` 생성
 [tabs]
 =====
 Java::
@@ -315,21 +314,21 @@ class LoginController(val authenticationManager: AuthenticationManager) {
 
 [NOTE]
 ====
-In this example, it is your responsibility to save the authenticated user in the `SecurityContextRepository` if needed.
-For example, if using the `HttpSession` to persist the `SecurityContext` between requests, you can use xref:servlet/authentication/persistence.adoc#httpsecuritycontextrepository[`HttpSessionSecurityContextRepository`].
+이 예제에서는 필요한 경우 인증된 사용자를 ``SecurityContextRepository``에 저장하는 것은 여러분이 해야할 일입니다.
+예를 들어, 요청 간 ``SecurityContext``를 유지하기 위해 ``HttpSession``을 사용하는 경우 ``HttpSessionSecurityContextRepository``를 사용할 수 있습니다.
 ====
 
 [[customize-global-authentication-manager]]
-== Customize the `AuthenticationManager`
+== `AuthenticationManager` 사용자 정의하기
 
-Normally, Spring Security builds an `AuthenticationManager` internally composed of a `DaoAuthenticationProvider` for username/password authentication.
-In certain cases, it may still be desired to customize the instance of `AuthenticationManager` used by Spring Security.
-For example, you may need to simply disable xref:servlet/authentication/architecture.adoc#servlet-authentication-providermanager-erasing-credentials[credential erasure] for cached users.
+일반적으로 Spring Security는 사용자 이름/비밀번호 인증을 위해 ``DaoAuthenticationProvider``로 구성된 ``AuthenticationManager``를 내부적으로 생성합니다.
+하지만 특정 경우에는 Spring Security가 사용하는 `AuthenticationManager` 인스턴스를 사용자 정의해야 할 수 있습니다.
+예를 들어, 캐시된 사용자의 자격 증명 삭제를 비활성화해야 할 수 있습니다.
 
-To do this, you can take advantage of the fact that the `AuthenticationManagerBuilder` used to build Spring Security's global `AuthenticationManager` is published as a bean.
-You can configure the builder as follows:
+이를 위해 Spring Security의 전역 ``AuthenticationManager``를 구축하는 데 사용되는 ``AuthenticationManagerBuilder``가 빈으로 게시된다는 점을 활용할 수 있습니다.
+다음과 같이 빌더를 구성할 수 있습니다:
 
-.Configure global `AuthenticationManagerBuilder`
+.전역 `AuthenticationManagerBuilder` 구성
 [tabs]
 =====
 Java::
@@ -348,7 +347,7 @@ public class SecurityConfig {
 
 	@Bean
 	public UserDetailsService userDetailsService() {
-		// Return a UserDetailsService that caches users
+		// 사용자를 캐시하는 UserDetailsService 반환
 		// ...
 	}
 
@@ -378,7 +377,7 @@ class SecurityConfig {
 
 	@Bean
 	fun userDetailsService(): UserDetailsService {
-		// Return a UserDetailsService that caches users
+		// 사용자를 캐시하는 UserDetailsService 반환
 		// ...
 	}
 
@@ -391,9 +390,9 @@ class SecurityConfig {
 ----
 =====
 
-Alternatively, you may configure a local `AuthenticationManager` to override the global one.
+또는 전역 ``AuthenticationManager``를 재정의하기 위해 로컬 ``AuthenticationManager``를 구성할 수 있습니다.
 
-.Configure local `AuthenticationManager` for Spring Security
+.Spring Security를 위한 로컬 `AuthenticationManager` 구성
 [tabs]
 =====
 Java::
@@ -528,4 +527,3 @@ class SecurityConfig {
 }
 ----
 =====
-

@@ -1,5 +1,5 @@
 [[servlet-authentication-unpwd-input]]
-= Reading the Username & Password
+= 사용자 이름 및 비밀번호 읽기
 :page-section-summary-toc: 1
 
-Spring Security provides the following built-in mechanisms for reading a username and password from `HttpServletRequest`:
+Spring Security는 `HttpServletRequest`에서 사용자 이름과 비밀번호를 읽기 위한 다음과 같은 내장 메커니즘을 제공합니다:

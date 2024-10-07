@@ -1,42 +1,40 @@
 [[servlet-authentication-digest]]
-= Digest Authentication
+= 다이제스트 인증
 
-This section provides details on how Spring Security provides support for https://tools.ietf.org/html/rfc2617[Digest Authentication], which is provided `DigestAuthenticationFilter`.
+이 섹션에서는 Spring Security가 ``DigestAuthenticationFilter``를 통해 제공하는 다이제스트 인증 지원에 대해 자세히 설명합니다.
 
 [WARNING]
 ====
-You should not use Digest Authentication in modern applications, because it is not considered to be secure.
-The most obvious problem is that you must store your passwords in plaintext or an encrypted or MD5 format.
-All of these storage formats are considered insecure.
-Instead, you should store credentials by using a one way adaptive password hash (bCrypt, PBKDF2, SCrypt, and others), which is not supported by Digest Authentication.
+현대 애플리케이션에서는 다이제스트 인증을 사용하지 않는 것이 좋습니다. 이는 안전하지 않은 것으로 간주되기 때문입니다.
+가장 명백한 문제는 비밀번호를 일반 텍스트나 암호화된 형태 또는 MD5 형식으로 저장해야 한다는 점입니다.
+이러한 모든 저장 형식은 안전하지 않은 것으로 간주됩니다.
+대신, 단방향 적응형 비밀번호 해시(bCrypt, PBKDF2, SCrypt 등)를 사용하여 자격 증명을 저장해야 합니다. 이는 다이제스트 인증에서 지원되지 않습니다.
 ====
 
-Digest Authentication tries to solve many of the weaknesses of xref:servlet/authentication/passwords/basic.adoc#servlet-authentication-basic[Basic authentication], specifically by ensuring credentials are never sent in clear text across the wire.
-Many https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Digest#Browser_compatibility[browsers support Digest Authentication].
+다이제스트 인증은 기본 인증의 여러 약점을 해결하려고 시도합니다. 특히 자격 증명이 네트워크를 통해 일반 텍스트로 전송되지 않도록 합니다.
+많은 브라우저가 다이제스트 인증을 지원합니다.
 
-The standard governing HTTP Digest Authentication is defined by https://tools.ietf.org/html/rfc2617[RFC 2617], which updates an earlier version of the Digest Authentication standard prescribed by https://tools.ietf.org/html/rfc2069[RFC 2069].
-Most user agents implement RFC 2617.
-Spring Security's Digest Authentication support is compatible with the "`auth`" quality of protection (`qop`) prescribed by RFC 2617, which also provides backward compatibility with RFC 2069.
-Digest Authentication was seen as a more attractive option if you need to use unencrypted HTTP (no TLS or HTTPS) and wish to maximize security of the authentication process.
-However, everyone should use xref:features/exploits/http.adoc#http[HTTPS].
+HTTP 다이제스트 인증을 관리하는 표준은 RFC 2617에 의해 정의되었으며, 이는 RFC 2069에서 규정한 이전 버전의 다이제스트 인증 표준을 업데이트한 것입니다.
+대부분의 사용자 에이전트는 RFC 2617을 구현합니다.
+Spring Security의 다이제스트 인증 지원은 RFC 2617에서 규정한 "auth" 품질의 보호(``qop - Quality of Protection``)와 호환되며, RFC 2069와의 하위 호환성도 제공합니다.
+다이제스트 인증은 암호화되지 않은 HTTP(TLS 또는 HTTPS 없음)를 사용해야 하고 인증 과정의 보안을 최대화하고자 할 때 더 매력적인 옵션으로 여겨졌습니다.
+하지만 모든 사람이 HTTPS를 사용해야 합니다.
 
-Central to Digest Authentication is a "`nonce`".
-This is a value the server generates.
-Spring Security's nonce adopts the following format:
+다이제스트 인증의 핵심은 "nonce"입니다. 이는 서버가 생성하는 값입니다.
+Spring Security의 nonce는 다음과 같은 형식을 채택합니다:
 
-.Digest Syntax
+.다이제스트 구문
 [source,txt]
 ----
 base64(expirationTime + ":" + md5Hex(expirationTime + ":" + key))
-expirationTime:   The date and time when the nonce expires, expressed in milliseconds
-key:              A private key to prevent modification of the nonce token
+expirationTime:   nonce가 만료되는 날짜와 시간 (밀리초로 표현)
+key:              nonce 토큰의 수정을 방지하기 위한 개인 키
 ----
 
-You need to ensure that you xref:features/authentication/password-storage.adoc#authentication-password-storage-configuration[configure] insecure plain text xref:features/authentication/password-storage.adoc#authentication-password-storage[Password Storage] using `NoOpPasswordEncoder`.
-(See the {security-api-url}org/springframework/security/crypto/password/NoOpPasswordEncoder.html[`NoOpPasswordEncoder`] class in the Javadoc.)
-The following provides an example of configuring Digest Authentication with Java Configuration:
+안전하지 않은 일반 텍스트 비밀번호 저장을 ``NoOpPasswordEncoder``를 사용하여 구성해야 합니다.
+다음은 Java 구성을 사용한 다이제스트 인증 구성의 예시입니다:
 
-.Digest Authentication
+.다이제스트 인증
 [tabs]
 ======
 Java::

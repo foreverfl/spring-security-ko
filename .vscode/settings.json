@@ -3,5 +3,6 @@
   "asciidoc.enableIncludeWarning": false, // 경고 무시 설정
   "asciidoc.attributes": {
     "showTitle": true
-  }
+  },
+  "asciidoc.antora.enableAntoraSupport": true
 }

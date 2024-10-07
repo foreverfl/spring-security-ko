@@ -1,72 +1,64 @@
 [[servlet-authentication-form]]
-= Form Login
+= 폼 로그인
 :figures: servlet/authentication/unpwd
 
-Spring Security provides support for username and password being provided through an HTML form.
-This section provides details on how form based authentication works within Spring Security.
-// FIXME: describe authenticationentrypoint, authenticationfailurehandler, authenticationsuccesshandler
+Spring Security는 HTML 폼을 통해 제공되는 사용자 이름과 비밀번호를 지원합니다.
+이 섹션에서는 Spring Security 내에서 폼 기반 인증이 어떻게 작동하는지 자세히 설명합니다.
 
-This section examines how form-based login works within Spring Security.
-First, we see how the user is redirected to the login form:
+먼저, 사용자가 로그인 폼으로 리다이렉트되는 과정을 살펴보겠습니다:
 
-.Redirecting to the Login Page
+.로그인 페이지로 리다이렉트
 image::{figures}/loginurlauthenticationentrypoint.png[]
 
-The preceding figure builds off our xref:servlet/architecture.adoc#servlet-securityfilterchain[`SecurityFilterChain`] diagram.
+위 그림은 `SecurityFilterChain` 다이어그램을 기반으로 합니다.
 
-image:{icondir}/number_1.png[] First, a user makes an unauthenticated request to the resource (`/private`) for which it is not authorized.
+image:{icondir}/number_1.png[] 먼저, 사용자가 권한이 없는 리소스(`/private`)에 대해 인증되지 않은 요청을 합니다.
 
-image:{icondir}/number_2.png[] Spring Security's xref:servlet/authorization/authorize-http-requests.adoc[`AuthorizationFilter`] indicates that the unauthenticated request is __Denied__ by throwing an `AccessDeniedException`.
+image:{icondir}/number_2.png[] Spring Security의 ``AuthorizationFilter``가 인증되지 않은 요청이 거부되었음을 ``AccessDeniedException``을 던져 표시합니다.
 
-image:{icondir}/number_3.png[] Since the user is not authenticated, xref:servlet/architecture.adoc#servlet-exceptiontranslationfilter[`ExceptionTranslationFilter`] initiates __Start Authentication__ and sends a redirect to the login page with the configured xref:servlet/authentication/architecture.adoc#servlet-authentication-authenticationentrypoint[`AuthenticationEntryPoint`].
-In most cases, the `AuthenticationEntryPoint` is an instance of {security-api-url}org/springframework/security/web/authentication/LoginUrlAuthenticationEntryPoint.html[`LoginUrlAuthenticationEntryPoint`].
+image:{icondir}/number_3.png[] 사용자가 인증되지 않았으므로, ``ExceptionTranslationFilter``가 인증 시작을 초기화하고 구성된 ``AuthenticationEntryPoint``를 사용해 로그인 페이지로 리다이렉트합니다.
+대부분의 경우 ``AuthenticationEntryPoint``는 ``LoginUrlAuthenticationEntryPoint``의 인스턴스입니다.
 
-image:{icondir}/number_4.png[] The browser requests the login page to which it was redirected.
+image:{icondir}/number_4.png[] 브라우저가 리다이렉트된 로그인 페이지를 요청합니다.
 
-image:{icondir}/number_5.png[] Something within the application, must <<servlet-authentication-form-custom,render the login page>>.
+image:{icondir}/number_5.png[] 애플리케이션 내의 어떤 부분에서 로그인 페이지를 렌더링해야 합니다.
 
 [[servlet-authentication-usernamepasswordauthenticationfilter]]
-When the username and password are submitted, the `UsernamePasswordAuthenticationFilter` authenticates the username and password.
-The `UsernamePasswordAuthenticationFilter` extends xref:servlet/authentication/architecture.adoc#servlet-authentication-abstractprocessingfilter[AbstractAuthenticationProcessingFilter], so the following diagram should look pretty similar:
+사용자 이름과 비밀번호가 제출되면, ``UsernamePasswordAuthenticationFilter``가 이를 인증합니다.
+``UsernamePasswordAuthenticationFilter``는 ``AbstractAuthenticationProcessingFilter``를 확장하므로, 다음 다이어그램은 매우 유사할 것입니다:
 
-.Authenticating Username and Password
+.사용자 이름과 비밀번호 인증
 image::{figures}/usernamepasswordauthenticationfilter.png[]
 
-The figure builds off our xref:servlet/architecture.adoc#servlet-securityfilterchain[`SecurityFilterChain`] diagram.
+이 그림은 `SecurityFilterChain` 다이어그램을 기반으로 합니다.
 
+image:{icondir}/number_1.png[] 사용자가 사용자 이름과 비밀번호를 제출하면, ``UsernamePasswordAuthenticationFilter``가 ``HttpServletRequest``에서 사용자 이름과 비밀번호를 추출하여 ``UsernamePasswordAuthenticationToken``을 생성합니다. 이는 ``Authentication``의 한 유형입니다.
 
-image:{icondir}/number_1.png[] When the user submits their username and password, the `UsernamePasswordAuthenticationFilter` creates a `UsernamePasswordAuthenticationToken`, which is a type of  xref:servlet/authentication/architecture.adoc#servlet-authentication-authentication[`Authentication`], by extracting the username and password from the `HttpServletRequest` instance.
+image:{icondir}/number_2.png[] 다음으로, ``UsernamePasswordAuthenticationToken``이 인증을 위해 ``AuthenticationManager`` 인스턴스로 전달됩니다.
+``AuthenticationManager``의 구체적인 모습은 사용자 정보가 어떻게 저장되어 있는지에 따라 다릅니다.
 
-image:{icondir}/number_2.png[]  Next, the `UsernamePasswordAuthenticationToken` is passed into the `AuthenticationManager` instance to be authenticated.
-The details of what `AuthenticationManager` looks like depend on how the xref:servlet/authentication/passwords/index.adoc#servlet-authentication-unpwd-storage[user information is stored].
+image:{icondir}/number_3.png[] 인증이 실패하면 다음과 같은 실패 처리가 이루어집니다.
 
-image:{icondir}/number_3.png[] If authentication fails, then __Failure__.
+. ``SecurityContextHolder``가 초기화됩니다.
+. ``RememberMeServices.loginFail``이 호출됩니다.
+Remember me가 구성되지 않았다면 이는 아무 작업도 하지 않습니다.
+. ``AuthenticationFailureHandler``가 호출됩니다.
 
-. The xref:servlet/authentication/architecture.adoc#servlet-authentication-securitycontextholder[SecurityContextHolder] is cleared out.
-. `RememberMeServices.loginFail` is invoked.
-If remember me is not configured, this is a no-op.
-See the {security-api-url}org/springframework/security/web/authentication/RememberMeServices.html[`RememberMeServices`] interface in the Javadoc.
-. `AuthenticationFailureHandler` is invoked.
-See the {security-api-url}org/springframework/security/web/authentication/AuthenticationFailureHandler.html[`AuthenticationFailureHandler`] class in the Javadoc
+image:{icondir}/number_4.png[] 인증이 성공하면 다음과 같은 성공 처리가 이루어집니다.
 
-image:{icondir}/number_4.png[] If authentication is successful, then __Success__.
-
-. `SessionAuthenticationStrategy` is notified of a new login.
-See the {security-api-url}org/springframework/security/web/authentication/session/SessionAuthenticationStrategy.html[`SessionAuthenticationStrategy`] interface in the Javadoc.
-. The xref:servlet/authentication/architecture.adoc#servlet-authentication-authentication[Authentication] is set on the xref:servlet/authentication/architecture.adoc#servlet-authentication-securitycontextholder[SecurityContextHolder].
-See the {security-api-url}org/springframework/security/web/context/SecurityContextPersistenceFilter.html[`SecurityContextPersistenceFilter`] class in the Javadoc.
-. `RememberMeServices.loginSuccess` is invoked.
-If remember me is not configured, this is a no-op.
-See the {security-api-url}org/springframework/security/web/authentication/RememberMeServices.html[`RememberMeServices`] interface in the Javadoc.
-. `ApplicationEventPublisher` publishes an `InteractiveAuthenticationSuccessEvent`.
-. The `AuthenticationSuccessHandler` is invoked. Typically, this is a `SimpleUrlAuthenticationSuccessHandler`, which redirects to a request saved by xref:servlet/architecture.adoc#servlet-exceptiontranslationfilter[`ExceptionTranslationFilter`] when we redirect to the login page.
+. ``SessionAuthenticationStrategy``에 새로운 로그인이 통보됩니다.
+. ``Authentication``이 ``SecurityContextHolder``에 설정됩니다.
+. ``RememberMeServices.loginSuccess``가 호출됩니다.
+Remember me가 구성되지 않았다면 이는 아무 작업도 하지 않습니다.
+. ``ApplicationEventPublisher``가 ``InteractiveAuthenticationSuccessEvent``를 발행합니다.
+. ``AuthenticationSuccessHandler``가 호출됩니다. 일반적으로 이는 ``SimpleUrlAuthenticationSuccessHandler``로, 로그인 페이지로 리다이렉트할 때 ``ExceptionTranslationFilter``에 의해 저장된 요청으로 리다이렉트합니다.
 
 [[servlet-authentication-form-min]]
-By default, Spring Security form login is enabled.
-However, as soon as any servlet-based configuration is provided, form based login must be explicitly provided.
-The following example shows a minimal, explicit Java configuration:
+기본적으로 Spring Security의 폼 로그인은 활성화되어 있습니다.
+그러나 서블릿 기반 구성이 제공되는 즉시 폼 기반 로그인을 명시적으로 제공해야 합니다.
+다음은 최소한의 명시적 Java 구성 예시입니다:
 
-.Form Login
+.폼 로그인
 [tabs]
 ======
 Java::
@@ -103,13 +95,13 @@ open fun filterChain(http: HttpSecurity): SecurityFilterChain {
 ----
 ======
 
-In the preceding configuration, Spring Security renders a default login page.
-Most production applications require a custom login form.
+위 구성에서 Spring Security는 기본 로그인 페이지를 렌더링합니다.
+대부분의 실제 애플리케이션에서는 사용자 정의 로그인 폼이 필요합니다.
 
 [[servlet-authentication-form-custom]]
-The following configuration demonstrates how to provide a custom login form.
+다음 구성은 사용자 정의 로그인 폼을 제공하는 방법을 보여줍니다.
 
-.Custom Login Form Configuration
+.사용자 정의 로그인 폼 구성
 [tabs]
 ======
 Java::
@@ -154,52 +146,51 @@ open fun filterChain(http: HttpSecurity): SecurityFilterChain {
 ======
 
 [[servlet-authentication-form-custom-html]]
-When the login page is specified in the Spring Security configuration, you are responsible for rendering the page.
-// FIXME: default login page rendered by Spring Security
-The following https://www.thymeleaf.org/[Thymeleaf] template produces an HTML login form that complies with a login page of `/login`.:
+Spring Security 구성에서 로그인 페이지를 지정하면, 해당 페이지를 렌더링하는 것은 여러분의 책임입니다.
+다음 Thymeleaf 템플릿은 `/login` 로그인 페이지에 맞는 HTML 로그인 폼을 생성합니다:
 
-.Login Form - src/main/resources/templates/login.html
+.로그인 폼 - src/main/resources/templates/login.html
 [source,xml]
 ----
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
 	<head>
-		<title>Please Log In</title>
+		<title>로그인해 주세요</title>
 	</head>
 	<body>
-		<h1>Please Log In</h1>
+		<h1>로그인해 주세요</h1>
 		<div th:if="${param.error}">
-			Invalid username and password.</div>
+			잘못된 사용자 이름과 비밀번호입니다.</div>
 		<div th:if="${param.logout}">
-			You have been logged out.</div>
+			로그아웃되었습니다.</div>
 		<form th:action="@{/login}" method="post">
 			<div>
-			<input type="text" name="username" placeholder="Username"/>
+			<input type="text" name="username" placeholder="사용자 이름"/>
 			</div>
 			<div>
-			<input type="password" name="password" placeholder="Password"/>
+			<input type="password" name="password" placeholder="비밀번호"/>
 			</div>
-			<input type="submit" value="Log in" />
+			<input type="submit" value="로그인" />
 		</form>
 	</body>
 </html>
 ----
 
-There are a few key points about the default HTML form:
+기본 HTML 폼에 대한 몇 가지 주요 사항은 다음과 같습니다:
 
-* The form should perform a `post` to `/login`.
-* The form needs to include a xref:servlet/exploits/csrf.adoc#servlet-csrf[CSRF Token], which is xref:servlet/exploits/csrf.adoc#csrf-integration-form[automatically included] by Thymeleaf.
-* The form should specify the username in a parameter named `username`.
-* The form should specify the password in a parameter named `password`.
-* If the HTTP parameter named `error` is found, it indicates the user failed to provide a valid username or password.
-* If the HTTP parameter named `logout` is found, it indicates the user has logged out successfully.
+* 폼은 ``/login``으로 ``post`` 요청을 수행해야 합니다.
+* 폼에는 CSRF 토큰이 포함되어야 하며, Thymeleaf에서는 자동으로 포함됩니다.
+* 폼은 ``username``이라는 이름의 파라미터로 사용자 이름을 지정해야 합니다.
+* 폼은 ``password``라는 이름의 파라미터로 비밀번호를 지정해야 합니다.
+* `error`라는 HTTP 파라미터가 발견되면 사용자가 유효한 사용자 이름이나 비밀번호를 제공하지 않았음을 나타냅니다.
+* `logout`이라는 HTTP 파라미터가 발견되면 사용자가 성공적으로 로그아웃했음을 나타냅니다.
 
-Many users do not need much more than to customize the login page.
-However, if needed, you can customize everything shown earlier with additional configuration.
+많은 사용자들은 로그인 페이지를 사용자 정의하는 것 이상의 작업이 필요하지 않습니다.
+그러나 필요한 경우 추가 구성을 통해 앞서 보여진 모든 것을 사용자 정의할 수 있습니다.
 
 [[servlet-authentication-form-custom-controller]]
-If you use Spring MVC, you need a controller that maps `GET /login` to the login template we created.
-The following example shows a minimal `LoginController`:
+Spring MVC를 사용하는 경우, ``GET /login``을 우리가 생성한 로그인 템플릿에 매핑하는 컨트롤러가 필요합니다.
+다음은 최소한의 `LoginController` 예시입니다:
 
 .LoginController
 [tabs]

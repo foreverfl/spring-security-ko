@@ -4,15 +4,13 @@
 #       root_component_name: "security"
 site:
   title: Spring Security
-  # url: https://docs.spring.io/spring-security/reference
   url: https://spring-security.mogumogu.dev
   robots: allow
 git:
   ensure_git_suffix: false
 content:
   sources:
-    # - url: ../../spring-security-ko
-    - url: https://github.com/foreverfl/spring-security-ko.git
+    - url: ../../spring-security-ko
       branches: ["6.3.x"]
       tags: ["6.3.{3}"]
       # branches: [main, "5.{{6..9},{1..9}+({0..9})}.x", "6.+({0..9}).x"]
@@ -44,7 +42,7 @@ urls:
   redirect_facility: httpd
 ui:
   bundle:
-    url: ../ui.zip
+    url: https://blog_workers.forever-fl.workers.dev/spring-ui-bundle.zip
     snapshot: true
 runtime:
   log:
