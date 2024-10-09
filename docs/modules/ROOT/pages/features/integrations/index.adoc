@@ -1,7 +1,7 @@
 [[integrations]]
-= Integrations
+= 통합
 :page-section-summary-toc: 1
 
-Spring Security provides integrations with numerous frameworks and APIs.
-In this section, we discuss generic integrations that are not specific to Servlet or Reactive environments.
-To see specific integrations, refer to the xref:servlet/integrations/index.adoc[Servlet] and xref:reactive/integrations/cors.adoc[Reactive] Integrations sections.
+Spring Security는 다양한 프레임워크와 API와의 통합을 제공합니다.
+이 섹션에서는 서블릿 또는 리액티브 환경에 특정되지 않은 일반적인 통합에 대해 논의합니다.
+특정 환경에 대한 통합을 보려면 xref:servlet/integrations/index.adoc[서블릿] 및 xref:reactive/integrations/cors.adoc[리액티브] 통합 섹션을 참조하세요.

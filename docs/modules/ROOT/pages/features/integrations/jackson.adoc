@@ -1,10 +1,10 @@
 [[jackson]]
-= Jackson Support
+= Jackson 지원
 
-Spring Security provides Jackson support for persisting Spring Security related classes.
-This can improve the performance of serializing Spring Security related classes when working with distributed sessions (i.e. session replication, Spring Session, etc).
+Spring Security는 Spring Security 관련 클래스를 지속하기 위한 Jackson 지원을 제공합니다.
+이는 분산 세션(예: 세션 복제, Spring Session 등)을 사용할 때 Spring Security 관련 클래스의 직렬화 성능을 향상시킬 수 있습니다.
 
-To use it, register the `SecurityJackson2Modules.getModules(ClassLoader)` with `ObjectMapper` (https://github.com/FasterXML/jackson-databind[jackson-databind]):
+이를 사용하려면 ``SecurityJackson2Modules.getModules(ClassLoader)``를 ``ObjectMapper``에 등록하세요 (https://github.com/FasterXML/jackson-databind[jackson-databind]):
 
 [tabs]
 ======
@@ -17,7 +17,7 @@ ClassLoader loader = getClass().getClassLoader();
 List<Module> modules = SecurityJackson2Modules.getModules(loader);
 mapper.registerModules(modules);
 
-// ... use ObjectMapper as normally ...
+// ... ObjectMapper를 평소대로 사용 ...
 SecurityContext context = new SecurityContextImpl();
 // ...
 String json = mapper.writeValueAsString(context);
@@ -32,7 +32,7 @@ val loader = javaClass.classLoader
 val modules: MutableList<Module> = SecurityJackson2Modules.getModules(loader)
 mapper.registerModules(modules)
 
-// ... use ObjectMapper as normally ...
+// ... ObjectMapper를 평소대로 사용 ...
 val context: SecurityContext = SecurityContextImpl()
 // ...
 val json: String = mapper.writeValueAsString(context)
@@ -41,7 +41,7 @@ val json: String = mapper.writeValueAsString(context)
 
 [NOTE]
 ====
-The following Spring Security modules provide Jackson support:
+다음 Spring Security 모듈들이 Jackson 지원을 제공합니다:
 
 - spring-security-core (`CoreJackson2Module`)
 - spring-security-web (`WebJackson2Module`, `WebServletJackson2Module`, `WebServerJackson2Module`)

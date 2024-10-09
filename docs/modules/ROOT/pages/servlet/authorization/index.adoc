@@ -1,14 +1,12 @@
 [[servlet-authorization]]
-= Authorization
+= 권한 부여
 :page-section-summary-toc: 1
 
-Having established xref:servlet/authentication/index.adoc[how users will authenticate], you also need to configure your application's authorization rules.
+xref:servlet/authentication/index.adoc[사용자 인증 방법]을 설정한 후에는 애플리케이션의 권한 부여 규칙도 구성해야 합니다.
 
-The advanced authorization capabilities within Spring Security represent one of the most compelling reasons for its popularity.
-Irrespective of how you choose to authenticate (whether using a Spring Security-provided mechanism and provider or integrating with a container or other non-Spring Security authentication authority), the authorization services can be used within your application in a consistent and simple way.
+Spring Security 내의 고급 권한 부여 기능은 그 인기의 가장 매력적인 이유 중 하나입니다.
+인증 방식을 어떻게 선택하든(Spring Security에서 제공하는 메커니즘과 공급자를 사용하거나 컨테이너 또는 다른 비 Spring Security 인증 기관과 통합하든), 권한 부여 서비스는 애플리케이션 내에서 일관되고 간단한 방식으로 사용할 수 있습니다.
 
-You should consider attaching authorization rules to xref:servlet/authorization/authorize-http-requests.adoc[request URIs] and xref:servlet/authorization/method-security.adoc[methods] to begin.
-In either case, you can listen and react to xref:servlet/authorization/events.adoc[authorization events] that each authorization check publishes.
-Below there is also wealth of detail about xref:servlet/authorization/architecture.adoc[how Spring Security authorization works] and how, having established a basic model, it can be fine-tuned.
-
-
+시작하려면 xref:servlet/authorization/authorize-http-requests.adoc[요청 URI]와 xref:servlet/authorization/method-security.adoc[메서드]에 권한 부여 규칙을 연결하는 것을 고려해야 합니다.
+두 경우 모두 각 권한 부여 검사에서 발행하는 xref:servlet/authorization/events.adoc[권한 부여 이벤트]를 수신하고 대응할 수 있습니다.
+아래에는 xref:servlet/authorization/architecture.adoc[Spring Security 권한 부여의 작동 방식]과 기본 모델을 설정한 후 이를 미세 조정하는 방법에 대한 풍부한 세부 정보가 있습니다.

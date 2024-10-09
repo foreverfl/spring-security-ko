@@ -1,23 +1,22 @@
-
 [[jc]]
-= Java Configuration
+= Java 설정
 
-General support for https://docs.spring.io/spring/docs/3.1.x/spring-framework-reference/html/beans.html#beans-java[Java configuration] was added to Spring Framework in Spring 3.1.
-Spring Security 3.2 introduced Java configuration to let users configure Spring Security without the use of any XML.
+Spring 3.1에서 https://docs.spring.io/spring/docs/3.1.x/spring-framework-reference/html/beans.html#beans-java[Java 설정]에 대한 일반적인 지원이 추가되었습니다.
+Spring Security 3.2는 사용자가 XML을 사용하지 않고도 Spring Security를 설정할 수 있도록 Java 설정을 도입했습니다.
 
-If you are familiar with the xref:servlet/configuration/xml-namespace.adoc#ns-config[Security Namespace Configuration], you should find quite a few similarities between it and Spring Security Java configuration.
+xref:servlet/configuration/xml-namespace.adoc#ns-config[보안 네임스페이스 설정]에 익숙하다면 Spring Security Java 설정과 상당히 유사한 점을 발견할 수 있을 것입니다.
 
 [NOTE]
 ====
-Spring Security provides https://github.com/spring-projects/spring-security-samples/tree/main/servlet/java-configuration[lots of sample applications] to demonstrate the use of Spring Security Java Configuration.
+Spring Security는 Spring Security Java 설정의 사용을 보여주는 https://github.com/spring-projects/spring-security-samples/tree/main/servlet/java-configuration[많은 샘플 애플리케이션]을 제공합니다.
 ====
 
 [[jc-hello-wsca]]
-== Hello Web Security Java Configuration
+== Hello Web Security Java 설정
 
-The first step is to create our Spring Security Java Configuration.
-The configuration creates a Servlet Filter known as the `springSecurityFilterChain`, which is responsible for all the security (protecting the application URLs, validating submitted username and passwords, redirecting to the log in form, and so on) within your application.
-The following example shows the most basic example of a Spring Security Java Configuration:
+첫 번째 단계는 Spring Security Java 설정을 만드는 것입니다.
+이 설정은 ``springSecurityFilterChain``이라는 서블릿 필터를 생성합니다. 이 필터는 애플리케이션 내의 모든 보안(애플리케이션 URL 보호, 제출된 사용자 이름과 비밀번호 검증, 로그인 폼으로 리다이렉션 등)을 담당합니다.
+다음 예제는 Spring Security Java 설정의 가장 기본적인 예시를 보여줍니다:
 
 [source,java]
 ----
@@ -40,21 +39,21 @@ public class WebSecurityConfig {
 }
 ----
 
-This configuration is not complex or extensive, but it does a lot:
+이 설정은 복잡하거나 광범위하지 않지만 많은 작업을 수행합니다:
 
-* Require authentication to every URL in your application
-* Generate a login form for you
-* Let the user with a *Username* of `user` and a *Password* of `password` authenticate with form based authentication
-* Let the user logout
-* https://en.wikipedia.org/wiki/Cross-site_request_forgery[CSRF attack] prevention
-* https://en.wikipedia.org/wiki/Session_fixation[Session Fixation] protection
-* Security Header integration:
-** https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security[HTTP Strict Transport Security] for secure requests
-** https://msdn.microsoft.com/en-us/library/ie/gg622941(v=vs.85).aspx[X-Content-Type-Options] integration
-** Cache Control (which you can override later in your application to allow caching of your static resources)
-** https://msdn.microsoft.com/en-us/library/dd565647(v=vs.85).aspx[X-XSS-Protection] integration
-** X-Frame-Options integration to help prevent https://en.wikipedia.org/wiki/Clickjacking[Clickjacking]
-* Integration with the following Servlet API methods:
+* 애플리케이션의 모든 URL에 대해 인증 요구
+* 로그인 폼 생성
+* 사용자 이름 ``user``와 비밀번호 ``password``로 폼 기반 인증 허용
+* 사용자 로그아웃 허용
+* https://en.wikipedia.org/wiki/Cross-site_request_forgery[CSRF 공격] 방지
+* https://en.wikipedia.org/wiki/Session_fixation[세션 고정] 보호
+* 보안 헤더 통합:
+** 보안 요청을 위한 https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security[HTTP Strict Transport Security]
+** https://msdn.microsoft.com/en-us/library/ie/gg622941(v=vs.85).aspx[X-Content-Type-Options] 통합
+** 캐시 제어 (나중에 애플리케이션에서 정적 리소스의 캐싱을 허용하도록 재정의 가능)
+** https://msdn.microsoft.com/en-us/library/dd565647(v=vs.85).aspx[X-XSS-Protection] 통합
+** https://en.wikipedia.org/wiki/Clickjacking[클릭재킹] 방지를 돕는 X-Frame-Options 통합
+* 다음 서블릿 API 메서드와의 통합:
 ** https://docs.oracle.com/javaee/6/api/javax/servlet/http/HttpServletRequest.html#getRemoteUser()[`HttpServletRequest#getRemoteUser()`]
 ** https://docs.oracle.com/javaee/6/api/javax/servlet/http/HttpServletRequest.html#getUserPrincipal()[`HttpServletRequest#getUserPrincipal()`]
 ** https://docs.oracle.com/javaee/6/api/javax/servlet/http/HttpServletRequest.html#isUserInRole(java.lang.String)[`HttpServletRequest#isUserInRole(java.lang.String)`]
@@ -63,18 +62,18 @@ This configuration is not complex or extensive, but it does a lot:
 
 === AbstractSecurityWebApplicationInitializer
 
-The next step is to register the `springSecurityFilterChain` with the WAR file.
-You can do so in Java configuration with https://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/mvc.html#mvc-container-config[Spring's `WebApplicationInitializer` support] in a Servlet 3.0+ environment.
-Not surprisingly, Spring Security provides a base class (`AbstractSecurityWebApplicationInitializer`) to ensure that the `springSecurityFilterChain` gets registered for you.
-The way in which we use `AbstractSecurityWebApplicationInitializer` differs depending on if we are already using Spring or if Spring Security is the only Spring component in our application.
+다음 단계는 WAR 파일에 ``springSecurityFilterChain``을 등록하는 것입니다.
+Servlet 3.0+ 환경에서 https://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/mvc.html#mvc-container-config[Spring의 `WebApplicationInitializer` 지원]을 사용하여 Java 설정으로 이를 수행할 수 있습니다.
+당연히 Spring Security는 ``springSecurityFilterChain``이 등록되도록 기본 클래스 (``AbstractSecurityWebApplicationInitializer``)를 제공합니다.
+``AbstractSecurityWebApplicationInitializer``를 사용하는 방법은 이미 Spring을 사용하고 있는지 또는 Spring Security가 애플리케이션에서 유일한 Spring 컴포넌트인지에 따라 다릅니다.
 
-* <<abstractsecuritywebapplicationinitializer-without-existing-spring>> - Use these instructions if you are not already using Spring
-* <<abstractsecuritywebapplicationinitializer-with-spring-mvc>> - Use these instructions if you are already using Spring
+* <<abstractsecuritywebapplicationinitializer-without-existing-spring>> - 아직 Spring을 사용하지 않는 경우 이 지침을 사용하세요
+* <<abstractsecuritywebapplicationinitializer-with-spring-mvc>> - 이미 Spring을 사용하고 있는 경우 이 지침을 사용하세요
 
 [[abstractsecuritywebapplicationinitializer-without-existing-spring]]
-=== AbstractSecurityWebApplicationInitializer without Existing Spring
+=== 기존 Spring 없이 AbstractSecurityWebApplicationInitializer 사용
 
-If you are not using Spring or Spring MVC, you need to pass the `WebSecurityConfig` to the superclass to ensure the configuration is picked up:
+Spring 또는 Spring MVC를 사용하지 않는 경우, 설정이 확실히 선택되도록 ``WebSecurityConfig``를 상위 클래스에 전달해야 합니다:
 
 [source,java]
 ----
@@ -89,18 +88,18 @@ public class SecurityWebApplicationInitializer
 }
 ----
 
-The `SecurityWebApplicationInitializer`:
+``SecurityWebApplicationInitializer``:
 
-* Automatically registers the `springSecurityFilterChain` Filter for every URL in your application.
-* Add a `ContextLoaderListener` that loads the <<jc-hello-wsca,WebSecurityConfig>>.
+* 애플리케이션의 모든 URL에 대해 ``springSecurityFilterChain`` 필터를 자동으로 등록합니다.
+* <<jc-hello-wsca,WebSecurityConfig>>를 로드하는 ``ContextLoaderListener``를 추가합니다.
 
 [[abstractsecuritywebapplicationinitializer-with-spring-mvc]]
-=== AbstractSecurityWebApplicationInitializer with Spring MVC
+=== Spring MVC와 함께 AbstractSecurityWebApplicationInitializer 사용
 
-If we use Spring elsewhere in our application, we probably already have a `WebApplicationInitializer` that is loading our Spring Configuration.
-If we use the previous configuration, we would get an error.
-Instead, we should register Spring Security with the existing `ApplicationContext`.
-For example, if we use Spring MVC, our `SecurityWebApplicationInitializer` could look something like the following:
+애플리케이션의 다른 부분에서 Spring을 사용하고 있다면, 이미 Spring 설정을 로드하는 ``WebApplicationInitializer``가 있을 것입니다.
+이전 설정을 사용하면 오류가 발생할 수 있습니다.
+대신 기존 ``ApplicationContext``에 Spring Security를 등록해야 합니다.
+예를 들어, Spring MVC를 사용하는 경우 ``SecurityWebApplicationInitializer``는 다음과 같을 수 있습니다:
 
 [source,java]
 ----
@@ -112,9 +111,9 @@ public class SecurityWebApplicationInitializer
 }
 ----
 
-This only registers the `springSecurityFilterChain` for every URL in your application.
-After that, we need to ensure that `WebSecurityConfig` was loaded in our existing `ApplicationInitializer`.
-For example, if we use Spring MVC it is added in the `getServletConfigClasses()`:
+이는 애플리케이션의 모든 URL에 대해 ``springSecurityFilterChain``만 등록합니다.
+그 후, 기존 ``ApplicationInitializer``에서 ``WebSecurityConfig``가 로드되었는지 확인해야 합니다.
+예를 들어, Spring MVC를 사용하는 경우 ``getServletConfigClasses()``에 추가됩니다:
 
 [[message-web-application-inititializer-java]]
 [source,java]
@@ -127,16 +126,16 @@ public class MvcWebApplicationInitializer extends
 		return new Class[] { WebSecurityConfig.class, WebMvcConfig.class };
 	}
 
-	// ... other overrides ...
+	// ... 다른 오버라이드 ...
 }
 ----
 
-The reason for this is that Spring Security needs to be able to inspect some Spring MVC configuration in order to appropriately configure xref:servlet/authorization/authorize-http-requests.adoc#authorizing-endpoints[underlying request matchers], so they need to be in the same application context.
-Placing Spring Security in `getRootConfigClasses` places it into a parent application context that may not be able to find Spring MVC's `HandlerMappingIntrospector`.
+이는 Spring Security가 xref:servlet/authorization/authorize-http-requests.adoc#authorizing-endpoints[기본 요청 매처]를 적절히 설정하기 위해 일부 Spring MVC 설정을 검사해야 하므로, 이들이 동일한 애플리케이션 컨텍스트에 있어야 하기 때문입니다.
+Spring Security를 ``getRootConfigClasses``에 배치하면 Spring MVC의 ``HandlerMappingIntrospector``를 찾지 못할 수 있는 상위 애플리케이션 컨텍스트에 배치됩니다.
 
-==== Configuring for Multiple Spring MVC Dispatchers
+==== 여러 Spring MVC 디스패처 설정
 
-If desired, any Spring Security configuration that is unrelated to Spring MVC may be placed in a different configuration class like so:
+원한다면 Spring MVC와 관련 없는 Spring Security 설정을 다른 설정 클래스에 배치할 수 있습니다:
 
 [source,java]
 ----
@@ -153,20 +152,20 @@ public class MvcWebApplicationInitializer extends
 		return new Class[] { WebSecurityConfig.class, WebMvcConfig.class };
 	}
 
-	// ... other overrides ...
+	// ... 다른 오버라이드 ...
 }
 ----
 
-This can be helpful if you have multiple instances of `AbstractAnnotationConfigDispatcherServletInitializer` and don't want to duplicate the general security configuration across both of them.
+이는 ``AbstractAnnotationConfigDispatcherServletInitializer``의 여러 인스턴스가 있고 일반 보안 설정을 둘 다에 복제하고 싶지 않은 경우 유용할 수 있습니다.
 
 [[jc-httpsecurity]]
 == HttpSecurity
 
-Thus far, our <<jc-hello-wsca,`WebSecurityConfig`>> contains only information about how to authenticate our users.
-How does Spring Security know that we want to require all users to be authenticated?
-How does Spring Security know we want to support form-based authentication?
-Actually, there is a configuration class (called `SecurityFilterChain`) that is being invoked behind the scenes.
-It is configured with the following default implementation:
+지금까지 <<jc-hello-wsca,`WebSecurityConfig`>>에는 사용자 인증 방법에 대한 정보만 포함되어 있습니다.
+Spring Security는 모든 사용자에 대해 인증이 필요하다는 것을 어떻게 알까요?
+Spring Security는 폼 기반 인증을 지원하고 싶다는 것을 어떻게 알까요?
+실제로 뒤에서 ``SecurityFilterChain``이라는 설정 클래스가 호출되고 있습니다.
+다음과 같은 기본 구현으로 설정되어 있습니다:
 
 [source,java]
 ----
@@ -182,13 +181,13 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 }
 ----
 
-The default configuration (shown in the preceding example):
+기본 설정(위 예제에 표시)은:
 
-* Ensures that any request to our application requires the user to be authenticated
-* Lets users authenticate with form based login
-* Lets users authenticate with HTTP Basic authentication
+* 애플리케이션에 대한 모든 요청에 사용자 인증이 필요함을 보장합니다
+* 사용자가 폼 기반 로그인으로 인증할 수 있도록 합니다
+* 사용자가 HTTP 기본 인증으로 인증할 수 있도록 합니다
 
-Note that this configuration is parallels the XML Namespace configuration:
+이 설정은 XML 네임스페이스 설정과 유사합니다:
 
 [source,xml]
 ----
@@ -199,11 +198,11 @@ Note that this configuration is parallels the XML Namespace configuration:
 </http>
 ----
 
-== Multiple HttpSecurity Instances
+== 여러 HttpSecurity 인스턴스
 
-We can configure multiple `HttpSecurity` instances just as we can have multiple `<http>` blocks in XML.
-The key is to register multiple `SecurityFilterChain` ``@Bean``s.
-The following example has a different configuration for URLs that start with `/api/`.
+XML에서 여러 ``<http>`` 블록을 가질 수 있는 것처럼 여러 ``HttpSecurity`` 인스턴스를 설정할 수 있습니다.
+핵심은 여러 ``SecurityFilterChain`` ``@Bean``을 등록하는 것입니다.
+다음 예제는 ``/api/``로 시작하는 URL에 대해 다른 설정을 가집니다.
 
 [source,java]
 ----
@@ -212,7 +211,7 @@ The following example has a different configuration for URLs that start with `/a
 public class MultiHttpSecurityConfig {
 	@Bean                                                             <1>
 	public UserDetailsService userDetailsService() throws Exception {
-		// ensure the passwords are encoded properly
+		// 비밀번호가 적절히 인코딩되었는지 확인
 		UserBuilder users = User.withDefaultPasswordEncoder();
 		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
 		manager.createUser(users.username("user").password("password").roles("USER").build());
@@ -243,17 +242,17 @@ public class MultiHttpSecurityConfig {
 	}
 }
 ----
-<1> Configure Authentication as usual.
-<2> Create an instance of `SecurityFilterChain` that contains `@Order` to specify which `SecurityFilterChain` should be considered first.
-<3> The `http.securityMatcher` states that this `HttpSecurity` is applicable only to URLs that start with `/api/`.
-<4> Create another instance of `SecurityFilterChain`.
-If the URL does not start with `/api/`, this configuration is used.
-This configuration is considered after `apiFilterChain`, since it has an `@Order` value after `1` (no `@Order` defaults to last).
+<1> 평소와 같이 인증을 설정합니다.
+<2> 어떤 ``SecurityFilterChain``이 먼저 고려되어야 하는지 지정하기 위해 ``@Order``를 포함하는 ``SecurityFilterChain`` 인스턴스를 생성합니다.
+<3> ``http.securityMatcher``는 이 ``HttpSecurity``가 ``/api/``로 시작하는 URL에만 적용됨을 명시합니다.
+<4> 다른 ``SecurityFilterChain`` 인스턴스를 생성합니다.
+URL이 ``/api/``로 시작하지 않으면 이 설정이 사용됩니다.
+이 설정은 ``apiFilterChain`` 다음에 고려되는데, ``@Order`` 값이 1 이후이기 때문입니다 (``@Order``가 없으면 기본적으로 마지막).
 
 [[jc-custom-dsls]]
-== Custom DSLs
+== 사용자 정의 DSL
 
-You can provide your own custom DSLs in Spring Security:
+Spring Security에서 자체 사용자 정의 DSL을 제공할 수 있습니다:
 
 [tabs]
 ======
@@ -266,8 +265,8 @@ public class MyCustomDsl extends AbstractHttpConfigurer<MyCustomDsl, HttpSecurit
 
 	@Override
 	public void init(HttpSecurity http) throws Exception {
-		// any method that adds another configurer
-		// must be done in the init method
+		// 다른 설정자를 추가하는 모든 메서드는
+		// init 메서드에서 수행되어야 합니다
 		http.csrf().disable();
 	}
 
@@ -275,7 +274,7 @@ public class MyCustomDsl extends AbstractHttpConfigurer<MyCustomDsl, HttpSecurit
 	public void configure(HttpSecurity http) throws Exception {
 		ApplicationContext context = http.getSharedObject(ApplicationContext.class);
 
-		// here we lookup from the ApplicationContext. You can also just create a new instance.
+		// 여기서 ApplicationContext에서 조회합니다. 새 인스턴스를 생성할 수도 있습니다.
 		MyFilter myFilter = context.getBean(MyFilter.class);
 		myFilter.setFlag(flag);
 		http.addFilterBefore(myFilter, UsernamePasswordAuthenticationFilter.class);
@@ -300,15 +299,15 @@ class MyCustomDsl : AbstractHttpConfigurer<MyCustomDsl, HttpSecurity>() {
     var flag: Boolean = false
 
     override fun init(http: HttpSecurity) {
-        // any method that adds another configurer
-        // must be done in the init method
+        // 다른 설정자를 추가하는 모든 메서드는
+        // init 메서드에서 수행되어야 합니다
         http.csrf().disable()
     }
 
     override fun configure(http: HttpSecurity) {
         val context: ApplicationContext = http.getSharedObject(ApplicationContext::class.java)
 
-        // here we lookup from the ApplicationContext. You can also just create a new instance.
+        // 여기서 ApplicationContext에서 조회합니다. 새 인스턴스를 생성할 수도 있습니다.
         val myFilter: MyFilter = context.getBean(MyFilter::class.java)
         myFilter.setFlag(flag)
         http.addFilterBefore(myFilter, UsernamePasswordAuthenticationFilter::class.java)
@@ -326,10 +325,10 @@ class MyCustomDsl : AbstractHttpConfigurer<MyCustomDsl, HttpSecurity>() {
 
 [NOTE]
 ====
-This is actually how methods like `HttpSecurity.authorizeHttpRequests()` are implemented.
+이는 실제로 `HttpSecurity.authorizeHttpRequests()` 같은 메서드가 구현되는 방식입니다.
 ====
 
-You can then use the custom DSL:
+그런 다음 사용자 정의 DSL을 사용할 수 있습니다:
 
 [tabs]
 ======
@@ -374,14 +373,14 @@ class Config {
 ----
 ======
 
-The code is invoked in the following order:
+코드는 다음 순서로 호출됩니다:
 
-* Code in the `Config.filterChain` method is invoked
-* Code in the `MyCustomDsl.init` method is invoked
-* Code in the `MyCustomDsl.configure` method is invoked
+* `Config.filterChain` 메서드의 코드가 호출됩니다
+* `MyCustomDsl.init` 메서드의 코드가 호출됩니다
+* `MyCustomDsl.configure` 메서드의 코드가 호출됩니다
 
-If you want, you can have `HttpSecurity` add `MyCustomDsl` by default by using `SpringFactories`.
-For example, you can create a resource on the classpath named `META-INF/spring.factories` with the following contents:
+원하는 경우 ``SpringFactories``를 사용하여 ``HttpSecurity``가 기본적으로 ``MyCustomDsl``을 추가하도록 할 수 있습니다.
+예를 들어, 클래스패스에 ``META-INF/spring.factories``라는 리소스를 다음 내용으로 생성할 수 있습니다:
 
 .META-INF/spring.factories
 [source]
@@ -389,7 +388,7 @@ For example, you can create a resource on the classpath named `META-INF/spring.f
 org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer = sample.MyCustomDsl
 ----
 
-You can also explicit disable the default:
+기본값을 명시적으로 비활성화할 수도 있습니다:
 
 [tabs]
 ======
@@ -436,15 +435,15 @@ class Config {
 ======
 
 [[post-processing-configured-objects]]
-== Post Processing Configured Objects
+== 설정된 객체의 후처리
 
-Spring Security's Java configuration does not expose every property of every object that it configures.
-This simplifies the configuration for a majority of users.
-After all, if every property were exposed, users could use standard bean configuration.
+Spring Security의 Java 설정은 설정하는 모든 객체의 모든 속성을 노출하지 않습니다.
+이는 대부분의 사용자에게 설정을 단순화합니다.
+결국, 모든 속성이 노출된다면 사용자는 표준 빈 설정을 사용할 수 있을 것입니다.
 
-While there are good reasons to not directly expose every property, users may still need more advanced configuration options.
-To address this issue, Spring Security introduces the concept of an `ObjectPostProcessor`, which can be used to modify or replace many of the `Object` instances created by the Java Configuration.
-For example, to configure the `filterSecurityPublishAuthorizationSuccess` property on `FilterSecurityInterceptor`, you can use the following:
+모든 속성을 직접 노출하지 않는 데에는 좋은 이유가 있지만, 사용자는 여전히 더 고급 설정 옵션이 필요할 수 있습니다.
+이 문제를 해결하기 위해 Spring Security는 Java 설정에 의해 생성된 많은 ``Object`` 인스턴스를 수정하거나 교체하는 데 사용할 수 있는 ``ObjectPostProcessor`` 개념을 도입했습니다.
+예를 들어, ``FilterSecurityInterceptor``의 ``filterSecurityPublishAuthorizationSuccess`` 속성을 설정하려면 다음과 같이 사용할 수 있습니다:
 
 [source,java]
 ----

@@ -1,4 +1,4 @@
-.Explicit Saving of SecurityContext
+.SecurityContext의 명시적 저장
 [tabs]
 ======
 Java::
@@ -40,12 +40,11 @@ XML::
 ----
 ======
 
+이 구성을 사용할 때, ``SecurityContextHolder``에 ``SecurityContext``를 설정하는 모든 코드는 요청 간에 유지되어야 하는 경우 ``SecurityContextRepository``에 ``SecurityContext``를 저장해야 합니다.
 
-Upon using the configuration, it is important that any code that sets the `SecurityContextHolder` with a `SecurityContext` also saves the `SecurityContext` to the `SecurityContextRepository` if it should be persisted between requests.
+예를 들어, 다음과 같은 코드:
 
-For example, the following code:
-
-.Setting `SecurityContextHolder` with `SecurityContextPersistenceFilter`
+.``SecurityContextPersistenceFilter``로 ``SecurityContextHolder`` 설정
 [tabs]
 ======
 Java::
@@ -63,9 +62,9 @@ SecurityContextHolder.setContext(securityContext)
 ----
 ======
 
-should be replaced with
+다음과 같이 변경되어야 합니다:
 
-.Setting `SecurityContextHolder` with `SecurityContextHolderFilter`
+.``SecurityContextHolderFilter``로 ``SecurityContextHolder`` 설정
 [tabs]
 ======
 Java::

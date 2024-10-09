@@ -1,13 +1,13 @@
 [[servlet-events]]
-= Authorization Events
+= 권한 부여 이벤트
 
-For each authorization that is denied, an `AuthorizationDeniedEvent` is fired.
-Also, it's possible to fire an `AuthorizationGrantedEvent` for authorizations that are granted.
+권한 부여가 거부될 때마다 ``AuthorizationDeniedEvent``가 발생합니다.
+또한, 권한이 부여된 경우 ``AuthorizationGrantedEvent``를 발생시킬 수 있습니다.
 
-To listen for these events, you must first publish an `AuthorizationEventPublisher`.
+이러한 이벤트를 수신하려면 먼저 ``AuthorizationEventPublisher``를 등록해야 합니다.
 
-Spring Security's `SpringAuthorizationEventPublisher` will probably do fine.
-It comes publishes authorization events using Spring's `ApplicationEventPublisher`:
+Spring Security의 ``SpringAuthorizationEventPublisher``가 적합할 것입니다.
+이는 Spring의 ``ApplicationEventPublisher``를 사용하여 권한 부여 이벤트를 등록합니다.:
 
 [tabs]
 ======
@@ -34,7 +34,7 @@ fun authorizationEventPublisher
 ----
 ======
 
-Then, you can use Spring's `@EventListener` support:
+그런 다음 Spring의 `@EventListener` 지원을 사용할 수 있습니다:
 
 [tabs]
 ======
@@ -68,14 +68,14 @@ class AuthenticationEvents {
 ======
 
 [[authorization-granted-events]]
-== Authorization Granted Events
+== 권한 부여 승인 이벤트
 
-Because ``AuthorizationGrantedEvent``s have the potential to be quite noisy, they are not published by default.
+``AuthorizationGrantedEvent``는 불필요하게 많이 발생할 가능성이 때문에 기본적으로 등록되지 않습니다.
 
-In fact, publishing these events will likely require some business logic on your part to ensure that your application is not inundated with noisy authorization events.
+실제로, 이러한 이벤트를 등록하려면 애플리케이션이 불필요하게 많이 발생하는 권한 부여 이벤트로 인해 부담을 받지 않도록 하기 위해 일부 비즈니스 로직이 필요할 것입니다.
 
-You can create your own event publisher that filters success events.
-For example, the following publisher only publishes authorization grants where `ROLE_ADMIN` was required:
+성공 이벤트를 필터링하는 자체 이벤트 등록자를 만들 수 있습니다.
+예를 들어, 다음 등록자는 ``ROLE_ADMIN``이 필요한 권한 부여 승인만 등록합니다:
 
 [tabs]
 ======

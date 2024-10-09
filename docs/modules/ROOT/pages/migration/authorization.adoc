@@ -1,18 +1,18 @@
-= Authorization Changes
+= 권한 부여 변경 사항
 
-The following sections relate to how to adapt to changes in the authorization support.
+다음 섹션들은 권한 부여 지원의 변경 사항에 대응하는 방법과 관련이 있습니다.
 
-== Method Security
+== 메서드 보안
 
 [[compile-with-parameters]]
-=== Compile With `-parameters`
+=== ``-parameters``로 컴파일하기
 
-Spring Framework 6.1 https://github.com/spring-projects/spring-framework/issues/29559[removes LocalVariableTableParameterNameDiscoverer].
-This affects how `@PreAuthorize` and other xref:servlet/authorization/method-security.adoc[method security] annotations will process parameter names.
-If you are using method security annotations with parameter names, for example:
+Spring Framework 6.1은 https://github.com/spring-projects/spring-framework/issues/29559[LocalVariableTableParameterNameDiscoverer를 제거]했습니다.
+이는 ``@PreAuthorize``와 다른 xref:servlet/authorization/method-security.adoc[메서드 보안] 어노테이션이 매개변수 이름을 처리하는 방식에 영향을 미칩니다.
+만약 매개변수 이름을 사용하는 메서드 보안 어노테이션을 사용하고 있다면, 예를 들어:
 
 [source,java]
-.Method security annotation using `id` parameter name
+.`id` 매개변수 이름을 사용하는 메서드 보안 어노테이션
 ----
 @PreAuthorize("@authz.checkPermission(#id, authentication)")
 public void doSomething(Long id) {
@@ -20,5 +20,5 @@ public void doSomething(Long id) {
 }
 ----
 
-You must compile with `-parameters` to ensure that the parameter names are available at runtime.
-For more information about this, please visit the https://github.com/spring-projects/spring-framework/wiki/Upgrading-to-Spring-Framework-6.x#core-container[Upgrading to Spring Framework 6.1 page].
+반드시 `-parameters` 옵션을 사용하여 컴파일해야 합니다. 이는 런타임에 매개변수 이름을 사용할 수 있도록 보장합니다.
+이에 대한 자세한 정보는 https://github.com/spring-projects/spring-framework/wiki/Upgrading-to-Spring-Framework-6.x#core-container[Spring Framework 6.1로 업그레이드하기 페이지]를 참조하세요.

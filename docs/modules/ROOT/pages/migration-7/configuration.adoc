@@ -1,16 +1,16 @@
-= Configuration Migrations
+= 설정 마이그레이션
 
-The following steps relate to changes around how to configure `HttpSecurity`, `WebSecurity` and related components.
+다음 단계들은 `HttpSecurity`, `WebSecurity` 및 관련 컴포넌트의 설정 방식 변경과 관련된 내용입니다.
 
-== Use the Lambda DSL
+== Lambda DSL 사용하기
 
-The Lambda DSL is present in Spring Security since version 5.2, and it allows HTTP security to be configured using lambdas.
+Lambda DSL은 Spring Security 5.2 버전부터 도입되어 람다를 사용해 HTTP 보안을 설정할 수 있게 해줍니다.
 
-You may have seen this style of configuration in the Spring Security documentation or samples.
-Let us take a look at how a lambda configuration of HTTP security compares to the previous configuration style.
+Spring Security 문서나 샘플에서 이러한 설정 스타일을 보셨을 것입니다.
+HTTP 보안의 람다 설정이 이전 설정 스타일과 어떻게 다른지 살펴보겠습니다.
 
 [source,java]
-.Configuration using lambdas
+.람다를 사용한 설정
 ----
 @Configuration
 @EnableWebSecurity
@@ -35,7 +35,7 @@ public class SecurityConfig {
 ----
 
 [source,java]
-.Equivalent configuration without using lambdas
+.람다를 사용하지 않은 동일한 설정
 ----
 @Configuration
 @EnableWebSecurity
@@ -59,33 +59,33 @@ public class SecurityConfig {
 }
 ----
 
-The Lambda DSL is the preferred way to configure Spring Security, the prior configuration style will not be valid in Spring Security 7 where the usage of the Lambda DSL will be required.
-This has been done mainly for a couple of reasons:
+Lambda DSL은 Spring Security를 설정하는 권장 방식입니다. 이전 설정 스타일은 Spring Security 7에서는 유효하지 않을 것이며, Lambda DSL 사용이 필수가 될 것입니다.
+이는 주로 다음과 같은 이유로 결정되었습니다:
 
-- The previous way it was not clear what object was getting configured without knowing what the return type was.
-The deeper the nesting the more confusing it became.
-Even experienced users would think that their configuration was doing one thing when in fact, it was doing something else.
+- 이전 방식에서는 반환 타입을 알지 않고는 어떤 객체가 설정되고 있는지 명확하지 않았습니다.
+중첩이 깊어질수록 더욱 혼란스러워졌습니다.
+경험 많은 사용자조차도 자신의 설정이 실제로는 다른 동작을 하고 있음에도 불구하고 의도한 대로 동작한다고 생각하곤 했습니다.
 
-- Consistency.
-Many code bases switched between the two styles which caused inconsistencies that made understanding the configuration difficult and often led to misconfigurations.
+- 일관성.
+많은 코드베이스에서 두 스타일을 번갈아 사용하여 설정을 이해하기 어렵게 만들고 종종 잘못된 설정으로 이어졌습니다.
 
-=== Lambda DSL Configuration Tips
+=== Lambda DSL 설정 팁
 
-When comparing the two samples above, you will notice some key differences:
+위의 두 샘플을 비교해보면 몇 가지 주요 차이점을 알 수 있습니다:
 
-- In the Lambda DSL there is no need to chain configuration options using the `.and()` method.
-The `HttpSecurity` instance is automatically returned for further configuration after the call to the lambda method.
+- Lambda DSL에서는 ``.and()`` 메서드를 사용하여 설정 옵션을 연결할 필요가 없습니다.
+람다 메서드 호출 후 자동으로 `HttpSecurity` 인스턴스가 반환되어 추가 설정이 가능합니다.
 
-- `Customizer.withDefaults()` enables a security feature using the defaults provided by Spring Security.
-This is a shortcut for the lambda expression `it -> {}`.
+- ``Customizer.withDefaults()``는 Spring Security에서 제공하는 기본값을 사용하여 보안 기능을 활성화합니다.
+이는 람다 표현식 ``it -> {}``의 단축형입니다.
 
 === WebFlux Security
 
-You may also configure WebFlux security using lambdas in a similar manner.
-Below is an example configuration using lambdas.
+WebFlux Security도 비슷한 방식으로 람다를 사용하여 설정할 수 있습니다.
+아래는 람다를 사용한 설정 예시입니다.
 
 [source,java]
-.WebFlux configuration using lambdas
+.람다를 사용한 WebFlux 설정
 ----
 @Configuration
 @EnableWebFluxSecurity
@@ -109,17 +109,17 @@ public class SecurityConfig {
 }
 ----
 
-=== Goals of the Lambda DSL
+=== Lambda DSL의 목표
 
-The Lambda DSL was created to accomplish to following goals:
+Lambda DSL은 다음과 같은 목표를 달성하기 위해 만들어졌습니다:
 
-- Automatic indentation makes the configuration more readable.
-- There is no need to chain configuration options using `.and()`
-- The Spring Security DSL has a similar configuration style to other Spring DSLs such as Spring Integration and Spring Cloud Gateway.
+- 자동 들여쓰기로 설정의 가독성이 향상됩니다.
+- ``.and()``를 사용하여 설정 옵션을 연결할 필요가 없습니다.
+- Spring Security DSL은 Spring Integration 및 Spring Cloud Gateway와 같은 다른 Spring DSL과 유사한 설정 스타일을 가집니다.
 
-== Use `.with()` instead of `.apply()` for Custom DSLs
+== 커스텀 DSL에 `.apply()` 대신 `.with()` 사용하기
 
-In versions prior to 6.2, if you had a xref:servlet/configuration/java.adoc#jc-custom-dsls[custom DSL], you would apply it to the `HttpSecurity` using the `HttpSecurity#apply(...)` method.
-However, starting from version 6.2, this method is deprecated and will be removed in 7.0 because it will no longer be possible to chain configurations using `.and()` once `.and()` is removed (see https://github.com/spring-projects/spring-security/issues/13067).
-Instead, it is recommended to use the new `.with(...)` method.
-For more information about how to use `.with(...)` please refer to the xref:servlet/configuration/java.adoc#jc-custom-dsls[Custom DSLs section].
+6.2 버전 이전에는 xref:servlet/configuration/java.adoc#jc-custom-dsls[커스텀 DSL]이 있는 경우 `HttpSecurity#apply(...)` 메서드를 사용하여 ``HttpSecurity``에 적용했습니다.
+그러나 6.2 버전부터 이 메서드는 더 이상 사용되지 않으며 7.0에서는 제거될 예정입니다. 이는 ``.and()``가 제거되면 ``.and()``를 사용한 설정 연결이 더 이상 불가능해지기 때문입니다 (https://github.com/spring-projects/spring-security/issues/13067 참조).
+대신 새로운 ``.with(...)`` 메서드를 사용하는 것이 권장됩니다.
+``.with(...)``의 사용 방법에 대한 자세한 정보는 xref:servlet/configuration/java.adoc#jc-custom-dsls[커스텀 DSL 섹션]을 참조하세요.

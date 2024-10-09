@@ -1,12 +1,12 @@
 [[persistant]]
-= Persisting Authentication
+= 인증 유지하기
 :figures: servlet/authentication
 
-The first time a user requests a protected resource, they are xref:servlet/authentication/architecture.adoc#servlet-authentication-authenticationentrypoint[prompted for credentials].
-One of the most common ways to prompt for credentials is to redirect the user to a xref:servlet/authentication/passwords/form.adoc[log in page].
-A summarized HTTP exchange for an unauthenticated user requesting a protected resource might look like this:
+사용자가 처음으로 보호된 리소스를 요청할 때, xref:servlet/authentication/architecture.adoc#servlet-authentication-authenticationentrypoint[자격 증명을 입력하라는 메시지가 표시됩니다].
+자격 증명을 요청하는 가장 일반적인 방법 중 하나는 사용자를 xref:servlet/authentication/passwords/form.adoc[로그인 페이지]로 리다이렉트하는 것입니다.
+인증되지 않은 사용자가 보호된 리소스를 요청하는 HTTP 교환의 요약은 다음과 같을 수 있습니다:
 
-.Unauthenticated User Requests Protected Resource
+.인증되지 않은 사용자가 보호된 리소스 요청
 ====
 [source,http]
 ----
@@ -22,9 +22,9 @@ Location: /login
 ----
 ====
 
-The user submits their username and password.
+사용자가 사용자 이름과 비밀번호를 제출합니다.
 
-.Username and Password Submitted
+.사용자 이름과 비밀번호 제출
 [source,http]
 ----
 POST /login HTTP/1.1
@@ -34,9 +34,9 @@ Cookie: SESSION=91470ce0-3f3c-455b-b7ad-079b02290f7b
 username=user&password=password&_csrf=35942e65-a172-4cd4-a1d4-d16a51147b3e
 ----
 
-Upon authenticating the user, the user is associated to a new session id to prevent xref:servlet/authentication/session-management.adoc#ns-session-fixation[session fixation attacks].
+사용자 인증 후, xref:servlet/authentication/session-management.adoc#ns-session-fixation[세션 고정 공격]을 방지하기 위해 사용자는 새 세션 ID와 연결됩니다.
 
-.Authenticated User is Associated to New Session
+.인증된 사용자가 새 세션과 연결됨
 [source,http]
 ----
 HTTP/1.1 302 Found
@@ -44,9 +44,9 @@ Location: /
 Set-Cookie: SESSION=4c66e474-3f5a-43ed-8e48-cc1d8cb1d1c8; Path=/; HttpOnly; SameSite=Lax
 ----
 
-Subsequent requests include the session cookie which is used to authenticate the user for the remainder of the session.
+이후 요청에는 세션 쿠키가 포함되며, 이는 세션의 나머지 기간 동안 사용자를 인증하는 데 사용됩니다.
 
-.Authenticated Session Provided as Credentials
+.인증된 세션이 자격 증명으로 제공됨
 [source,http]
 ----
 GET / HTTP/1.1
@@ -54,13 +54,11 @@ Host: example.com
 Cookie: SESSION=4c66e474-3f5a-43ed-8e48-cc1d8cb1d1c8
 ----
 
-
 [[securitycontextrepository]]
 == SecurityContextRepository
 
-// FIXME: api documentation
-In Spring Security the association of the user to future requests is made using  {security-api-url}org/springframework/security/web/context/SecurityContextRepository.html[`SecurityContextRepository`].
-The default implementation of `SecurityContextRepository` is {security-api-url}org/springframework/security/web/context/DelegatingSecurityContextRepository.html[`DelegatingSecurityContextRepository`] which delegates to the following:
+Spring Security에서 사용자를 향후 요청과 연결하는 작업은 {security-api-url}org/springframework/security/web/context/SecurityContextRepository.html[`SecurityContextRepository`]를 사용하여 수행됩니다.
+``SecurityContextRepository``의 기본 구현은 {security-api-url}org/springframework/security/web/context/DelegatingSecurityContextRepository.html[`DelegatingSecurityContextRepository`]로, 다음 항목에 위임합니다:
 
 * <<httpsecuritycontextrepository,`HttpSessionSecurityContextRepository`>>
 * <<requestattributesecuritycontextrepository,`RequestAttributeSecurityContextRepository`>>
@@ -68,25 +66,25 @@ The default implementation of `SecurityContextRepository` is {security-api-url}o
 [[httpsecuritycontextrepository]]
 === HttpSessionSecurityContextRepository
 
-The {security-api-url}org/springframework/security/web/context/HttpSessionSecurityContextRepository.html[`HttpSessionSecurityContextRepository`] associates the xref:servlet/authentication/architecture.adoc#servlet-authentication-securitycontext[`SecurityContext`] to the `HttpSession`.
-Users can replace `HttpSessionSecurityContextRepository` with another implementation of `SecurityContextRepository` if they wish to associate the user with subsequent requests in another way or not at all.
+{security-api-url}org/springframework/security/web/context/HttpSessionSecurityContextRepository.html[`HttpSessionSecurityContextRepository`]는 xref:servlet/authentication/architecture.adoc#servlet-authentication-securitycontext[`SecurityContext`]를 ``HttpSession``과 연결합니다.
+사용자는 ``HttpSessionSecurityContextRepository``를 ``SecurityContextRepository``의 다른 구현으로 대체하여 사용자를 후속 요청과 다른 방식으로 연결하거나 전혀 연결하지 않을 수 있습니다.
 
 [[nullsecuritycontextrepository]]
 === NullSecurityContextRepository
 
-If it is not desirable to associate the `SecurityContext` to an `HttpSession` (i.e. when authenticating with OAuth) the {security-api-url}org/springframework/security/web/context/NullSecurityContextRepository.html[`NullSecurityContextRepository`] is an implementation of `SecurityContextRepository` that does nothing.
+``SecurityContext``를 ``HttpSession``과 연결하지 않으려는 경우(예: OAuth로 인증할 때) {security-api-url}org/springframework/security/web/context/NullSecurityContextRepository.html[`NullSecurityContextRepository`]는 아무 작업도 수행하지 않는 ``SecurityContextRepository``의 구현입니다.
 
 [[requestattributesecuritycontextrepository]]
 === RequestAttributeSecurityContextRepository
 
-The {security-api-url}org/springframework/security/web/context/RequestAttributeSecurityContextRepository.html[`RequestAttributeSecurityContextRepository`] saves the `SecurityContext` as a request attribute to make sure the `SecurityContext` is available for a single request that occurs across dispatch types that may clear out the `SecurityContext`.
+{security-api-url}org/springframework/security/web/context/RequestAttributeSecurityContextRepository.html[`RequestAttributeSecurityContextRepository`]는 ``SecurityContext``를 요청 속성으로 저장하여 ``SecurityContext``를 지울 수 있는 디스패치 유형에서 발생하는 단일 요청에 대해 ``SecurityContext``를 사용할 수 있도록 합니다.
 
-For example, assume that a client makes a request, is authenticated, and then an error occurs.
-Depending on the servlet container implementation, the error means that any `SecurityContext` that was established is cleared out and then the error dispatch is made.
-When the error dispatch is made, there is no `SecurityContext` established.
-This means that the error page cannot use the `SecurityContext` for authorization or displaying the current user unless the `SecurityContext` is persisted somehow.
+예를 들어, 클라이언트가 요청을 하고 인증된 후 오류가 발생한다고 가정해 보겠습니다.
+서블릿 컨테이너 구현에 따라 오류는 설정된 ``SecurityContext``가 지워지고 오류 디스패치가 이루어짐을 의미할 수 있습니다.
+오류 디스패치가 이루어질 때 설정된 ``SecurityContext``가 없습니다.
+이는 ``SecurityContext``가 어떤 방식으로든 유지되지 않는 한 오류 페이지에서 권한 부여나 현재 사용자 표시에 ``SecurityContext``를 사용할 수 없음을 의미합니다.
 
-.Use RequestAttributeSecurityContextRepository
+.RequestAttributeSecurityContextRepository 사용
 [tabs]
 ======
 Java::
@@ -118,11 +116,11 @@ XML::
 [[delegatingsecuritycontextrepository]]
 === DelegatingSecurityContextRepository
 
-The {security-api-url}org/springframework/security/web/context/DelegatingSecurityContextRepository.html[`DelegatingSecurityContextRepository`] saves the `SecurityContext` to multiple `SecurityContextRepository` delegates and allows retrieval from any of the delegates in a specified order.
+{security-api-url}org/springframework/security/web/context/DelegatingSecurityContextRepository.html[`DelegatingSecurityContextRepository`]는 ``SecurityContext``를 여러 `SecurityContextRepository` 대리자에게 저장하고 지정된 순서로 대리자 중 하나에서 검색할 수 있도록 합니다.
 
-The most useful arrangement for this is configured with the following example, which allows the use of both xref:requestattributesecuritycontextrepository[`RequestAttributeSecurityContextRepository`] and xref:httpsecuritycontextrepository[`HttpSessionSecurityContextRepository`] simultaneously.
+이에 대한 가장 유용한 구성은 다음 예시와 같이 xref:requestattributesecuritycontextrepository[`RequestAttributeSecurityContextRepository`]와 xref:httpsecuritycontextrepository[`HttpSessionSecurityContextRepository`]를 동시에 사용할 수 있도록 합니다.
 
-.Configure DelegatingSecurityContextRepository
+.DelegatingSecurityContextRepository 구성
 [tabs]
 ======
 Java::
@@ -183,43 +181,42 @@ XML::
 
 [NOTE]
 ====
-In Spring Security 6, the example shown above is the default configuration.
+Spring Security 6에서는 위에 표시된 예시가 기본 구성입니다.
 ====
 
 [[securitycontextpersistencefilter]]
 == SecurityContextPersistenceFilter
 
-The {security-api-url}org/springframework/security/web/context/SecurityContextPersistenceFilter.html[`SecurityContextPersistenceFilter`] is responsible for persisting the `SecurityContext` between requests using the xref::servlet/authentication/persistence.adoc#securitycontextrepository[`SecurityContextRepository`].
+{security-api-url}org/springframework/security/web/context/SecurityContextPersistenceFilter.html[`SecurityContextPersistenceFilter`]는 xref::servlet/authentication/persistence.adoc#securitycontextrepository[`SecurityContextRepository`]를 사용하여 요청 간에 ``SecurityContext``를 유지하는 역할을 합니다.
 
 image::{figures}/securitycontextpersistencefilter.png[]
 
-image:{icondir}/number_1.png[] Before running the rest of the application, `SecurityContextPersistenceFilter` loads the `SecurityContext` from the `SecurityContextRepository` and sets it on the `SecurityContextHolder`.
+image:{icondir}/number_1.png[] 애플리케이션의 나머지 부분을 실행하기 전에 ``SecurityContextPersistenceFilter``는 ``SecurityContextRepository``에서 ``SecurityContext``를 로드하여 ``SecurityContextHolder``에 설정합니다.
 
-image:{icondir}/number_2.png[] Next, the application is ran.
+image:{icondir}/number_2.png[] 다음으로 애플리케이션이 실행됩니다.
 
-image:{icondir}/number_3.png[] Finally, if the `SecurityContext` has changed, we save the `SecurityContext` using the `SecurityContextPersistenceRepository`.
-This means that when using `SecurityContextPersistenceFilter`, just setting the `SecurityContextHolder` will ensure that the `SecurityContext` is persisted using `SecurityContextRepository`.
+image:{icondir}/number_3.png[] 마지막으로 ``SecurityContext``가 변경된 경우 ``SecurityContextPersistenceRepository``를 사용하여 ``SecurityContext``를 저장합니다.
+이는 ``SecurityContextPersistenceFilter``를 사용할 때 ``SecurityContextHolder``를 설정하는 것만으로도 ``SecurityContextRepository``를 사용하여 ``SecurityContext``가 유지됨을 의미합니다.
 
-In some cases a response is committed and written to the client before the `SecurityContextPersistenceFilter` method completes.
-For example, if a redirect is sent to the client the response is immediately written back to the client.
-This means that establishing an `HttpSession` would not be possible in step 3 because the session id could not be included in the already written response.
-Another situation that can happen is that if a client authenticates successfully, the response is committed before `SecurityContextPersistenceFilter` completes, and the client makes a second request before the `SecurityContextPersistenceFilter` completes the wrong authentication could be present in the second request.
+일부 경우에는 ``SecurityContextPersistenceFilter`` 메서드가 완료되기 전에 응답이 확정되어 클라이언트에 기록됩니다.
+예를 들어, 클라이언트에 리다이렉트가 전송되면 응답이 즉시 클라이언트에 기록됩니다.
+이는 이미 작성된 응답에 세션 ID를 포함할 수 없기 때문에 3단계에서 ``HttpSession``을 설정하는 것이 불가능함을 의미합니다.
+또 다른 상황은 클라이언트가 성공적으로 인증하고 ``SecurityContextPersistenceFilter``가 완료되기 전에 응답이 확정되며, 클라이언트가 ``SecurityContextPersistenceFilter``가 완료되기 전에 두 번째 요청을 하면 두 번째 요청에 잘못된 인증이 존재할 수 있습니다.
 
-To avoid these problems, the `SecurityContextPersistenceFilter` wraps both the `HttpServletRequest` and the `HttpServletResponse` to detect if the `SecurityContext` has changed and if so save the `SecurityContext` just before the response is committed.
+이러한 문제를 피하기 위해 ``SecurityContextPersistenceFilter``는 ``HttpServletRequest``와 ``HttpServletResponse``를 모두 감싸서 ``SecurityContext``가 변경되었는지 감지하고, 변경된 경우 응답이 확정되기 직전에 ``SecurityContext``를 저장합니다.
 
 [[securitycontextholderfilter]]
 == SecurityContextHolderFilter
 
-The {security-api-url}org/springframework/security/web/context/SecurityContextHolderFilter.html[`SecurityContextHolderFilter`] is responsible for loading the `SecurityContext` between requests using the xref::servlet/authentication/persistence.adoc#securitycontextrepository[`SecurityContextRepository`].
+{security-api-url}org/springframework/security/web/context/SecurityContextHolderFilter.html[`SecurityContextHolderFilter`]는 xref::servlet/authentication/persistence.adoc#securitycontextrepository[`SecurityContextRepository`]를 사용하여 요청 간에 ``SecurityContext``를 로드하는 역할을 합니다.
 
 image::{figures}/securitycontextholderfilter.png[]
 
-image:{icondir}/number_1.png[] Before running the rest of the application, `SecurityContextHolderFilter` loads the `SecurityContext` from the `SecurityContextRepository` and sets it on the `SecurityContextHolder`.
+image:{icondir}/number_1.png[] 애플리케이션의 나머지 부분을 실행하기 전에 ``SecurityContextHolderFilter``는 ``SecurityContextRepository``에서 ``SecurityContext``를 로드하여 ``SecurityContextHolder``에 설정합니다.
 
-image:{icondir}/number_2.png[] Next, the application is ran.
+image:{icondir}/number_2.png[] 다음으로 애플리케이션이 실행됩니다.
 
-Unlike, xref:servlet/authentication/persistence.adoc#securitycontextpersistencefilter[`SecurityContextPersistenceFilter`], `SecurityContextHolderFilter` only loads the `SecurityContext` it does not save the `SecurityContext`.
-This means that when using `SecurityContextHolderFilter`, it is required that the `SecurityContext` is explicitly saved.
-
+xref:servlet/authentication/persistence.adoc#securitycontextpersistencefilter[`SecurityContextPersistenceFilter`]와 달리 ``SecurityContextHolderFilter``는 ``SecurityContext``를 로드만 하고 저장하지 않습니다.
+이는 ``SecurityContextHolderFilter``를 사용할 때 ``SecurityContext``를 명시적으로 저장해야 함을 의미합니다.
 
 include::partial$servlet/architecture/security-context-explicit.adoc[]

@@ -1,26 +1,25 @@
 [[crypto]]
-= Spring Security Crypto Module
+= Spring Security 암호화 모듈
 
 [[spring-security-crypto-introduction]]
-The Spring Security Crypto module provides support for symmetric encryption, key generation, and password encoding.
-The code is distributed as part of the core module but has no dependencies on any other Spring Security (or Spring) code.
-
+Spring Security Crypto 모듈은 대칭 암호화, 키 생성, 및 비밀번호 인코딩을 지원합니다.
+코드는 핵심 모듈의 일부로 배포되지만 다른 Spring Security(또는 Spring) 코드에 의존하지 않습니다.
 
 [[spring-security-crypto-encryption]]
-== Encryptors
-The {security-api-url}org/springframework/security/crypto/encrypt/Encryptors.html[`Encryptors`] class provides factory methods for constructing symmetric encryptors.
-This class lets you create {security-api-url}org/springframework/security/crypto/encrypt/BytesEncryptor.html[`BytesEncryptor`] instances to encrypt data in raw `byte[]` form.
-You can also construct {security-api-url}org/springframework/security/crypto/encrypt/TextEncryptor.html[TextEncryptor] instances to encrypt text strings.
-Encryptors are thread-safe.
+== 암호화기 (Encryptors)
+{security-api-url}org/springframework/security/crypto/encrypt/Encryptors.html[`Encryptors`] 클래스는 대칭 암호기를 구성하는 팩토리 메서드를 제공합니다.
+이 클래스는 원시 `byte[]` 형식의 데이터를 암호화하기 위해 {security-api-url}org/springframework/security/crypto/encrypt/BytesEncryptor.html[`BytesEncryptor`] 인스턴스를 생성할 수 있습니다.
+또한 텍스트 문자열을 암호화하기 위해 {security-api-url}org/springframework/security/crypto/encrypt/TextEncryptor.html[TextEncryptor] 인스턴스를 생성할 수 있습니다.
+암호화기는 쓰레드 안전합니다.
 
 [NOTE]
 ====
-Both `BytesEncryptor` and `TextEncryptor` are interfaces. `BytesEncryptor` has multiple implementations.
+``BytesEncryptor``와 ``TextEncryptor``는 인터페이스입니다. ``BytesEncryptor``는 여러 구현을 가지고 있습니다.
 ====
 
 [[spring-security-crypto-encryption-bytes]]
 === BytesEncryptor
-You can use the `Encryptors.stronger` factory method to construct a `BytesEncryptor`:
+`Encryptors.stronger` 팩토리 메서드를 사용하여 ``BytesEncryptor``를 생성할 수 있습니다:
 
 .BytesEncryptor
 [tabs]
@@ -40,43 +39,41 @@ Encryptors.stronger("password", "salt")
 ----
 ======
 
-The `stronger` encryption method creates an encryptor by using 256-bit AES encryption with
-Galois Counter Mode (GCM).
-It derives the secret key by using PKCS #5's PBKDF2 (Password-Based Key Derivation Function #2).
-This method requires Java 6.
-The password used to generate the `SecretKey` should be kept in a secure place and should not be shared.
-The salt is used to prevent dictionary attacks against the key in the event that your encrypted data is compromised.
-A 16-byte random initialization vector is also applied so that each encrypted message is unique.
+`stronger` 암호화 메서드는 256비트 AES 암호화를 Galois Counter Mode(GCM)로 사용하여 암호기를 생성합니다.
+이 메서드는 PKCS #5의 PBKDF2(비밀번호 기반 키 도출 함수 #2)를 사용하여 비밀 키를 도출합니다.
+이 메서드는 Java 6이 필요합니다.
+비밀 키를 생성하는 데 사용된 비밀번호는 안전한 장소에 보관되어야 하며, 공유하지 말아야 합니다.
+암호화된 데이터가 유출될 경우에 대비하여 키에 대한 사전 공격을 방지하기 위해 salt가 사용됩니다.
+각 암호화 메시지가 고유해지도록 16바이트의 임의 초기화 벡터도 적용됩니다.
 
-The provided salt should be in hex-encoded String form, be random, and be at least 8 bytes in length.
-You can generate such a salt by using a `KeyGenerator`:
+제공된 salt는 16진수 인코딩된 문자열 형식이어야 하며, 무작위적이고 최소 8바이트 길이여야 합니다.
+``KeyGenerator``를 사용하여 salt를 생성할 수 있습니다:
 
-.Generating a key
+.키 생성
 [tabs]
 ======
 Java::
 +
 [source,java,role="primary"]
 ----
-String salt = KeyGenerators.string().generateKey(); // generates a random 8-byte salt that is then hex-encoded
+String salt = KeyGenerators.string().generateKey(); // 무작위 8바이트 salt를 생성하고 이를 16진수로 인코딩합니다
 ----
 
 Kotlin::
 +
 [source,kotlin,role="secondary"]
 ----
-val salt = KeyGenerators.string().generateKey() // generates a random 8-byte salt that is then hex-encoded
+val salt = KeyGenerators.string().generateKey() // 무작위 8바이트 salt를 생성하고 이를 16진수로 인코딩합니다
 ----
 ======
 
-You can also use the `standard` encryption method, which is 256-bit AES in Cipher Block Chaining (CBC) Mode.
-This mode is not https://en.wikipedia.org/wiki/Authenticated_encryption[authenticated] and does not provide any
-guarantees about the authenticity of the data.
-For a more secure alternative, use `Encryptors.stronger`.
+인증되지 않은 표준 암호화 방식인 256비트 AES Cipher Block Chaining(CBC) 모드를 사용하는 `standard` 암호화 메서드를 사용할 수도 있습니다.
+이 모드는 https://en.wikipedia.org/wiki/Authenticated_encryption[인증된 암호화]가 아니며 데이터의 무결성을 보장하지 않습니다.
+더 안전한 대안을 위해서는 ``Encryptors.stronger``를 사용하세요.
 
 [[spring-security-crypto-encryption-text]]
 === TextEncryptor
-You can use the `Encryptors.text` factory method to construct a standard TextEncryptor:
+`Encryptors.text` 팩토리 메서드를 사용하여 표준 TextEncryptor를 생성할 수 있습니다:
 
 .TextEncryptor
 [tabs]
@@ -96,18 +93,18 @@ Encryptors.text("password", "salt")
 ----
 ======
 
-A `TextEncryptor` uses a standard `BytesEncryptor` to encrypt text data.
-Encrypted results are returned as hex-encoded strings for easy storage on the filesystem or in a database.
+``TextEncryptor``는 텍스트 데이터를 암호화하기 위해 표준 ``BytesEncryptor``를 사용합니다.
+암호화된 결과는 파일 시스템이나 데이터베이스에 쉽게 저장할 수 있도록 16진수로 인코딩된 문자열로 반환됩니다.
 
 [[spring-security-crypto-keygenerators]]
-== Key Generators
-The {security-api-url}org/springframework/security/crypto/keygen/KeyGenerators.html[`KeyGenerators`] class provides a number of convenience factory methods for constructing different types of key generators.
-By using this class, you can create a {security-api-url}org/springframework/security/crypto/keygen/BytesKeyGenerator.html[`BytesKeyGenerator`] to generate `byte[]` keys.
-You can also construct a {security-api-url}org/springframework/security/crypto/keygen/StringKeyGenerator.html`[StringKeyGenerator]` to generate string keys.
-`KeyGenerators` is a thread-safe class.
+== 키 생성기 (Key Generators)
+{security-api-url}org/springframework/security/crypto/keygen/KeyGenerators.html[`KeyGenerators`] 클래스는 다양한 키 생성기를 구성하기 위한 여러 편리한 팩토리 메서드를 제공합니다.
+이 클래스를 사용하여 `byte[]` 키를 생성하는 {security-api-url}org/springframework/security/crypto/keygen/BytesKeyGenerator.html[`BytesKeyGenerator`]를 생성할 수 있습니다.
+또한 문자열 키를 생성하는 {security-api-url}org/springframework/security/crypto/keygen/StringKeyGenerator.html[`StringKeyGenerator`]를 생성할 수 있습니다.
+``KeyGenerators``는 쓰레드 안전한 클래스입니다.
 
 === BytesKeyGenerator
-You can use the `KeyGenerators.secureRandom` factory methods to generate a `BytesKeyGenerator` backed by a `SecureRandom` instance:
+`SecureRandom` 인스턴스로 지원되는 ``BytesKeyGenerator``를 생성하기 위해 `KeyGenerators.secureRandom` 팩토리 메서드를 사용할 수 있습니다:
 
 .BytesKeyGenerator
 [tabs]
@@ -129,8 +126,8 @@ val key = generator.generateKey()
 ----
 ======
 
-The default key length is 8 bytes.
-A `KeyGenerators.secureRandom` variant provides control over the key length:
+기본 키 길이는 8바이트입니다.
+`KeyGenerators.secureRandom` 변형을 사용하여 키 길이를 조정할 수 있습니다:
 
 .KeyGenerators.secureRandom
 [tabs]
@@ -150,7 +147,7 @@ KeyGenerators.secureRandom(16)
 ----
 ======
 
-Use the `KeyGenerators.shared` factory method to construct a BytesKeyGenerator that always returns the same key on every invocation:
+매번 동일한 키를 반환하는 BytesKeyGenerator를 생성하려면 `KeyGenerators.shared` 팩토리 메서드를 사용하세요:
 
 .KeyGenerators.shared
 [tabs]
@@ -171,7 +168,7 @@ KeyGenerators.shared(16)
 ======
 
 === StringKeyGenerator
-You can use the `KeyGenerators.string` factory method to construct an 8-byte, `SecureRandom` `KeyGenerator` that hex-encodes each key as a `String`:
+`KeyGenerators.string` 팩토리 메서드를 사용하여 8바이트, `SecureRandom` ``KeyGenerator``를 생성하고 각 키를 문자열로 16진수 인코딩할 수 있습니다:
 
 .StringKeyGenerator
 [tabs]
@@ -192,9 +189,9 @@ KeyGenerators.string()
 ======
 
 [[spring-security-crypto-passwordencoders]]
-== Password Encoding
-The password package of the `spring-security-crypto` module provides support for encoding passwords.
-`PasswordEncoder` is the central service interface and has the following signature:
+== 비밀번호 인코딩 (Password Encoding)
+`spring-security-crypto` 모듈의 비밀번호 패키지는 비밀번호 인코딩을 지원합니다.
+``PasswordEncoder``는 중심 서비스 인터페이스로 다음과 같은 시그니처를 가집니다:
 
 [source,java]
 ----
@@ -209,16 +206,15 @@ public interface PasswordEncoder {
 }
 ----
 
-The `matches` method returns true if the `rawPassword`, once encoded, equals the `encodedPassword`.
-This method is designed to support password-based authentication schemes.
+`matches` 메서드는 ``rawPassword``를 인코딩한 결과가 ``encodedPassword``와 일치하면 true를 반환합니다.
+이 메서드는 비밀번호 기반 인증 스키마를 지원하도록 설계되었습니다.
 
-The `BCryptPasswordEncoder` implementation uses the widely supported "`bcrypt`" algorithm to hash the passwords.
-Bcrypt uses a random 16-byte salt value and is a deliberately slow algorithm, to hinder password crackers.
-You can tune the amount of work it does by using the `strength` parameter, which takes a value from 4 to 31.
-The higher the value, the more work has to be done to calculate the hash.
-The default value is `10`.
-You can change this value in your deployed system without affecting existing passwords, as the value is also stored in the encoded hash.
-The following example uses the `BCryptPasswordEncoder`:
+`BCryptPasswordEncoder` 구현은 널리 사용되는 "`bcrypt`" 알고리즘을 사용하여 비밀번호를 해싱합니다.
+Bcrypt는 16바이트의 무작위 salt 값을 사용하며, 의도적으로 느린 알고리즘으로 비밀번호 크래킹을 어렵게 만듭니다.
+`strength` 매개변수를 사용하여 계산 작업의 양을 조정할 수 있으며, 4에서 31까지의 값을 사용할 수 있습니다.
+값이 높을수록 해시를 계산하는 데 더 많은 작업이 필요합니다.
+기본값은 ``10``이며, 배포된 시스템에서 이 값을 변경해도 기존 비밀번호에는 영향을 미치지 않습니다. 이 값은 인코딩된 해시에도 저장됩니다.
+다음 예제는 ``BCryptPasswordEncoder``를 사용합니다:
 
 .BCryptPasswordEncoder
 [tabs]
@@ -227,8 +223,7 @@ Java::
 +
 [source,java,role="primary"]
 ----
-
-// Create an encoder with strength 16
+// 강도 16으로 인코더 생성
 BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
 String result = encoder.encode("myPassword");
 assertTrue(encoder.matches("myPassword", result));
@@ -238,18 +233,16 @@ Kotlin::
 +
 [source,kotlin,role="secondary"]
 ----
-
-// Create an encoder with strength 16
+// 강도 16으로 인코더 생성
 val encoder = BCryptPasswordEncoder(16)
 val result: String = encoder.encode("myPassword")
 assertTrue(encoder.matches("myPassword", result))
 ----
 ======
 
-The `Pbkdf2PasswordEncoder` implementation uses PBKDF2 algorithm to hash the passwords.
-To defeat password cracking, PBKDF2 is a deliberately slow algorithm and should be tuned to take about .5 seconds to verify a password on your system.
-The following system uses the `Pbkdf2PasswordEncoder`:
-
+`Pbkdf2PasswordEncoder` 구현은 PBKDF2 알고리즘을 사용하여 비밀번호를 해싱합니다.
+비밀번호 크래킹을 방지하기 위해 PBKDF2는 의도적으로 느린 알고리즘이며, 시스템에서 비밀번호를 확인하는 데 약 0.5초가 걸리도록 조정해야 합니다.
+다음 시스템은 ``Pbkdf2PasswordEncoder``를 사용합니다:
 
 .Pbkdf2PasswordEncoder
 [tabs]
@@ -258,7 +251,7 @@ Java::
 +
 [source,java,role="primary"]
 ----
-// Create an encoder with all the defaults
+// 모든 기본값을 사용하여 인코더 생성
 Pbkdf2PasswordEncoder encoder = Pbkdf2PasswordEncoder.defaultsForSpringSecurity_v5_8();
 String result = encoder.encode("myPassword");
 assertTrue(encoder.matches("myPassword", result));
@@ -268,7 +261,7 @@ Kotlin::
 +
 [source,kotlin,role="secondary"]
 ----
-// Create an encoder with all the defaults
+// 모든 기본값을 사용하여 인코더 생성
 val encoder = Pbkdf2PasswordEncoder.defaultsForSpringSecurity_v5_8()
 val result: String = encoder.encode("myPassword")
 assertTrue(encoder.matches("myPassword", result))

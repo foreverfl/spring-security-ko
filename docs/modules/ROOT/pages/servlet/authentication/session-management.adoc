@@ -1,92 +1,89 @@
 [[session-mgmt]]
-= Authentication Persistence and Session Management
+= 인증 유지 및 세션 관리
 
-Once you have got an application that is xref:servlet/authentication/index.adoc[authenticating requests], it is important to consider how that resulting authentication will be persisted and restored on future requests.
+애플리케이션이 xref:servlet/authentication/index.adoc[요청을 인증]하고 나면, 그 결과로 얻은 인증 정보를 어떻게 유지하고 향후 요청에서 복원할지 고려해야 합니다.
 
-This is done automatically by default, so no additional code is necessary, though it is important to know what `requireExplicitSave` means in `HttpSecurity`.
+이는 기본값으로 자동으로 처리되므로 추가 코드가 필요하지 않습니다. 하지만 ``HttpSecurity``에서 ``requireExplicitSave``가 무엇을 의미하는지 아는 것이 중요합니다.
 
-If you like, <<how-it-works-requireexplicitsave,you can read more about what requireExplicitSave is doing>> or <<requireexplicitsave,why it's important>>. Otherwise, in most cases you are done with this section.
+원한다면 <<how-it-works-requireexplicitsave,requireExplicitSave가 무엇을 하는지>> 또는 <<requireexplicitsave,왜 중요한지>>에 대해 더 자세히 읽어볼 수 있습니다. 그렇지 않다면 대부분의 경우 이 섹션을 마치셔도 됩니다.
 
-But before you leave, consider if any of these use cases fit your application:
+하지만 이 페이지를 벗어나기 전에 다음 사용 사례 중 애플리케이션에 해당하는 것이 있는지 고려해보세요:
 
-* I want to <<understanding-session-management-components,Understand Session Management's components>>
-* I want to <<ns-concurrent-sessions,restrict the number of times>> a user can be logged in concurrently
-* I want <<store-authentication-manually,to store the authentication directly>> myself instead of Spring Security doing it for me
-* I am storing the authentication manually and I want <<properly-clearing-authentication,to remove it>>
-* I am using <<the-sessionmanagementfilter, `SessionManagementFilter`>> and I need <<moving-away-from-sessionmanagementfilter,guidance on moving away from that>>
-* I want to store the authentication <<customizing-where-authentication-is-stored,in something other than the session>>
-* I am using a <<stateless-authentication, stateless authentication>>, but <<storing-stateless-authentication-in-the-session,I'd still like to store it in the session>>
-* I am using `SessionCreationPolicy.NEVER` but <<never-policy-session-still-created,the application is still creating sessions>>.
+* <<understanding-session-management-components,세션 관리 컴포넌트 이해하기>>
+* <<ns-concurrent-sessions,사용자가 동시에 로그인할 수 있는 횟수 제한하기>>
+* <<store-authentication-manually,인증 정보를 직접 저장하기>> (Spring Security가 대신 하지 않고)
+* 인증 정보를 수동으로 저장하고 있으며 <<properly-clearing-authentication,이를 제거하고 싶을 때>>
+* <<the-sessionmanagementfilter, `SessionManagementFilter`>>를 사용 중이며 <<moving-away-from-sessionmanagementfilter,이를 대체할 방법에 대한 가이드가 필요할 때>>
+* 인증 정보를 <<customizing-where-authentication-is-stored,세션 이외의 곳에 저장하고 싶을 때>>
+* <<stateless-authentication, 상태 비저장 인증>>을 사용하고 있지만 <<storing-stateless-authentication-in-the-session,여전히 세션에 저장하고 싶을 때>>
+* ``SessionCreationPolicy.NEVER``를 사용하고 있지만 <<never-policy-session-still-created,애플리케이션이 여전히 세션을 생성할 때>>.
 
 
 [[understanding-session-management-components]]
-== Understanding Session Management's Components
+== 세션 관리 컴포넌트 이해하기
 
-The Session Management support is composed of a few components that work together to provide the functionality.
-Those components are, xref:servlet/authentication/persistence.adoc#securitycontextholderfilter[the `SecurityContextHolderFilter`], xref:servlet/authentication/persistence.adoc#securitycontextpersistencefilter[the `SecurityContextPersistenceFilter`] and <<the-sessionmanagementfilter,the `SessionManagementFilter`>>.
+세션 관리 지원은 함께 작동하여 기능을 제공하는 몇 가지 컴포넌트로 구성됩니다.
+이 컴포넌트들은 xref:servlet/authentication/persistence.adoc#securitycontextholderfilter[`SecurityContextHolderFilter`], xref:servlet/authentication/persistence.adoc#securitycontextpersistencefilter[`SecurityContextPersistenceFilter`], <<the-sessionmanagementfilter,`SessionManagementFilter`>>입니다.
 
 [NOTE]
 =====
-In Spring Security 6, the `SecurityContextPersistenceFilter` and `SessionManagementFilter` are not set by default.
-In addition to that, any application should only have either `SecurityContextHolderFilter` or `SecurityContextPersistenceFilter` set, never both.
+Spring Security 6에서는 ``SecurityContextPersistenceFilter``와 ``SessionManagementFilter``가 기본값으로 설정되지 않습니다.
+또한 어떤 애플리케이션이든 ``SecurityContextHolderFilter`` 또는 ``SecurityContextPersistenceFilter`` 중 하나만 설정해야 하며, 둘 다 설정해서는 안 됩니다.
 =====
 
 [[the-sessionmanagementfilter]]
-=== The `SessionManagementFilter`
+=== `SessionManagementFilter`
 
-The `SessionManagementFilter` checks the contents of the `SecurityContextRepository` against the current contents of the `SecurityContextHolder` to determine whether a user has been authenticated during the current request, typically by a non-interactive authentication mechanism, such as pre-authentication or remember-me  footnote:[
-Authentication by mechanisms which perform a redirect after authenticating (such as form-login) will not be detected by `SessionManagementFilter`, as the filter will not be invoked during the authenticating request.
-Session-management functionality has to be handled separately in these cases.
+``SessionManagementFilter``는 ``SecurityContextRepository``의 내용을 ``SecurityContextHolder``의 현재 내용과 비교하여 현재 요청 중에 사용자가 인증되었는지 확인합니다. 이는 일반적으로 사전 인증이나 자동 로그인(remember-me)과 같은 비대화형 인증 메커니즘에 의해 이루어집니다 footnote:[
+폼 로그인과 같이 인증 후 리다이렉트를 수행하는 메커니즘에 의한 인증은 ``SessionManagementFilter``에 의해 감지되지 않습니다. 인증 요청 중에는 이 필터가 호출되지 않기 때문입니다.
+이러한 경우 세션 관리 기능은 별도로 처리해야 합니다.
 ].
-If the repository contains a security context, the filter does nothing.
-If it doesn't, and the thread-local `SecurityContext` contains a (non-anonymous) `Authentication` object, the filter assumes they have been authenticated by a previous filter in the stack.
-It will then invoke the configured `SessionAuthenticationStrategy`.
 
-If the user is not currently authenticated, the filter will check whether an invalid session ID has been requested (because of a timeout, for example) and will invoke the configured `InvalidSessionStrategy`, if one is set.
-The most common behaviour is just to redirect to a fixed URL and this is encapsulated in the standard implementation `SimpleRedirectInvalidSessionStrategy`.
-The latter is also used when configuring an invalid session URL through the namespace, <<session-mgmt,as described earlier>>.
+사용자가 현재 인증되지 않은 경우, 필터는 무효한 세션 ID가 요청되었는지 확인하고(예: 시간 초과로 인해) 구성된 ``InvalidSessionStrategy``가 설정되어 있으면 이를 호출합니다.
+가장 일반적인 동작은 고정 URL로 리다이렉트하는 것이며, 이는 표준 구현인 ``SimpleRedirectInvalidSessionStrategy``에 캡슐화되어 있습니다.
+후자는 <<session-mgmt,앞서 설명한 대로>> 네임스페이스를 통해 무효한 세션 URL을 구성할 때도 사용됩니다.
 
 [[moving-away-from-sessionmanagementfilter]]
-==== Moving Away From `SessionManagementFilter`
+==== ``SessionManagementFilter``에서 벗어나기
 
-In Spring Security 5, the default configuration relies on `SessionManagementFilter` to detect if a user just authenticated and invoke {security-api-url}org/springframework/security/web/authentication/session/SessionAuthenticationStrategy.html[the `SessionAuthenticationStrategy`].
-The problem with this is that it means that in a typical setup, the `HttpSession` must be read for every request.
+Spring Security 5에서는 기본 구성이 ``SessionManagementFilter``에 의존하여 사용자가 방금 인증했는지 감지하고 {security-api-url}org/springframework/security/web/authentication/session/SessionAuthenticationStrategy.html[`SessionAuthenticationStrategy`]를 호출합니다.
+이 방식의 문제점은 일반적인 설정에서 모든 요청에 대해 ``HttpSession``을 읽어야 한다는 것입니다.
 
-In Spring Security 6, the default is that authentication mechanisms themselves must invoke the `SessionAuthenticationStrategy`.
-This means that there is no need to detect when `Authentication` is done and thus the `HttpSession` does not need to be read for every request.
+Spring Security 6에서는 기본값으로 인증 메커니즘 자체가 ``SessionAuthenticationStrategy``를 호출해야 합니다.
+이는 ``Authentication``이 언제 수행되는지 감지할 필요가 없으므로 모든 요청에 대해 ``HttpSession``을 읽을 필요가 없음을 의미합니다.
 
-==== Things To Consider When Moving Away From `SessionManagementFilter`
+==== ``SessionManagementFilter``에서 벗어날 때 고려해야 할 사항
 
-In Spring Security 6, the `SessionManagementFilter` is not used by default, therefore, some methods from the `sessionManagement` DSL will not have any effect.
+Spring Security 6에서는 ``SessionManagementFilter``가 기본값으로 사용되지 않으므로 ``sessionManagement`` DSL의 일부 메서드는 아무 효과가 없습니다.
 
 |===
-|Method |Replacement
+|메서드 |대체 방법
 
 |`sessionAuthenticationErrorUrl`
-|Configure an {security-api-url}/org/springframework/security/web/authentication/AuthenticationFailureHandler.html[`AuthenticationFailureHandler`] in your authentication mechanism
+|인증 메커니즘에서 {security-api-url}/org/springframework/security/web/authentication/AuthenticationFailureHandler.html[`AuthenticationFailureHandler`] 구성
 
 |`sessionAuthenticationFailureHandler`
-|Configure an {security-api-url}/org/springframework/security/web/authentication/AuthenticationFailureHandler.html[`AuthenticationFailureHandler`] in your authentication mechanism
+|인증 메커니즘에서 {security-api-url}/org/springframework/security/web/authentication/AuthenticationFailureHandler.html[`AuthenticationFailureHandler`] 구성
 
 |`sessionAuthenticationStrategy`
-|Configure an `SessionAuthenticationStrategy` in your authentication mechanism as <<moving-away-from-sessionmanagementfilter,discussed above>>
+|인증 메커니즘에서 `SessionAuthenticationStrategy` 구성 (<<moving-away-from-sessionmanagementfilter,위에서 설명한 대로>>)
 |===
 
-If you try to use any of these methods, an exception will be thrown.
+이러한 메서드를 사용하려고 하면 예외가 발생합니다.
 
 
 [[customizing-where-authentication-is-stored]]
-== Customizing Where the Authentication Is Stored
+== 인증 정보 저장 위치 사용자 정의하기
 
-By default, Spring Security stores the security context for you in the HTTP session. However, here are several reasons you may want to customize that:
+기본값으로 Spring Security는 HTTP 세션에 보안 컨텍스트를 저장합니다. 그러나 다음과 같은 이유로 이를 사용자 정의하고 싶을 수 있습니다:
 
-* You may want to call individual setters on the `HttpSessionSecurityContextRepository` instance
-* You may want to store the security context in a cache or database to enable horizontal scaling
+* ``HttpSessionSecurityContextRepository`` 인스턴스의 개별 설정자를 호출하고 싶을 때
+* 수평 확장을 가능하게 하기 위해 보안 컨텍스트를 캐시나 데이터베이스에 저장하고 싶을 때
 
-First, you need to create an implementation of `SecurityContextRepository` or use an existing implementation like `HttpSessionSecurityContextRepository`, then you can set it in `HttpSecurity`.
+먼저 ``SecurityContextRepository``의 구현체를 만들거나 ``HttpSessionSecurityContextRepository``와 같은 기존 구현체를 사용해야 합니다. 그런 다음 ``HttpSecurity``에서 이를 설정할 수 있습니다.
 
 [[customizing-the-securitycontextrepository]]
-.Customizing the `SecurityContextRepository`
+.`SecurityContextRepository` 사용자 정의하기
 [tabs]
 ======
 Java::
@@ -135,18 +132,18 @@ XML::
 
 [NOTE]
 ====
-The above configuration sets the `SecurityContextRepository` on the `SecurityContextHolderFilter` and **participating** authentication filters, like `UsernamePasswordAuthenticationFilter`.
-To also set it in stateless filters, please see <<storing-stateless-authentication-in-the-session,how to customize the `SecurityContextRepository` for Stateless Authentication>>.
+위의 구성은 ``SecurityContextRepository``를 ``SecurityContextHolderFilter``와 ``UsernamePasswordAuthenticationFilter``와 같은 **참여하는** 인증 필터에 설정합니다.
+상태 비저장 필터에도 설정하려면 <<storing-stateless-authentication-in-the-session,상태 비저장 인증을 위한 `SecurityContextRepository` 사용자 정의 방법>>을 참조하세요.
 ====
 
-If you are using a custom authentication mechanism, you might want to <<store-authentication-manually,store the `Authentication` by yourself>>.
+사용자 정의 인증 메커니즘을 사용하는 경우 <<store-authentication-manually,직접 ``Authentication``을 저장>>하고 싶을 수 있습니다.
 
 [[store-authentication-manually]]
-=== Storing the `Authentication` manually
+=== `Authentication` 수동 저장하기
 
-In some cases, for example, you might be authenticating a user manually instead of relying on Spring Security filters.
-You can use a custom filters or a {spring-framework-reference-url}/web.html#mvc-controller[Spring MVC controller] endpoint to do that.
-If you want to save the authentication between requests, in the `HttpSession`, for example, you have to do so:
+경우에 따라 Spring Security 필터에 의존하지 않고 사용자를 수동으로 인증해야 할 수 있습니다.
+이를 위해 사용자 정의 필터나 {spring-framework-reference-url}/web.html#mvc-controller[Spring MVC 컨트롤러] 엔드포인트를 사용할 수 있습니다.
+인증 정보를 요청 간에 저장하려면 (예: ``HttpSession``에) 다음과 같이 해야 합니다:
 
 [tabs]
 ======
@@ -155,17 +152,17 @@ Java::
 [source,java,role="primary"]
 ----
 private SecurityContextRepository securityContextRepository =
-        new HttpSessionSecurityContextRepository(); <1>
+        new HttpSessionSecurityContextRepository(); // <1>
 
 @PostMapping("/login")
-public void login(@RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) { <2>
+public void login(@RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) { // <2>
     UsernamePasswordAuthenticationToken token = UsernamePasswordAuthenticationToken.unauthenticated(
-        loginRequest.getUsername(), loginRequest.getPassword()); <3>
-    Authentication authentication = authenticationManager.authenticate(token); <4>
+        loginRequest.getUsername(), loginRequest.getPassword()); // <3>
+    Authentication authentication = authenticationManager.authenticate(token); // <4>
     SecurityContext context = securityContextHolderStrategy.createEmptyContext();
-    context.setAuthentication(authentication); <5>
+    context.setAuthentication(authentication); // <5>
     securityContextHolderStrategy.setContext(context);
-    securityContextRepository.saveContext(context, request, response); <6>
+    securityContextRepository.saveContext(context, request, response); // <6>
 }
 
 class LoginRequest {
@@ -178,29 +175,28 @@ class LoginRequest {
 ----
 ======
 
-<1> Add the `SecurityContextRepository` to the controller
-<2> Inject the `HttpServletRequest` and `HttpServletResponse` to be able to save the `SecurityContext`
-<3> Create an unauthenticated `UsernamePasswordAuthenticationToken` using the provided credentials
-<4> Call `AuthenticationManager#authenticate` to authenticate the user
-<5> Create a `SecurityContext` and set the `Authentication` in it
-<6> Save the `SecurityContext` in the `SecurityContextRepository`
+<1> 컨트롤러에 `SecurityContextRepository` 추가
+<2> ``SecurityContext``를 저장할 수 있도록 ``HttpServletRequest``와 `HttpServletResponse` 주입
+<3> 제공된 자격 증명으로 인증되지 않은 `UsernamePasswordAuthenticationToken` 생성
+<4> 사용자를 인증하기 위해 `AuthenticationManager#authenticate` 호출
+<5> ``SecurityContext``를 생성하고 여기에 `Authentication` 설정
+<6> ``SecurityContextRepository``에 `SecurityContext` 저장
 
-And that's it.
-If you are not sure what `securityContextHolderStrategy` is in the above example, you can read more about it in the <<use-securitycontextholderstrategy, Using `SecurityContextStrategy` section>>.
+이렇게 하면 됩니다.
+위 예제에서 ``securityContextHolderStrategy``가 무엇인지 모르겠다면, <<use-securitycontextholderstrategy, `SecurityContextStrategy` 사용하기 섹션>>에서 자세히 알아볼 수 있습니다.
 
 [[properly-clearing-authentication]]
-=== Properly Clearing an Authentication
+=== 인증 정보 제대로 지우기
 
-If you are using Spring Security's xref:servlet/authentication/logout.adoc[Logout Support] then it handles a lot of stuff for you including clearing and saving the context.
-But, let's say you need to manually log users out of your app. In that case, you'll need to make sure you're xref:servlet/authentication/logout.adoc#creating-custom-logout-endpoint[clearing and saving the context properly].
+Spring Security의 xref:servlet/authentication/logout.adoc[로그아웃 지원]을 사용하고 있다면, 컨텍스트 지우기와 저장 등 많은 작업을 처리해줍니다.
+하지만 애플리케이션에서 수동으로 사용자를 로그아웃시켜야 한다고 가정해봅시다. 이 경우 xref:servlet/authentication/logout.adoc#creating-custom-logout-endpoint[컨텍스트를 제대로 지우고 저장]하고 있는지 확인해야 합니다.
 
 [[stateless-authentication]]
-=== Configuring Persistence for Stateless Authentication
+=== 상태 비저장 인증을 위한 지속성 구성
 
-Sometimes there is no need to create and maintain a `HttpSession` for example, to persist the authentication across requests.
-Some authentication mechanisms like xref:servlet/authentication/passwords/basic.adoc[HTTP Basic] are stateless and, therefore, re-authenticates the user on every request.
+때로는 ``HttpSession``을 생성하고 유지할 필요가 없는 경우가 있습니다. 예를 들어, xref:servlet/authentication/passwords/basic.adoc[HTTP 기본 인증]과 같은 일부 인증 메커니즘은 상태 비저장이며, 따라서 매 요청마다 사용자를 재인증합니다.
 
-If you do not wish to create sessions, you can use `SessionCreationPolicy.STATELESS`, like so:
+세션을 생성하지 않으려면 ``SessionCreationPolicy.STATELESS``를 사용할 수 있습니다:
 
 [tabs]
 ======
@@ -245,23 +241,22 @@ XML::
 ----
 ======
 
-The above configuration is <<customizing-where-authentication-is-stored, configuring the `SecurityContextRepository`>> to use a `NullSecurityContextRepository` and is also xref:servlet/architecture.adoc#requestcache-prevent-saved-request[preventing the request from being saved in the session].
+위의 구성은 <<customizing-where-authentication-is-stored, ``SecurityContextRepository``를 구성>>하여 ``NullSecurityContextRepository``를 사용하도록 하며, 또한 xref:servlet/architecture.adoc#requestcache-prevent-saved-request[요청이 세션에 저장되는 것을 방지]합니다.
 
 
 [[never-policy-session-still-created]]
-If you are using `SessionCreationPolicy.NEVER`, you might notice that the application is still creating a `HttpSession`.
-In most cases, this happens because the xref:servlet/architecture.adoc#savedrequests[request is saved in the session] for the authenticated resource to re-request after authentication is successful.
-To avoid that, please refer to xref:servlet/architecture.adoc#requestcache-prevent-saved-request[how to prevent the request of being saved] section.
+``SessionCreationPolicy.NEVER``를 사용하고 있는데도 애플리케이션이 여전히 ``HttpSession``을 생성하고 있다면, 대부분의 경우 이는 인증 성공 후 재요청을 위해 xref:servlet/architecture.adoc#savedrequests[인증된 리소스에 대한 요청이 세션에 저장]되기 때문입니다.
+이를 피하려면 xref:servlet/architecture.adoc#requestcache-prevent-saved-request[요청 저장 방지 방법] 섹션을 참조하세요.
 
 
 [[storing-stateless-authentication-in-the-session]]
-==== Storing Stateless Authentication in the Session
+==== 상태 비저장 인증을 세션에 저장하기
 
-If, for some reason, you are using a stateless authentication mechanism, but you still want to store the authentication in the session you can use the `HttpSessionSecurityContextRepository` instead of the `NullSecurityContextRepository`.
+어떤 이유로 상태 비저장 인증 메커니즘을 사용하지만 여전히 인증 정보를 세션에 저장하고 싶다면 ``NullSecurityContextRepository`` 대신 ``HttpSessionSecurityContextRepository``를 사용할 수 있습니다.
 
-For the xref:servlet/authentication/passwords/basic.adoc[HTTP Basic], you can add xref:servlet/configuration/java.adoc#post-processing-configured-objects[a `ObjectPostProcessor`] that changes the `SecurityContextRepository` used by the `BasicAuthenticationFilter`:
+xref:servlet/authentication/passwords/basic.adoc[HTTP 기본 인증]의 경우, xref:servlet/configuration/java.adoc#post-processing-configured-objects[`ObjectPostProcessor`]를 추가하여 ``BasicAuthenticationFilter``가 사용하는 ``SecurityContextRepository``를 변경할 수 있습니다:
 
-.Store HTTP Basic authentication in the `HttpSession`
+.HTTP 기본 인증을 ``HttpSession``에 저장하기
 [tabs]
 ======
 Java::
@@ -287,32 +282,32 @@ SecurityFilterChain web(HttpSecurity http) throws Exception {
 ----
 ======
 
-The above also applies to others authentication mechanisms, like xref:servlet/oauth2/resource-server/index.adoc[Bearer Token Authentication].
+위의 방법은 xref:servlet/oauth2/resource-server/index.adoc[Bearer 토큰 인증]과 같은 다른 인증 메커니즘에도 적용됩니다.
 
 
 [[requireexplicitsave]]
-== Understanding Require Explicit Save
+== 명시적 저장 요구 이해하기
 
-In Spring Security 5, the default behavior is for the xref:servlet/authentication/architecture.adoc#servlet-authentication-securitycontext[`SecurityContext`] to automatically be saved to the xref:servlet/authentication/persistence.adoc#securitycontextrepository[`SecurityContextRepository`] using the <<securitycontextpersistencefilter, `SecurityContextPersistenceFilter`>>.
-Saving must be done just prior to the `HttpServletResponse` being committed and just before `SecurityContextPersistenceFilter`.
-Unfortunately, automatic persistence of the `SecurityContext` can surprise users when it is done prior to the request completing (i.e. just prior to committing the `HttpServletResponse`).
-It also is complex to keep track of the state to determine if a save is necessary causing unnecessary writes to the `SecurityContextRepository` (i.e. `HttpSession`) at times.
+Spring Security 5에서는 xref:servlet/authentication/architecture.adoc#servlet-authentication-securitycontext[`SecurityContext`]가 자동으로 <<securitycontextpersistencefilter, `SecurityContextPersistenceFilter`>>를 사용하여 xref:servlet/authentication/persistence.adoc#securitycontextrepository[`SecurityContextRepository`]에 저장되는 것이 기본 동작입니다.
+저장은 ``HttpServletResponse``가 커밋되기 직전과 ``SecurityContextPersistenceFilter`` 직전에 수행되어야 합니다.
+안타깝게도, ``SecurityContext``의 자동 지속성은 요청이 완료되기 전(즉, ``HttpServletResponse``를 커밋하기 직전)에 수행될 때 사용자를 놀라게 할 수 있습니다.
+또한 저장이 필요한지 결정하기 위한 상태를 추적하는 것이 복잡하여 때때로 불필요하게 ``SecurityContextRepository``(즉, `HttpSession`)에 쓰기 작업이 발생합니다.
 
-For these reasons, the `SecurityContextPersistenceFilter` has been deprecated to be replaced with the `SecurityContextHolderFilter`.
-In Spring Security 6, the default behavior is that xref:servlet/authentication/persistence.adoc#securitycontextholderfilter[the `SecurityContextHolderFilter`] will only read the `SecurityContext` from  `SecurityContextRepository` and populate it in the `SecurityContextHolder`.
-Users now must explicitly save the `SecurityContext` with the `SecurityContextRepository` if they want the `SecurityContext` to persist between requests.
-This removes ambiguity and improves performance by only requiring writing to the `SecurityContextRepository` (i.e. `HttpSession`) when it is necessary.
+이러한 이유로, ``SecurityContextPersistenceFilter``는 ``SecurityContextHolderFilter``로 대체되기 위해 더 이상 사용되지 않습니다.
+Spring Security 6에서는 기본값으로 xref:servlet/authentication/persistence.adoc#securitycontextholderfilter[`SecurityContextHolderFilter`]가 ``SecurityContextRepository``에서 ``SecurityContext``를 읽어 ``SecurityContextHolder``에 채우기만 합니다.
+이제 사용자는 ``SecurityContext``를 ``SecurityContextRepository``와 함께 명시적으로 저장해야 요청 간에 ``SecurityContext``가 유지됩니다.
+이는 모호성을 제거하고 필요한 경우에만 ``SecurityContextRepository``(즉, `HttpSession`)에 쓰기 작업을 수행하여 성능을 향상시킵니다.
 
 [[how-it-works-requireexplicitsave]]
-=== How it works
+=== 작동 방식
 
-In summary, when `requireExplicitSave` is `true`, Spring Security sets up xref:servlet/authentication/persistence.adoc#securitycontextholderfilter[the `SecurityContextHolderFilter`] instead of xref:servlet/authentication/persistence.adoc#securitycontextpersistencefilter[the `SecurityContextPersistenceFilter`]
+요약하면, ``requireExplicitSave``가 ``true``일 때 Spring Security는 xref:servlet/authentication/persistence.adoc#securitycontextpersistencefilter[`SecurityContextPersistenceFilter`] 대신 xref:servlet/authentication/persistence.adoc#securitycontextholderfilter[`SecurityContextHolderFilter`]를 설정합니다.
 
 
 [[ns-concurrent-sessions]]
-== Configuring Concurrent Session Control
-If you wish to place constraints on a single user's ability to log in to your application, Spring Security supports this out of the box with the following simple additions.
-First, you need to add the following listener to your configuration to keep Spring Security updated about session lifecycle events:
+== 동시 세션 제어 구성하기
+단일 사용자의 애플리케이션 로그인 가능 여부에 제약을 두고 싶다면, Spring Security는 다음과 같은 간단한 추가로 이를 기본값으로 지원합니다.
+먼저 세션 수명 주기 이벤트에 대해 Spring Security를 업데이트하기 위해 다음 리스너를 구성에 추가해야 합니다:
 
 [tabs]
 ======
@@ -348,7 +343,7 @@ web.xml::
 ----
 ======
 
-Then add the following lines to your security configuration:
+그런 다음 보안 구성에 다음 줄을 추가하세요:
 
 [tabs]
 ======
@@ -397,9 +392,9 @@ XML::
 ======
 
 
-This will prevent a user from logging in multiple times - a second login will cause the first to be invalidated.
+이렇게 하면 사용자가 여러 번 로그인하는 것을 방지합니다. 두 번째 로그인은 첫 번째 로그인을 무효화합니다.
 
-Using Spring Boot, you can test the above configuration scenario the following way:
+Spring Boot를 사용하여 위의 구성 시나리오를 다음과 같이 테스트할 수 있습니다:
 
 [tabs]
 ======
@@ -427,7 +422,7 @@ public class MaximumSessionsTests {
 
         this.mvc.perform(formLogin()).andExpect(authenticated());
 
-        // first session is terminated by second login
+        // 첫 번째 세션은 두 번째 로그인에 의해 종료됨
         this.mvc.perform(get("/").session(firstLoginSession))
                 .andExpect(unauthenticated());
     }
@@ -436,9 +431,9 @@ public class MaximumSessionsTests {
 ----
 ======
 
-You can try it using the {gh-samples-url}/servlet/spring-boot/java/session-management/maximum-sessions[Maximum Sessions sample].
+{gh-samples-url}/servlet/spring-boot/java/session-management/maximum-sessions[최대 세션 샘플]을 사용하여 시도해볼 수 있습니다.
 
-It is also common that you would prefer to prevent a second login, in which case you can use:
+두 번째 로그인을 방지하고 싶은 경우도 일반적입니다. 이 경우 다음과 같이 사용할 수 있습니다:
 
 [tabs]
 ======
@@ -487,13 +482,12 @@ XML::
 ----
 ======
 
+그러면 두 번째 로그인이 거부됩니다.
+"거부"란 폼 기반 로그인이 사용되는 경우 사용자가 ``authentication-failure-url``로 보내진다는 의미입니다.
+두 번째 인증이 "remember-me"와 같은 다른 비대화형 메커니즘을 통해 이루어지는 경우, "unauthorized"(401) 오류가 클라이언트로 전송됩니다.
+대신 오류 페이지를 사용하려면 ``session-management`` 요소에 ``session-authentication-error-url`` 속성을 추가할 수 있습니다.
 
-The second login will then be rejected.
-By "rejected", we mean that the user will be sent to the `authentication-failure-url` if form-based login is being used.
-If the second authentication takes place through another non-interactive mechanism, such as "remember-me", an "unauthorized" (401) error will be sent to the client.
-If instead you want to use an error page, you can add the attribute `session-authentication-error-url` to the `session-management` element.
-
-Using Spring Boot, you can test the above configuration the following way:
+Spring Boot를 사용하여 위의 구성을 다음과 같이 테스트할 수 있습니다:
 
 [tabs]
 ======
@@ -519,10 +513,10 @@ public class MaximumSessionsPreventLoginTests {
         this.mvc.perform(get("/").session(firstLoginSession))
                 .andExpect(authenticated());
 
-        // second login is prevented
+        // 두 번째 로그인이 방지됨
         this.mvc.perform(formLogin()).andExpect(unauthenticated());
 
-        // first session is still valid
+        // 첫 번째 세션은 여전히 유효함
         this.mvc.perform(get("/").session(firstLoginSession))
                 .andExpect(authenticated());
     }
@@ -531,15 +525,15 @@ public class MaximumSessionsPreventLoginTests {
 ----
 ======
 
-If you are using a customized authentication filter for form-based login, then you have to configure concurrent session control support explicitly.
-You can try it using the {gh-samples-url}/servlet/spring-boot/java/session-management/maximum-sessions-prevent-login[Maximum Sessions Prevent Login sample].
+폼 기반 로그인에 대해 사용자 정의 인증 필터를 사용하는 경우 동시 세션 제어 지원을 명시적으로 구성해야 합니다.
+{gh-samples-url}/servlet/spring-boot/java/session-management/maximum-sessions-prevent-login[최대 세션 로그인 방지 샘플]을 사용하여 시도해볼 수 있습니다.
 
-== Detecting Timeouts
+== 시간 초과 감지하기
 
-Sessions expire on their own, and there is nothing that needs to be done to ensure that a security context gets removed.
-That said, Spring Security can detect when a session has expired and take specific actions that you indicate.
-For example, you may want to redirect to a specific endpoint when a user makes a request with an already-expired session.
-This is achieved through the `invalidSessionUrl` in `HttpSecurity`:
+세션은 자체적으로 만료되며, 보안 컨텍스트가 제거되도록 하기 위해 특별히 해야 할 일은 없습니다.
+그렇지만 Spring Security는 세션이 만료되었을 때를 감지하고 지정한 특정 작업을 수행할 수 있습니다.
+예를 들어, 사용자가 이미 만료된 세션으로 요청을 할 때 특정 엔드포인트로 리다이렉트하고 싶을 수 있습니다.
+이는 ``HttpSecurity``에서 ``invalidSessionUrl``을 통해 달성할 수 있습니다:
 
 [tabs]
 ======
@@ -583,14 +577,13 @@ XML::
 ----
 ======
 
-Note that if you use this mechanism to detect session timeouts, it may falsely report an error if the user logs out and then logs back in without closing the browser.
-This is because the session cookie is not cleared when you invalidate the session and will be resubmitted even if the user has logged out.
-If that is your case, you might want to <<clearing-session-cookie-on-logout,configure logout to clear the session cookie>>.
+이 메커니즘을 사용하여 세션 시간 초과를 감지하는 경우, 사용자가 브라우저를 닫지 않고 로그아웃한 후 다시 로그인하면 오류를 잘못 보고할 수 있습니다.
+이는 세션을 무효화할 때 세션 쿠키가 지워지지 않아 사용자가 로그아웃했더라도 다시 제출될 수 있기 때문입니다. 이런 경우라면 <<clearing-session-cookie-on-logout,로그아웃 시 세션 쿠키를 지우도록 구성>>하는 것이 좋습니다.
 
-=== Customizing the Invalid Session Strategy
+=== 유효하지 않은 세션 전략 사용자 정의하기
 
-The `invalidSessionUrl` is a convenience method for setting the `InvalidSessionStrategy` using the {security-api-url}/org/springframework/security/web/session/SimpleRedirectInvalidSessionStrategy.html[`SimpleRedirectInvalidSessionStrategy` implementation].
-If you want to customize the behavior, you can implement the {security-api-url}/org/springframework/security/web/session/InvalidSessionStrategy.html[`InvalidSessionStrategy`] interface and configure it using the `invalidSessionStrategy` method:
+``invalidSessionUrl``은 {security-api-url}/org/springframework/security/web/session/SimpleRedirectInvalidSessionStrategy.html[`SimpleRedirectInvalidSessionStrategy` 구현]을 사용하여 ``InvalidSessionStrategy``를 설정하는 편의 메서드입니다.
+동작을 사용자 정의하려면 {security-api-url}/org/springframework/security/web/session/InvalidSessionStrategy.html[`InvalidSessionStrategy`] 인터페이스를 구현하고 ``invalidSessionStrategy`` 메서드를 사용하여 구성할 수 있습니다:
 
 [tabs]
 ======
@@ -636,9 +629,9 @@ XML::
 ======
 
 [[clearing-session-cookie-on-logout]]
-== Clearing Session Cookies on Logout
+== 로그아웃 시 세션 쿠키 지우기
 
-You can explicitly delete the JSESSIONID cookie on logging out, for example by using the https://w3c.github.io/webappsec-clear-site-data/[`Clear-Site-Data` header] in the logout handler:
+로그아웃 시 JSESSIONID 쿠키를 명시적으로 삭제할 수 있습니다. 예를 들어 로그아웃 핸들러에서 https://w3c.github.io/webappsec-clear-site-data/[`Clear-Site-Data` 헤더]를 사용할 수 있습니다:
 
 [tabs]
 ======
@@ -692,9 +685,9 @@ XML::
 ----
 ======
 
-This has the advantage of being container agnostic and will work with any container that supports the `Clear-Site-Data` header.
+이 방법은 컨테이너에 구애받지 않으며 `Clear-Site-Data` 헤더를 지원하는 모든 컨테이너에서 작동한다는 장점이 있습니다.
 
-As an alternative, you can also use the following syntax in the logout handler:
+대안으로 로그아웃 핸들러에서 다음과 같은 구문을 사용할 수도 있습니다:
 
 [tabs]
 ======
@@ -737,12 +730,12 @@ XML::
 ----
 ======
 
-Unfortunately, this cannot be guaranteed to work with every servlet container, so you need to test it in your environment.
+안타깝게도 이 방법은 모든 서블릿 컨테이너에서 작동한다고 보장할 수 없으므로 사용 환경에서 테스트해 봐야 합니다.
 
 [NOTE]
 =====
-If you run your application behind a proxy, you may also be able to remove the session cookie by configuring the proxy server.
-For example, by using Apache HTTPD's `mod_headers`, the following directive deletes the `JSESSIONID` cookie by expiring it in the response to a logout request (assuming the application is deployed under the `/tutorial` path):
+애플리케이션을 프록시 뒤에서 실행하는 경우, 프록시 서버를 구성하여 세션 쿠키를 제거할 수도 있습니다.
+예를 들어, Apache HTTPD의 ``mod_headers``를 사용하면 다음 지시문으로 로그아웃 요청에 대한 응답에서 `JSESSIONID` 쿠키를 만료시켜 삭제할 수 있습니다(애플리케이션이 `/tutorial` 경로 아래에 배포되었다고 가정):
 =====
 
 [source,xml]
@@ -752,32 +745,25 @@ Header always set Set-Cookie "JSESSIONID=;Path=/tutorial;Expires=Thu, 01 Jan 197
 </LocationMatch>
 ----
 
-More details on the xref:servlet/exploits/headers.adoc#servlet-headers-clear-site-data[Clear Site Data] and xref:servlet/authentication/logout.adoc[Logout sections].
-
-
+xref:servlet/exploits/headers.adoc#servlet-headers-clear-site-data[Clear Site Data] 및 xref:servlet/authentication/logout.adoc[로그아웃 섹션]에서 더 자세한 내용을 확인할 수 있습니다.
 
 [[ns-session-fixation]]
-== Understanding Session Fixation Attack Protection
+== 세션 고정 공격 보호 이해하기
 
-https://en.wikipedia.org/wiki/Session_fixation[Session fixation] attacks are a potential risk where it is possible for a malicious attacker to create a session by accessing a site, then persuade another user to log in with the same session (by sending them a link containing the session identifier as a parameter, for example).
-Spring Security protects against this automatically by creating a new session or otherwise changing the session ID when a user logs in.
+https://en.wikipedia.org/wiki/Session_fixation[세션 고정] 공격은 악의적인 공격자가 사이트에 접근하여 세션을 생성한 다음, 다른 사용자가 동일한 세션으로 로그인하도록 유도하는(예: 세션 식별자를 파라미터로 포함한 링크를 보내는 등) 잠재적 위험입니다.
+Spring Security는 사용자가 로그인할 때 새 세션을 생성하거나 세션 ID를 변경하여 이를 자동으로 방지합니다.
 
-=== Configuring Session Fixation Protection
+=== 세션 고정 보호 구성하기
 
-You can control the strategy for Session Fixation Protection by choosing between three recommended options:
+세 가지 권장 옵션 중 하나를 선택하여 세션 고정 보호 전략을 제어할 수 있습니다:
 
-* `changeSessionId` - Do not create a new session.
-Instead, use the session fixation protection provided by the Servlet container (`HttpServletRequest#changeSessionId()`).
-This option is only available in Servlet 3.1 (Java EE 7) and newer containers.
-Specifying it in older containers will result in an exception.
-This is the default in Servlet 3.1 and newer containers.
+* `changeSessionId` - 새 세션을 생성하지 않습니다. 대신 서블릿 컨테이너가 제공하는 세션 고정 보호(`HttpServletRequest#changeSessionId()`)를 사용합니다. 이 옵션은 Servlet 3.1(Java EE 7) 이상의 컨테이너에서만 사용할 수 있습니다. 오래된 컨테이너에서 지정하면 예외가 발생합니다. Servlet 3.1 이상 컨테이너에서 기본값입니다.
 
-* `newSession` - Create a new "clean" session, without copying the existing session data (Spring Security-related attributes will still be copied).
+* `newSession` - 기존 세션 데이터를 복사하지 않고 새로운 "깨끗한" 세션을 생성합니다(Spring Security 관련 속성은 여전히 복사됩니다).
 
-* `migrateSession` - Create a new session and copy all existing session attributes to the new session.
-This is the default in Servlet 3.0 or older containers.
+* `migrateSession` - 새 세션을 생성하고 기존의 모든 세션 속성을 새 세션으로 복사합니다. Servlet 3.0 이하 컨테이너에서 기본값입니다.
 
-You can configure the session fixation protection by doing:
+다음과 같이 세션 고정 보호를 구성할 수 있습니다:
 
 [tabs]
 ======
@@ -824,17 +810,15 @@ XML::
 ----
 ======
 
-When session fixation protection occurs, it results in a `SessionFixationProtectionEvent` being published in the application context.
-If you use `changeSessionId`, this protection will __also__ result in any  ``jakarta.servlet.http.HttpSessionIdListener``s being notified, so use caution if your code listens for both events.
+세션 고정 보호가 발생하면 애플리케이션 컨텍스트에서 ``SessionFixationProtectionEvent``가 발행됩니다.
+``changeSessionId``를 사용하는 경우 이 보호는 ``jakarta.servlet.http.HttpSessionIdListener``에도 통지되므로, 두 이벤트 모두를 수신하는 코드가 있다면 주의해야 합니다.
 
-You can also set the session fixation protection to `none` to disable it, but this is not recommended as it leaves your application vulnerable.
-
-
+세션 고정 보호를 ``none``으로 설정하여 비활성화할 수도 있지만, 이는 애플리케이션을 취약하게 만들기 때문에 권장되지 않습니다.
 
 [[use-securitycontextholderstrategy]]
-== Using `SecurityContextHolderStrategy`
+== `SecurityContextHolderStrategy` 사용하기
 
-Consider the following block of code:
+다음 코드 블록을 고려해보세요:
 
 [tabs]
 ======
@@ -846,24 +830,24 @@ UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationTo
         loginRequest.getUsername(), loginRequest.getPassword());
 Authentication authentication = this.authenticationManager.authenticate(token);
 // ...
-SecurityContext context = SecurityContextHolder.createEmptyContext(); <1>
-context.setAuthentication(authentication); <2>
-SecurityContextHolder.setContext(context); <3>
+SecurityContext context = SecurityContextHolder.createEmptyContext(); // <1>
+context.setAuthentication(authentication); // <2>
+SecurityContextHolder.setContext(context); // <3>
 ----
 ======
 
-1. Creates an empty `SecurityContext` instance by accessing the `SecurityContextHolder` statically.
-2. Sets the `Authentication` object in the `SecurityContext` instance.
-3. Sets the `SecurityContext` instance in the `SecurityContextHolder` statically.
+1. ``SecurityContextHolder``를 정적으로 접근하여 빈 ``SecurityContext`` 인스턴스를 생성합니다.
+2. `SecurityContext` 인스턴스에 `Authentication` 객체를 설정합니다.
+3. ``SecurityContextHolder``에 `SecurityContext` 인스턴스를 정적으로 설정합니다.
 
-While the above code works fine, it can produce some undesired effects: when components access the `SecurityContext` statically through `SecurityContextHolder`, this can create race conditions when there are multiple application contexts that want to specify the `SecurityContextHolderStrategy`.
-This is because in `SecurityContextHolder` there is one strategy per classloader instead of one per application context.
+위 코드는 잘 작동하지만 원치 않는 부작용을 일으킬 수 있습니다: 여러 애플리케이션 컨텍스트가 ``SecurityContextHolderStrategy``를 지정하려고 할 때 컴포넌트가 ``SecurityContextHolder``를 통해 정적으로 ``SecurityContext``에 접근하면 경쟁 상태가 발생할 수 있습니다.
+이는 ``SecurityContextHolder``에 클래스로더당 하나의 전략만 있기 때문입니다.
 
-To address this, components can wire `SecurityContextHolderStrategy` from the application context.
-By default, they will still look up the strategy from `SecurityContextHolder`.
+이 문제를 해결하기 위해 컴포넌트는 애플리케이션 컨텍스트에서 ``SecurityContextHolderStrategy``를 주입받을 수 있습니다.
+기본값으로 여전히 ``SecurityContextHolder``에서 전략을 조회합니다.
 
-These changes are largely internal, but they present the opportunity for applications to autowire the `SecurityContextHolderStrategy` instead of accessing the `SecurityContext` statically.
-To do so, you should change the code to the following:
+이러한 변경은 대부분 내부적인 것이지만, 애플리케이션이 ``SecurityContext``에 정적으로 접근하는 대신 ``SecurityContextHolderStrategy``를 자동 주입할 수 있는 기회를 제공합니다.
+이를 위해 다음과 같이 코드를 변경해야 합니다:
 
 [tabs]
 ======
@@ -880,25 +864,25 @@ public class SomeClass {
                 loginRequest.getUsername(), loginRequest.getPassword());
         Authentication authentication = this.authenticationManager.authenticate(token);
         // ...
-        SecurityContext context = this.securityContextHolderStrategy.createEmptyContext(); <1>
-        context.setAuthentication(authentication); <2>
-        this.securityContextHolderStrategy.setContext(context); <3>
+        SecurityContext context = this.securityContextHolderStrategy.createEmptyContext(); // <1>
+        context.setAuthentication(authentication); // <2>
+        this.securityContextHolderStrategy.setContext(context); // <3>
     }
 
 }
 ----
 ======
 
-1. Creates an empty `SecurityContext` instance using the configured `SecurityContextHolderStrategy`.
-2. Sets the `Authentication` object in the `SecurityContext` instance.
-3. Sets the `SecurityContext` instance in the `SecurityContextHolderStrategy`.
+1. 구성된 ``SecurityContextHolderStrategy``를 사용하여 빈 ``SecurityContext`` 인스턴스를 생성합니다.
+2. ``SecurityContext`` 인스턴스에 ``Authentication`` 객체를 설정합니다.
+3. ``SecurityContextHolderStrategy``에 ``SecurityContext`` 인스턴스를 설정합니다.
 
 
 [[session-mgmt-force-session-creation]]
-== Forcing Eager Session Creation
+== 세션 생성 강제하기
 
-At times, it can be valuable to eagerly create sessions.
-This can be done by using the {security-api-url}org/springframework/security/web/session/ForceEagerSessionCreationFilter.html[`ForceEagerSessionCreationFilter`] which can be configured using:
+때로는 세션을 즉시 생성하는 것이 유용할 수 있습니다.
+이는 {security-api-url}org/springframework/security/web/session/ForceEagerSessionCreationFilter.html[`ForceEagerSessionCreationFilter`]를 사용하여 수행할 수 있으며, 다음과 같이 구성할 수 있습니다:
 
 [tabs]
 ======
@@ -941,8 +925,6 @@ XML::
 ----
 ======
 
+== 다음으로 읽을 내용
 
-
-== What to read next
-
-- Clustered sessions with https://docs.spring.io/spring-session/reference/index.html[Spring Session]
+- https://docs.spring.io/spring-session/reference/index.html[Spring Session을 사용한 클러스터된 세션]

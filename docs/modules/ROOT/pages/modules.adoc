@@ -1,83 +1,79 @@
-// FIXME: This might make sense in Getting Spring Security along with the artifact information
-
 [[modules]]
-= Project Modules and Dependencies
-In Spring Security 3.0, the codebase was sub-divided into separate jars which more clearly separate different functionality areas and third-party dependencies.
-If you use Maven to build your project, these are the modules you should add to your `pom.xml`.
-Even if you do not use Maven, we recommend that you consult the `pom.xml` files to get an idea of third-party dependencies and versions.
-Another good idea is to examine the libraries that are included in the sample applications.
+= 프로젝트 모듈 및 의존성
+Spring Security 3.0에서는 코드베이스가 다양한 기능 영역과 서드파티 의존성을 더 명확하게 분리하는 별도의 jar로 세분화되었습니다.
+Maven을 사용하여 프로젝트를 빌드하는 경우, ``pom.xml``에 추가해야 할 모듈들입니다.
+Maven을 사용하지 않더라도 서드파티 의존성과 버전에 대한 아이디어를 얻기 위해 `pom.xml` 파일을 참조하는 것이 좋습니다.
+또한 샘플 애플리케이션에 포함된 라이브러리를 살펴보는 것도 좋은 방법입니다.
 
-This section provides a reference of the modules in Spring Security and the additional dependencies that they require in order to function in a running application.
-We do not include dependencies that are used only when building or testing Spring Security itself.
-Nor do we include transitive dependencies that are required by external dependencies.
+이 섹션에서는 Spring Security의 모듈과 실행 중인 애플리케이션에서 기능하기 위해 필요한 추가 의존성에 대한 참조를 제공합니다.
+Spring Security 자체를 빌드하거나 테스트할 때만 사용되는 의존성은 포함하지 않습니다.
+또한 외부 의존성에 필요한 전이적 의존성도 포함하지 않습니다.
 
-The version of Spring required is listed on the project website, so the specific versions are omitted for Spring dependencies in the examples.
-Note that some of the dependencies listed as "`optional`" in the examples may still be required for other non-security functionality in a Spring application
-Also dependencies listed as "`optional`" may not actually be marked as such in the project's Maven POM files if they are used in most applications.
-They are "`optional`" only in the sense that you do not need them unless you use the specified functionality.
+Spring의 필수 버전은 프로젝트 웹사이트에 나열되어 있으므로 예제에서는 Spring 의존성의 특정 버전을 생략합니다.
+예제에서 "선택적"으로 표시된 일부 의존성은 Spring 애플리케이션의 다른 비보안 기능에 여전히 필요할 수 있습니다.
+또한 "선택적"으로 나열된 의존성이 대부분의 애플리케이션에서 사용되는 경우 프로젝트의 Maven POM 파일에 실제로 그렇게 표시되지 않을 수 있습니다.
+이들은 지정된 기능을 사용하지 않는 한 필요하지 않다는 의미에서만 "선택적"입니다.
 
-Where a module depends on another Spring Security module, the non-optional dependencies of the module it depends on are also assumed to be required and are not listed separately.
-
+모듈이 다른 Spring Security 모듈에 의존하는 경우, 의존하는 모듈의 필수 의존성도 필요한 것으로 간주되며 별도로 나열되지 않습니다.
 
 [[spring-security-core]]
-== Core -- `spring-security-core.jar`
-This module contains core authentication and access-control classes and interfaces, remoting support, and basic provisioning APIs.
-It is required by any application that uses Spring Security.
-It supports standalone applications, remote clients, method (service layer) security, and JDBC user provisioning.
-It contains the following top-level packages:
+== 코어 -- `spring-security-core.jar`
+이 모듈에는 핵심 인증 및 접근 제어 클래스와 인터페이스, 원격 지원, 기본 구성 API가 포함되어 있습니다.
+Spring Security를 사용하는 모든 애플리케이션에 필요합니다.
+독립 실행형 애플리케이션, 원격 클라이언트, 메서드(서비스 계층) 보안 및 JDBC 사용자 구성 지원합니다.
+다음과 같은 최상위 패키지를 포함합니다:
 
 * `org.springframework.security.core`
 * `org.springframework.security.access`
 * `org.springframework.security.authentication`
 * `org.springframework.security.provisioning`
 
-.Core Dependencies
+.코어 의존성
 |===
-| Dependency | Version | Description
+| 의존성 | 버전 | 설명
 
 | ehcache
 | 1.6.2
-| Required if the Ehcache-based user cache implementation is used (optional).
+| Ehcache 기반 사용자 캐시 구현을 사용하는 경우 필요합니다 (선택적).
 
 | spring-aop
 |
-| Method security is based on Spring AOP
+| 메서드 보안은 Spring AOP를 기반으로 합니다
 
 | spring-beans
 |
-| Required for Spring configuration
+| Spring 설정에 필요합니다
 
 | spring-expression
 |
-| Required for expression-based method security (optional)
+| 표현식 기반 메서드 보안에 필요합니다 (선택적)
 
 | spring-jdbc
 |
-| Required if using a database to store user data (optional).
+| 사용자 데이터를 저장하기 위해 데이터베이스를 사용하는 경우 필요합니다 (선택적).
 
 | spring-tx
 |
-| Required if using a database to store user data (optional).
+| 사용자 데이터를 저장하기 위해 데이터베이스를 사용하는 경우 필요합니다 (선택적).
 
 | aspectjrt
 | 1.6.10
-| Required if using AspectJ support (optional).
+| AspectJ 지원을 사용하는 경우 필요합니다 (선택적).
 
 | jsr250-api
 | 1.0
-| Required if you are using JSR-250 method-security annotations (optional).
+| JSR-250 메서드 보안 어노테이션을 사용하는 경우 필요합니다 (선택적).
 |===
-
 
 [[spring-security-remoting]]
-== Remoting -- `spring-security-remoting.jar`
-This module provides integration with Spring Remoting.
-You do not need this unless you are writing a remote client that uses Spring Remoting.
-The main package is `org.springframework.security.remoting`.
+== 원격 -- `spring-security-remoting.jar`
+이 모듈은 Spring Remoting과의 통합을 제공합니다.
+Spring Remoting을 사용하는 원격 클라이언트를 작성하지 않는 한 이 모듈은 필요하지 않습니다.
+주요 패키지는 ``org.springframework.security.remoting``입니다.
 
-.Remoting Dependencies
+.원격 의존성
 |===
-| Dependency | Version | Description
+| 의존성 | 버전 | 설명
 
 | spring-security-core
 |
@@ -85,19 +81,19 @@ The main package is `org.springframework.security.remoting`.
 
 | spring-web
 |
-| Required for clients which use HTTP remoting support.
+| HTTP 원격 지원을 사용하는 클라이언트에 필요합니다.
 |===
 
 [[spring-security-web]]
-== Web -- `spring-security-web.jar`
-This module contains filters and related web-security infrastructure code.
-It contains anything with a servlet API dependency.
-You need it if you require Spring Security web authentication services and URL-based access-control.
-The main package is `org.springframework.security.web`.
+== 웹 -- `spring-security-web.jar`
+이 모듈에는 필터 및 관련 웹 보안 인프라 코드가 포함되어 있습니다.
+서블릿 API 의존성이 있는 모든 것이 포함됩니다.
+Spring Security 웹 인증 서비스 및 URL 기반 접근 제어가 필요한 경우 이 모듈이 필요합니다.
+주요 패키지는 ``org.springframework.security.web``입니다.
 
-.Web Dependencies
+.웹 의존성
 |===
-| Dependency | Version | Description
+| 의존성 | 버전 | 설명
 
 | spring-security-core
 |
@@ -105,27 +101,27 @@ The main package is `org.springframework.security.web`.
 
 | spring-web
 |
-| Required for clients that use HTTP remoting support.
+| HTTP 원격 지원을 사용하는 클라이언트에 필요합니다.
 
 | spring-jdbc
 |
-| Required for a JDBC-based persistent remember-me token repository (optional).
+| JDBC 기반 영구 remember-me 토큰 저장소에 필요합니다 (선택적).
 
 | spring-tx
 |
-| Required by remember-me persistent token repository implementations (optional).
+| remember-me 영구 토큰 저장소 구현에 필요합니다 (선택적).
 |===
 
 [[spring-security-config]]
-== Config -- `spring-security-config.jar`
-This module contains the security namespace parsing code and Java configuration code.
-You need it if you use the Spring Security XML namespace for configuration or Spring Security's Java Configuration support.
-The main package is `org.springframework.security.config`.
-None of the classes are intended for direct use in an application.
+== 설정 -- `spring-security-config.jar`
+이 모듈에는 보안 네임스페이스 파싱 코드와 Java 설정 코드가 포함되어 있습니다.
+Spring Security XML 네임스페이스를 사용하여 설정하거나 Spring Security의 Java 설정 지원을 사용하는 경우 이 모듈이 필요합니다.
+주요 패키지는 ``org.springframework.security.config``입니다.
+클래스 중 어느 것도 애플리케이션에서 직접 사용하기 위한 것은 아닙니다.
 
-.Config Dependencies
+.설정 의존성
 |===
-| Dependency | Version | Description
+| 의존성 | 버전 | 설명
 
 | spring-security-core
 |
@@ -133,26 +129,26 @@ None of the classes are intended for direct use in an application.
 
 | spring-security-web
 |
-| Required if you are using any web-related namespace configuration (optional).
+| 웹 관련 네임스페이스 설정을 사용하는 경우 필요합니다 (선택적).
 
 | spring-security-ldap
 |
-| Required if you are using the LDAP namespace options (optional).
+| LDAP 네임스페이스 옵션을 사용하는 경우 필요합니다 (선택적).
 
 | aspectjweaver
 | 1.6.10
-| Required if using the protect-pointcut namespace syntax (optional).
+| protect-pointcut 네임스페이스 구문을 사용하는 경우 필요합니다 (선택적).
 |===
 
 [[spring-security-ldap]]
 == LDAP -- `spring-security-ldap.jar`
-This module provides LDAP authentication and provisioning code.
-It is required if you need to use LDAP authentication or manage LDAP user entries.
-The top-level package is `org.springframework.security.ldap`.
+이 모듈은 LDAP 인증 및 구성 코드를 제공합니다.
+LDAP 인증을 사용하거나 LDAP 사용자 항목을 관리해야 하는 경우 필요합니다.
+최상위 패키지는 ``org.springframework.security.ldap``입니다.
 
-.LDAP Dependencies
+.LDAP 의존성
 |===
-| Dependency | Version | Description
+| 의존성 | 버전 | 설명
 
 | spring-security-core
 |
@@ -160,71 +156,69 @@ The top-level package is `org.springframework.security.ldap`.
 
 | spring-ldap-core
 | 1.3.0
-| LDAP support is based on Spring LDAP.
+| LDAP 지원은 Spring LDAP을 기반으로 합니다.
 
 | spring-tx
 |
-| Data exception classes are required.
+| 데이터 예외 클래스가 필요합니다.
 
 | apache-ds
 | 1.5.5
-| Required if you are using an embedded LDAP server (optional). If you use `apache-ds`, the `apacheds-core`, `apacheds-core-entry`, `apacheds-protocol-shared`, `apacheds-protocol-ldap` and `apacheds-server-jndi` modules are required.
+| 내장 LDAP 서버를 사용하는 경우 필요합니다 (선택적). ``apache-ds``를 사용하는 경우 ``apacheds-core``, `apacheds-core-entry`, `apacheds-protocol-shared`, `apacheds-protocol-ldap` 및 `apacheds-server-jndi` 모듈이 필요합니다.
 
 | shared-ldap
 | 0.9.15
-| Required if you are using an embedded LDAP server (optional).
+| 내장 LDAP 서버를 사용하는 경우 필요합니다 (선택적).
 
 | ldapsdk
 | 4.1
 | Mozilla LdapSDK.
-Used for decoding LDAP password policy controls if you are using password-policy functionality with OpenLDAP, for example.
+예를 들어 OpenLDAP에서 비밀번호 정책 기능을 사용하는 경우 LDAP 비밀번호 정책 제어를 디코딩하는 데 사용됩니다.
 |===
 
 [[spring-security-oauth2-core]]
-== OAuth 2.0 Core -- `spring-security-oauth2-core.jar`
-`spring-security-oauth2-core.jar` contains core classes and interfaces that provide support for the OAuth 2.0 Authorization Framework and for OpenID Connect Core 1.0.
-It is required by applications that use OAuth 2.0 or OpenID Connect Core 1.0, such as client, resource server, and authorization server.
-The top-level package is `org.springframework.security.oauth2.core`.
-
+== OAuth 2.0 코어 -- `spring-security-oauth2-core.jar`
+``spring-security-oauth2-core.jar``에는 OAuth 2.0 인증 프레임워크 및 OpenID Connect Core 1.0에 대한 지원을 제공하는 핵심 클래스와 인터페이스가 포함되어 있습니다.
+클라이언트, 리소스 서버 및 인증 서버와 같이 OAuth 2.0 또는 OpenID Connect Core 1.0을 사용하는 애플리케이션에 필요합니다.
+최상위 패키지는 ``org.springframework.security.oauth2.core``입니다.
 
 [[spring-security-oauth2-client]]
-== OAuth 2.0 Client -- `spring-security-oauth2-client.jar`
-`spring-security-oauth2-client.jar` contains Spring Security's client support for OAuth 2.0 Authorization Framework and OpenID Connect Core 1.0.
-It is required by applications that use OAuth 2.0 or OpenID Connect Core 1.0, such as the client, the resource server, and the authorization server.
-The top-level package is `org.springframework.security.oauth2.core`.
-
+== OAuth 2.0 클라이언트 -- `spring-security-oauth2-client.jar`
+``spring-security-oauth2-client.jar``에는 OAuth 2.0 인증 프레임워크 및 OpenID Connect Core 1.0에 대한 Spring Security의 클라이언트 지원이 포함되어 있습니다.
+클라이언트, 리소스 서버 및 인증 서버와 같이 OAuth 2.0 또는 OpenID Connect Core 1.0을 사용하는 애플리케이션에 필요합니다.
+최상위 패키지는 ``org.springframework.security.oauth2.core``입니다.
 
 [[spring-security-oauth2-jose]]
 == OAuth 2.0 JOSE -- `spring-security-oauth2-jose.jar`
-`spring-security-oauth2-jose.jar` contains Spring Security's support for the JOSE (Javascript Object Signing and Encryption) framework.
-The JOSE framework is intended to provide a method to securely transfer claims between parties.
-It is built from a collection of specifications:
+``spring-security-oauth2-jose.jar``에는 JOSE (Javascript Object Signing and Encryption) 프레임워크에 대한 Spring Security의 지원이 포함되어 있습니다.
+JOSE 프레임워크는 당사자 간에 클레임을 안전하게 전송하는 방법을 제공하기 위한 것입니다.
+다음과 같은 사양 모음으로 구성되어 있습니다:
 
 * JSON Web Token (JWT)
 * JSON Web Signature (JWS)
 * JSON Web Encryption (JWE)
 * JSON Web Key (JWK)
 
-It contains the following top-level packages:
+다음과 같은 최상위 패키지를 포함합니다:
 
 * `org.springframework.security.oauth2.jwt`
 * `org.springframework.security.oauth2.jose`
 
 [[spring-security-oauth2-resource-server]]
-== OAuth 2.0 Resource Server -- `spring-security-oauth2-resource-server.jar`
-`spring-security-oauth2-resource-server.jar` contains Spring Security's support for OAuth 2.0 Resource Servers.
-It is used to protect APIs by using OAuth 2.0 Bearer Tokens.
-The top-level package is `org.springframework.security.oauth2.server.resource`.
+== OAuth 2.0 리소스 서버 -- `spring-security-oauth2-resource-server.jar`
+``spring-security-oauth2-resource-server.jar``에는 OAuth 2.0 리소스 서버에 대한 Spring Security의 지원이 포함되어 있습니다.
+OAuth 2.0 Bearer 토큰을 사용하여 API를 보호하는 데 사용됩니다.
+최상위 패키지는 ``org.springframework.security.oauth2.server.resource``입니다.
 
 [[spring-security-acl]]
 == ACL -- `spring-security-acl.jar`
-This module contains a specialized domain object ACL implementation.
-It is used to apply security to specific domain object instances within your application.
-The top-level package is `org.springframework.security.acls`.
+이 모듈에는 특수화된 도메인 객체 ACL 구현이 포함되어 있습니다.
+애플리케이션 내의 특정 도메인 객체 인스턴스에 보안을 적용하는 데 사용됩니다.
+최상위 패키지는 ``org.springframework.security.acls``입니다.
 
-.ACL Dependencies
+.ACL 의존성
 |===
-| Dependency | Version | Description
+| 의존성 | 버전 | 설명
 
 | spring-security-core
 |
@@ -232,26 +226,26 @@ The top-level package is `org.springframework.security.acls`.
 
 | ehcache
 | 1.6.2
-| Required if the Ehcache-based ACL cache implementation is used (optional if you use your own implementation).
+| Ehcache 기반 ACL 캐시 구현을 사용하는 경우 필요합니다 (자체 구현을 사용하는 경우 선택적).
 
 | spring-jdbc
 |
-| Required if you are using the default JDBC-based AclService (optional if you implement your own).
+| 기본 JDBC 기반 AclService를 사용하는 경우 필요합니다 (자체 구현을 하는 경우 선택적).
 
 | spring-tx
 |
-| Required if you are using the default JDBC-based AclService (optional if you implement your own).
+| 기본 JDBC 기반 AclService를 사용하는 경우 필요합니다 (자체 구현을 하는 경우 선택적).
 |===
 
 [[spring-security-cas]]
 == CAS -- `spring-security-cas.jar`
-This module contains Spring Security's CAS client integration.
-You should use it if you want to use Spring Security web authentication with a CAS single sign-on server.
-The top-level package is `org.springframework.security.cas`.
+이 모듈에는 Spring Security의 CAS 클라이언트 통합이 포함되어 있습니다.
+CAS 단일 로그온 서버와 함께 Spring Security 웹 인증을 사용하려는 경우 이 모듈을 사용해야 합니다.
+최상위 패키지는 ``org.springframework.security.cas``입니다.
 
-.CAS Dependencies
+.CAS 의존성
 |===
-| Dependency | Version | Description
+| 의존성 | 버전 | 설명
 
 | spring-security-core
 |
@@ -263,26 +257,25 @@ The top-level package is `org.springframework.security.cas`.
 
 | cas-client-core
 | 3.1.12
-| The JA-SIG CAS Client.
-This is the basis of the Spring Security integration.
+| JA-SIG CAS 클라이언트.
+이는 Spring Security 통합의 기반입니다.
 
 | ehcache
 | 1.6.2
-| Required if you are using the Ehcache-based ticket cache (optional).
+| Ehcache 기반 티켓 캐시를 사용하는 경우 필요합니다 (선택적).
 |===
-
 
 [[spring-security-test]]
-== Test -- `spring-security-test.jar`
-This module contains support for testing with Spring Security.
+== 테스트 -- `spring-security-test.jar`
+이 모듈에는 Spring Security를 사용한 테스트 지원이 포함되어 있습니다.
 
 [[spring-security-taglibs]]
-== Taglibs -- `spring-security-taglibs.jar`
-Provides Spring Security's JSP tag implementations.
+== 태그라이브러리 -- `spring-security-taglibs.jar`
+Spring Security의 JSP 태그 구현을 제공합니다.
 
-.Taglib Dependencies
+.태그라이브러리 의존성
 |===
-| Dependency | Version | Description
+| 의존성 | 버전 | 설명
 
 | spring-security-core
 |
@@ -294,9 +287,9 @@ Provides Spring Security's JSP tag implementations.
 
 | spring-security-acl
 |
-| Required if you are using the `accesscontrollist` tag or `hasPermission()` expressions with ACLs (optional).
+| `accesscontrollist` 태그나 ACL과 함께 `hasPermission()` 표현식을 사용하는 경우 필요합니다 (선택적).
 
 | spring-expression
 |
-| Required if you are using SPEL expressions in your tag access constraints.
+| 태그 접근 제약 조건에서 SPEL 표현식을 사용하는 경우 필요합니다.
 |===

@@ -1,10 +1,10 @@
 [[servlet-events]]
-= Authentication Events
+= 인증 이벤트
 
-For each authentication that succeeds or fails, a `AuthenticationSuccessEvent` or `AuthenticationFailureEvent`, respectively, is fired.
+각 인증이 성공하거나 실패할 때마다 각각 `AuthenticationSuccessEvent` 또는 ``AuthenticationFailureEvent``가 발생합니다.
 
-To listen for these events, you must first publish an `AuthenticationEventPublisher`.
-Spring Security's `DefaultAuthenticationEventPublisher` works fine for this purpose:
+이러한 이벤트를 수신하려면 먼저 ``AuthenticationEventPublisher``를 게시해야 합니다.
+Spring Security의 ``DefaultAuthenticationEventPublisher``는 이 목적에 적합합니다:
 
 [tabs]
 ======
@@ -31,7 +31,7 @@ fun authenticationEventPublisher
 ----
 ======
 
-Then you can use Spring's `@EventListener` support:
+그런 다음 Spring의 `@EventListener` 지원을 사용할 수 있습니다:
 
 [tabs]
 ======
@@ -72,14 +72,14 @@ class AuthenticationEvents {
 ----
 ======
 
-While similar to `AuthenticationSuccessHandler` and `AuthenticationFailureHandler`, these are nice in that they can be used independently from the servlet API.
+``AuthenticationSuccessHandler``와 ``AuthenticationFailureHandler``와 유사하지만, 이들은 서블릿 API와 독립적으로 사용할 수 있다는 점에서 유용합니다.
 
-== Adding Exception Mappings
+== 예외 매핑 추가하기
 
-By default, `DefaultAuthenticationEventPublisher` publishes an `AuthenticationFailureEvent` for the following events:
+기본적으로 ``DefaultAuthenticationEventPublisher``는 다음 이벤트에 대해 ``AuthenticationFailureEvent``를 발행합니다:
 
 |============
-| Exception | Event
+| 예외 | 이벤트
 | `BadCredentialsException` | `AuthenticationFailureBadCredentialsEvent`
 | `UsernameNotFoundException` | `AuthenticationFailureBadCredentialsEvent`
 | `AccountExpiredException` | `AuthenticationFailureExpiredEvent`
@@ -91,9 +91,9 @@ By default, `DefaultAuthenticationEventPublisher` publishes an `AuthenticationFa
 | `InvalidBearerTokenException` | `AuthenticationFailureBadCredentialsEvent`
 |============
 
-The publisher does an exact `Exception` match, which means that sub-classes of these exceptions do not also produce events.
+게시자는 정확한 `Exception` 일치를 수행하므로, 이러한 예외의 하위 클래스도 이벤트를 생성하지 않습니다.
 
-To that end, you may want to supply additional mappings to the publisher through the `setAdditionalExceptionMappings` method:
+이를 위해 `setAdditionalExceptionMappings` 메서드를 통해 게시자에게 추가 매핑을 제공할 수 있습니다:
 
 [tabs]
 ======
@@ -130,9 +130,9 @@ fun authenticationEventPublisher
 ----
 ======
 
-== Default Event
+== 기본 이벤트
 
-You can also supply a catch-all event to fire in the case of any `AuthenticationException`:
+모든 `AuthenticationException` 경우에 발생시킬 포괄적인 이벤트를 제공할 수도 있습니다:
 
 [tabs]
 ======

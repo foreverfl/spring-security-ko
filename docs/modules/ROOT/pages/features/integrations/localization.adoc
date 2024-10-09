@@ -1,16 +1,16 @@
 [[localization]]
-= Localization
-Spring Security supports localization of exception messages that end users are likely to see.
-If your application is designed for English-speaking users, you don't need to do anything as by default all Security messages are in English.
-If you need to support other locales, everything you need to know is contained in this section.
+= 지역화
+Spring Security는 최종 사용자가 볼 가능성이 높은 예외 메시지의 지역화를 지원합니다.
+애플리케이션이 영어 사용자를 위해 설계된 경우, 기본적으로 모든 보안 메시지가 영어로 되어 있으므로 추가 작업이 필요 없습니다.
+다른 로케일을 지원해야 한다면, 이 섹션에서 필요한 모든 정보를 찾을 수 있습니다.
 
-All exception messages can be localized, including messages related to authentication failures and access being denied (authorization failures).
-Exceptions and logging messages that are focused on developers or system deplopers (including incorrect attributes, interface contract violations, using incorrect constructors, startup time validation, debug-level logging) are not localized and instead are hard-coded in English within Spring Security's code.
+인증 실패와 접근 거부(권한 부여 실패)와 관련된 메시지를 포함한 모든 예외 메시지를 지역화할 수 있습니다.
+개발자나 시스템 배포자에 초점을 맞춘 예외 및 로깅 메시지(잘못된 속성, 인터페이스 계약 위반, 잘못된 생성자 사용, 시작 시간 검증, 디버그 수준 로깅 등)는 지역화되지 않으며 Spring Security 코드 내에서 영어로 하드코딩되어 있습니다.
 
-Shipping in the `spring-security-core-xx.jar` you will find an `org.springframework.security` package that in turn contains a `messages.properties` file, as well as localized versions for some common languages.
-This should be referred to by your `ApplicationContext`, as Spring Security classes implement Spring's `MessageSourceAware` interface and expect the message resolver to be dependency injected at application context startup time.
-Usually all you need to do is register a bean inside your application context to refer to the messages.
-An example is shown below:
+``spring-security-core-xx.jar``에는 `org.springframework.security` 패키지가 포함되어 있으며, 이 패키지 안에 `messages.properties` 파일과 일부 일반적인 언어에 대한 지역화된 버전이 있습니다.
+이는 ``ApplicationContext``에서 참조해야 합니다. Spring Security 클래스는 Spring의 `MessageSourceAware` 인터페이스를 구현하고 있어 애플리케이션 컨텍스트 시작 시 메시지 리졸버가 의존성 주입되기를 기대합니다.
+대개 애플리케이션 컨텍스트 내에 메시지를 참조하는 빈을 등록하기만 하면 됩니다.
+아래는 예시입니다:
 
 [source,xml]
 ----
@@ -20,17 +20,17 @@ An example is shown below:
 </bean>
 ----
 
-The `messages.properties` is named in accordance with standard resource bundles and represents the default language supported by Spring Security messages.
-This default file is in English.
+``messages.properties``는 표준 리소스 번들에 따라 이름이 지정되며 Spring Security 메시지가 지원하는 기본 언어를 나타냅니다.
+이 기본 파일은 영어로 되어 있습니다.
 
-If you wish to customize the `messages.properties` file, or support other languages, you should copy the file, rename it accordingly, and register it inside the above bean definition.
-There are not a large number of message keys inside this file, so localization should not be considered a major initiative.
-If you do perform localization of this file, please consider sharing your work with the community by logging a JIRA task and attaching your appropriately-named localized version of `messages.properties`.
+``messages.properties`` 파일을 사용자 정의하거나 다른 언어를 지원하려면 파일을 복사하여 적절히 이름을 바꾸고 위의 빈 정의에 등록해야 합니다.
+이 파일에는 많은 메시지 키가 없으므로 지역화는 주요 작업으로 간주되지 않습니다.
+이 파일을 지역화한다면 JIRA 태스크를 로깅하고 적절히 이름 지은 지역화된 `messages.properties` 버전을 첨부하여 커뮤니티와 작업을 공유하는 것을 고려해 보세요.
 
-Spring Security relies on Spring's localization support in order to actually lookup the appropriate message.
-In order for this to work, you have to make sure that the locale from the incoming request is stored in Spring's `org.springframework.context.i18n.LocaleContextHolder`.
-Spring MVC's `DispatcherServlet` does this for your application automatically, but since Spring Security's filters are invoked before this, the `LocaleContextHolder` needs to be set up to contain the correct `Locale` before the filters are called.
-You can either do this in a filter yourself (which must come before the Spring Security filters in `web.xml`) or you can use Spring's `RequestContextFilter`.
-Please refer to the Spring Framework documentation for further details on using localization with Spring.
+Spring Security는 실제 적절한 메시지를 찾기 위해 Spring의 지역화 지원에 의존합니다.
+이를 위해 들어오는 요청의 로케일이 Spring의 ``org.springframework.context.i18n.LocaleContextHolder``에 저장되어 있는지 확인해야 합니다.
+Spring MVC의 ``DispatcherServlet``이 이를 자동으로 수행하지만, Spring Security의 필터가 이보다 먼저 호출되므로 필터가 호출되기 전에 ``LocaleContextHolder``에 올바른 ``Locale``이 설정되어 있어야 합니다.
+이를 위해 직접 필터를 작성하거나(``web.xml``에서 Spring Security 필터 이전에 와야 함) Spring의 ``RequestContextFilter``를 사용할 수 있습니다.
+Spring과 함께 지역화를 사용하는 방법에 대한 자세한 내용은 Spring Framework 문서를 참조하세요.
 
-The "contacts" sample application is set up to use localized messages.
+"contacts" 샘플 애플리케이션은 지역화된 메시지를 사용하도록 설정되어 있습니다.

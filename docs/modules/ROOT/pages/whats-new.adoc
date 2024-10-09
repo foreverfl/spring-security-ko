@@ -1,26 +1,26 @@
 [[new]]
-= What's New in Spring Security 6.3
+= Spring Security 6.3의 새로운 기능
 
-Spring Security 6.3 provides a number of new features.
-Below are the highlights of the release, or you can view https://github.com/spring-projects/spring-security/releases[the release notes] for a detailed listing of each feature and bug fix.
+Spring Security 6.3은 다양한 새로운 기능을 제공합니다.
+아래는 이번 릴리스의 주요 내용입니다. 각 기능과 버그 수정에 대한 자세한 목록은 https://github.com/spring-projects/spring-security/releases[릴리스 노트]에서 확인할 수 있습니다.
 
-== Passive JDK Serialization Support
+== 수동적 JDK 직렬화 지원
 
-When it comes to its support for JDK-serialized security components, Spring Security has historically been quite aggressive, supporting each serialization version for only one Spring Security minor version.
-This meant that if you had JDK-serialized security components, then they would need to be evacuated before upgrading to the next Spring Security version since they would no longer be deserializable.
+Spring Security는 JDK 직렬화된 보안 컴포넌트에 대해 지금까지 꽤 공격적인 접근 방식을 취해왔습니다. 각 직렬화 버전을 오직 하나의 Spring Security 마이너 버전에서만 지원했습니다.
+이는 JDK 직렬화된 보안 컴포넌트를 사용하고 있다면, 다음 Spring Security 버전으로 업그레이드하기 전에 이들을 제거해야 한다는 것을 의미했습니다. 더 이상 역직렬화가 불가능해지기 때문입니다.
 
-Now that Spring Security performs a minor release every six months, this became a much larger pain point.
-To address that, Spring Security now will https://spring.io/blog/2024/01/19/spring-security-6-3-adds-passive-jdk-serialization-deserialization-for[maintain passivity with JDK serialization], like it does with JSON serialization, making for more seamless upgrades.
+이제 Spring Security가 6개월마다 마이너 릴리스를 수행하면서 이 문제가 더 큰 골치거리가 되었습니다.
+이를 해결하기 위해 Spring Security는 이제 JSON 직렬화와 마찬가지로 https://spring.io/blog/2024/01/19/spring-security-6-3-adds-passive-jdk-serialization-deserialization-for[JDK 직렬화에 대해 수동적 접근 방식을 유지]할 것입니다. 이로 인해 더 원활한 업그레이드가 가능해집니다.
 
-== Authorization
+== 권한 부여
 
-An ongoing theme for the last several releases has been to refactor and improve Spring Security's authorization subsystem.
-Starting with replacing the `AccessDecisionManager` API with `AuthorizationManager` it's now come to the point where we are able to add several exciting new features.
+최근 몇 번의 릴리스에서 지속적으로 다뤄온 주제는 Spring Security의 권한 부여 서브시스템을 리팩토링하고 개선하는 것이었습니다.
+`AccessDecisionManager` API를 ``AuthorizationManager``로 대체하는 것으로 시작해, 이제는 몇 가지 흥미로운 새로운 기능을 추가할 수 있는 단계에 이르렀습니다.
 
-=== Annotation Parameters - https://github.com/spring-projects/spring-security/issues/14480[#14480]
+=== 어노테이션 매개변수 - https://github.com/spring-projects/spring-security/issues/14480[#14480]
 
-The first 6.3 feature is https://github.com/spring-projects/spring-security/issues/14480[support for annotation parameters].
-Consider Spring Security's support for xref:servlet/authorization/method-security.adoc#meta-annotations[meta-annotations] like this one:
+6.3의 첫 번째 기능은 https://github.com/spring-projects/spring-security/issues/14480[어노테이션 매개변수 지원]입니다.
+Spring Security의 xref:servlet/authorization/method-security.adoc#meta-annotations[메타 어노테이션] 지원을 고려해 보세요. 다음과 같은 예시가 있습니다:
 
 [tabs]
 ======
@@ -36,7 +36,6 @@ public @interface HasMessageRead {}
 
 Kotlin::
 +
-.Kotlin
 [source,kotlin,role="secondary"]
 ----
 @Retention(RetentionPolicy.RUNTIME)
@@ -46,8 +45,8 @@ annotation class HasMessageRead
 ----
 ======
 
-Before this release, something like this is only helpful when it is used widely across the codebase.
-But now, xref:servlet/authorization/method-security.adoc#_templating_meta_annotation_expressions[you can add parameters] like so:
+이 릴리스 이전에는 이런 방식이 코드베이스 전체에서 광범위하게 사용될 때만 유용했습니다.
+하지만 이제는 xref:servlet/authorization/method-security.adoc#_templating_meta_annotation_expressions[매개변수를 추가]할 수 있게 되었습니다:
 
 [tabs]
 ======
@@ -74,7 +73,7 @@ annotation class HasScope (val scope:String)
 ----
 ======
 
-making it possible to do things like this:
+이를 통해 다음과 같은 방식으로 사용할 수 있게 되었습니다:
 
 [tabs]
 ======
@@ -95,16 +94,16 @@ fun method(): String { ... }
 ----
 ======
 
-and apply your SpEL expression in several more places.
+이렇게 하면 SpEL 표현식을 더 많은 곳에 적용할 수 있게 됩니다.
 
-=== Secure Return Values - https://github.com/spring-projects/spring-security/issues/14596[#14596], https://github.com/spring-projects/spring-security/issues/14597[#14597]
+=== 반환 값 보안 - https://github.com/spring-projects/spring-security/issues/14596[#14596], https://github.com/spring-projects/spring-security/issues/14597[#14597]
 
-Since the early days of Spring Security, you've been able to xref:servlet/authorization/method-security.adoc#use-preauthorize[annotate Spring beans with `@PreAuthorize` and `@PostAuthorize`].
-But controllers, services, and repositories are not the only things you care to secure.
-For example, what about a domain object `Order` where only admins should be able to call the `Order#getPayment` method?
+Spring Security의 초기부터 xref:servlet/authorization/method-security.adoc#use-preauthorize[Spring 빈에 ``@PreAuthorize``와 ``@PostAuthorize``를 어노테이션으로 추가]할 수 있었습니다.
+하지만 컨트롤러, 서비스, 리포지토리만이 보안을 적용하고 싶은 대상은 아닙니다.
+예를 들어, 관리자만 `Order#getPayment` 메서드를 호출할 수 있어야 하는 `Order` 도메인 객체는 어떨까요?
 
-Now in 6.3, https://github.com/spring-projects/spring-security/issues/14597[you can annotate those methods], too.
-First, annotate the `getPayment` method like you would a Spring bean:
+이제 6.3에서는 https://github.com/spring-projects/spring-security/issues/14597[이러한 메서드에도 어노테이션을 추가]할 수 있습니다.
+먼저 Spring 빈에 하듯이 `getPayment` 메서드에 어노테이션을 추가합니다:
 
 [tabs]
 ======
@@ -133,7 +132,7 @@ class Order {
 ----
 ======
 
-And then xref:servlet/authorization/method-security.adoc#authorize-object[annotate your Spring Data repository with `@AuthorizeReturnObject`] like so:
+그리고 나서 xref:servlet/authorization/method-security.adoc#authorize-object[Spring Data 리포지토리에 ``@AuthorizeReturnObject``를 어노테이션으로 추가]합니다:
 
 [tabs]
 ======
@@ -161,13 +160,13 @@ interface OrderRepository : CrudRepository<Order, String> {
 ----
 ======
 
-At that point, Spring Security will protect any `Order` returned from `findOrderById` by way of https://github.com/spring-projects/spring-security/issues/14596[proxying the `Order` instance].
+이 시점에서 Spring Security는 https://github.com/spring-projects/spring-security/issues/14596[`Order` 인스턴스를 프록시하는 방식]으로 ``findOrderById``에서 반환된 모든 ``Order``를 보호합니다.
 
-=== Error Handling - https://github.com/spring-projects/spring-security/issues/14598[#14598], https://github.com/spring-projects/spring-security/issues/14600[#14600], https://github.com/spring-projects/spring-security/issues/14601[#14601]
+=== 오류 처리 - https://github.com/spring-projects/spring-security/issues/14598[#14598], https://github.com/spring-projects/spring-security/issues/14600[#14600], https://github.com/spring-projects/spring-security/issues/14601[#14601]
 
-In this release, you can also https://github.com/spring-projects/spring-security/issues/14601[intercept and handle failure at the method level] with its last new method security annotation.
+이번 릴리스에서는 새로운 메서드 보안 어노테이션을 통해 https://github.com/spring-projects/spring-security/issues/14601[메서드 레벨에서 실패를 가로채고 처리]할 수 있습니다.
 
-When you xref:servlet/authorization/method-security.adoc#fallback-values-authorization-denied[annotate a method with `@HandleAuthorizationDenied`] like so:
+xref:servlet/authorization/method-security.adoc#fallback-values-authorization-denied[메서드에 `@HandleAuthorizationDenied` 어노테이션을 추가]하면 다음과 같이 사용할 수 있습니다:
 
 [tabs]
 ======
@@ -194,7 +193,7 @@ class Payment {
 ----
 ======
 
-and publish a `Mask` bean:
+그리고 `Mask` 빈을 등록합니다:
 
 [tabs]
 ======
@@ -222,14 +221,14 @@ class Mask : MethodAuthorizationDeniedHandler {
 ----
 ======
 
-then any unauthorized call to `Payment#getCreditCardNumber` will return `\***` instead of the number.
+이렇게 하면 권한이 없는 `Payment#getCreditCardNumber` 호출은 번호 대신 ``***``를 반환합니다.
 
-You can see all these features at work together in https://github.com/spring-projects/spring-security-samples/tree/main/servlet/spring-boot/java/data[the latest Spring Security Data sample].
+이 모든 기능이 함께 작동하는 것을 https://github.com/spring-projects/spring-security-samples/tree/main/servlet/spring-boot/java/data[최신 Spring Security Data 샘플]에서 확인할 수 있습니다.
 
-== Compromised Password Checking - https://github.com/spring-projects/spring-security/issues/7395[#7395]
+== 손상된 비밀번호 확인 - https://github.com/spring-projects/spring-security/issues/7395[#7395]
 
-If you are going to let users pick passwords, it's critical to ensure that such a password isn't already compromised.
-Spring Security 6.3 makes this as simple as xref:features/authentication/password-storage.adoc#authentication-compromised-password-check[publishing a `CompromisedPasswordChecker` bean]:
+사용자가 비밀번호를 선택하도록 허용한다면, 그 비밀번호가 이미 손상되지 않았는지 확인하는 것이 매우 중요합니다.
+Spring Security 6.3에서는 xref:features/authentication/password-storage.adoc#authentication-compromised-password-check[`CompromisedPasswordChecker` 빈을 게시]하는 것만으로 이를 간단히 구현할 수 있습니다:
 
 [tabs]
 ======
@@ -252,19 +251,18 @@ fun compromisedPasswordChecker(): CompromisedPasswordChecker = HaveIBeenPwnedRes
 ----
 ======
 
-== `spring-security-rsa` is now part of Spring Security - https://github.com/spring-projects/spring-security/issues/14202[#14202]
+== ``spring-security-rsa``가 이제 Spring Security의 일부가 됨 - https://github.com/spring-projects/spring-security/issues/14202[#14202]
 
-Since 2017, Spring Security has been undergoing a long-standing initiative to fold various Spring Security extensions into Spring Security proper.
-In 6.3, `spring-security-rsa` becomes the latest of these projects which will help the team maintain and add features to it, long-term.
+2017년부터 Spring Security는 다양한 Spring Security 확장 기능을 Spring Security 본체에 통합하는 장기 프로젝트를 진행해 왔습니다.
+6.3에서 ``spring-security-rsa``가 이 프로젝트들 중 최신으로 통합되었으며, 이는 팀이 장기적으로 이를 유지하고 기능을 추가하는 데 도움이 될 것입니다.
 
-`spring-security-rsa` provides a number of https://github.com/spring-projects/spring-security/blob/main/crypto/src/main/java/org/springframework/security/crypto/encrypt/RsaSecretEncryptor.java[handy `BytesEncryptor`] https://github.com/spring-projects/spring-security/blob/main/crypto/src/main/java/org/springframework/security/crypto/encrypt/RsaRawEncryptor.java[implementations] as well as https://github.com/spring-projects/spring-security/blob/main/crypto/src/main/java/org/springframework/security/crypto/encrypt/KeyStoreKeyFactory.java[a simpler API for working with ``KeyStore``s].
+``spring-security-rsa``는 여러 가지 https://github.com/spring-projects/spring-security/blob/main/crypto/src/main/java/org/springframework/security/crypto/encrypt/RsaSecretEncryptor.java[유용한 `BytesEncryptor`] https://github.com/spring-projects/spring-security/blob/main/crypto/src/main/java/org/springframework/security/crypto/encrypt/RsaRawEncryptor.java[구현]과 함께 https://github.com/spring-projects/spring-security/blob/main/crypto/src/main/java/org/springframework/security/crypto/encrypt/KeyStoreKeyFactory.java[`KeyStore`를 다루는 더 간단한 API]를 제공합니다.
 
+== OAuth 2.0 토큰 전환 권한 부여 - https://github.com/spring-projects/spring-security/issues/5199[#5199]
 
-== OAuth 2.0 Token Exchange Grant - https://github.com/spring-projects/spring-security/issues/5199[#5199]
+Spring Security에서 https://github.com/spring-projects/spring-security/issues/5199[가장 많은 투표를 받은 OAuth 2.0 기능] 중 하나가 이제 6.3에 구현되었습니다. 바로 https://datatracker.ietf.org/doc/html/rfc8693#section-2[OAuth 2.0 토큰 교환 그랜트] 지원입니다.
 
-One of https://github.com/spring-projects/spring-security/issues/5199[the most highly-voted OAuth 2.0 features] in Spring Security is now in place in 6.3, which is the support for https://datatracker.ietf.org/doc/html/rfc8693#section-2[the OAuth 2.0 Token Exchange grant].
-
-For xref:servlet/oauth2/client/authorization-grants.adoc#token-exchange-grant-access-token[any client configured for token exchange], you can activate it in Spring Security by adding a `TokenExchangeAuthorizedClientProvider` instance to your `OAuth2AuthorizedClientManager` like so:
+xref:servlet/oauth2/client/authorization-grants.adoc#token-exchange-grant-access-token[토큰 교환을 위해 구성된 모든 클라이언트]에 대해, Spring Security에서 이를 활성화하려면 ``OAuth2AuthorizedClientManager``에 `TokenExchangeAuthorizedClientProvider` 인스턴스를 다음과 같이 추가하면 됩니다:
 
 [tabs]
 ======
@@ -287,21 +285,4 @@ fun tokenExchange(): OAuth2AuthorizedClientProvider = TokenExchangeOAuth2Authori
 ----
 ======
 
-and then xref:servlet/oauth2/client/authorized-clients.adoc#oauth2Client-registered-authorized-client[use the `@RegisteredOAuth2AuthorizedClient` annotation] as per usual to retrieve the appropriate token with the expanded privileges your resource server needs.
-
-== Additional Highlights
-
-- https://github.com/spring-projects/spring-security/pull/14655[gh-14655] - Add `DelegatingAuthenticationConverter`
-- https://github.com/spring-projects/spring-security/issues/6192[gh-6192] - Add Concurrent Sessions Control on WebFlux (xref:reactive/authentication/concurrent-sessions-control.adoc[docs])
-- https://github.com/spring-projects/spring-security/pull/14193[gh-14193] - Added support for CAS Gateway Authentication
-- https://github.com/spring-projects/spring-security/issues/13259[gh-13259] - Customize when UserInfo is called
-- https://github.com/spring-projects/spring-security/pull/14168[gh-14168] - Introduce Customizable AuthorizationFailureHandler in OAuth2AuthorizationRequestRedirectFilter
-- https://github.com/spring-projects/spring-security/issues/14672[gh-14672] - Customize mapping the OidcUser from OidcUserRequest and OidcUserInfo
-- https://github.com/spring-projects/spring-security/issues/13763[gh-13763] - Simplify configuration of reactive OAuth2 Client component model
-- https://github.com/spring-projects/spring-security/issues/14758[gh-14758] - Update reactive OAuth2 docs landing page with examples (xref:reactive/oauth2/index.adoc[docs])
-- https://github.com/spring-projects/spring-security/issues/10538[gh-10538] - Support Certificate-Bound JWT Access Token Validation
-- https://github.com/spring-projects/spring-security/pull/14265[gh-14265] - Support Nested username in UserInfo response
-- https://github.com/spring-projects/spring-security/pull/14265[gh-14449] - Add `SecurityContext` argument resolver
-- https://github.com/spring-projects/spring-security/issues/11440[gh-11440] - Simplify Disabling `application/x-www-form-urlencoded` Encoding Client ID and Secret (xref:servlet/oauth2/client/client-authentication.adoc#_authenticate_using_client_secret_basic[servlet docs], xref:reactive/oauth2/client/client-authentication.adoc#_authenticate_using_client_secret_basic[reactive docs])
-
-And for an exhaustive list, please see the release notes for https://github.com/spring-projects/spring-security/releases/tag/6.3.0-RC1[6.3.0-RC1], https://github.com/spring-projects/spring-security/releases/tag/6.3.0-M3[6.3.0-M3], https://github.com/spring-projects/spring-security/releases/tag/6.3.0-M2[6.3.0-M2], and https://github.com/spring-projects/spring-security/releases/tag/6.3.0-M1[6.3.0-M1].
+그런 다음 xref:servlet/oauth2/client/authorized-clients.adoc#oauth2Client-registered-authorized-client[`@RegisteredOAuth2AuthorizedClient` 어노테이션을 평소처럼 사용]하여 리소스 서버에 필요한 확장된 권한을 가진 적절한 토큰을 검색할 수 있습니다.

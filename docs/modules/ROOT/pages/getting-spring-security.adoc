@@ -1,38 +1,36 @@
 [[getting]]
-= Getting Spring Security
+= Spring Security 가져오기
 
-This section describes how to get the Spring Security binaries.
-See xref:community.adoc#community-source[Source Code] for how to obtain the source code.
+이 섹션에서는 Spring Security 바이너리를 가져오는 방법을 설명합니다.
+소스 코드를 얻는 방법은 xref:community.adoc#community-source[소스 코드]를 참조하세요.
 
-== Release Numbering
+== 릴리스 번호 체계
 
-Spring Security versions are formatted as MAJOR.MINOR.PATCH such that:
+Spring Security 버전은 MAJOR.MINOR.PATCH 형식으로 되어 있으며:
 
-* MAJOR versions may contain breaking changes.
-Typically, these are done to provide improved security to match modern security practices.
-* MINOR versions contain enhancements but are considered passive updates.
-* PATCH level should be perfectly compatible, forwards and backwards, with the possible exception of changes that fix bugs.
-
+* MAJOR 버전은 호환성이 깨지는 변경사항을 포함할 수 있습니다.
+일반적으로 이는 현대적인 보안 관행에 맞춰 개선된 보안을 제공하기 위해 수행됩니다.
+* MINOR 버전은 기능 개선을 포함하지만 수동적 업데이트로 간주됩니다.
+* PATCH 레벨은 버그 수정을 제외하고는 이전 버전과 이후 버전 모두와 호환성이 완벽해야 합니다.
 
 [[maven]]
-== Usage with Maven
+== Maven과 함께 사용하기
 
-As most open source projects, Spring Security deploys its dependencies as Maven artifacts.
-The topics in this section describe how to consume Spring Security when using Maven.
+대부분의 오픈 소스 프로젝트와 마찬가지로 Spring Security는 의존성을 Maven 아티팩트로 배포합니다.
+이 섹션의 주제들은 Maven을 사용할 때 Spring Security를 사용하는 방법을 설명합니다.
 
 [[getting-maven-boot]]
-=== Spring Boot with Maven
+=== Maven과 함께 Spring Boot 사용하기
 
-Spring Boot provides a `spring-boot-starter-security` starter that aggregates Spring Security-related dependencies.
-The simplest and preferred way to use the starter is to use https://docs.spring.io/initializr/docs/current/reference/html/[Spring Initializr] by using an IDE integration in (https://joshlong.com/jl/blogPost/tech_tip_geting_started_with_spring_boot.html[Eclipse] or https://www.jetbrains.com/help/idea/spring-boot.html#d1489567e2[IntelliJ], https://github.com/AlexFalappa/nb-springboot/wiki/Quick-Tour[NetBeans]) or through https://start.spring.io.
-Alternatively, you can manually add the starter, as the following example shows:
-
+Spring Boot는 Spring Security 관련 의존성을 모아놓은 `spring-boot-starter-security` 스타터를 제공합니다.
+스타터를 사용하는 가장 간단하고 선호되는 방법은 IDE 통합 (https://joshlong.com/jl/blogPost/tech_tip_geting_started_with_spring_boot.html[Eclipse] 또는 https://www.jetbrains.com/help/idea/spring-boot.html#d1489567e2[IntelliJ], https://github.com/AlexFalappa/nb-springboot/wiki/Quick-Tour[NetBeans])을 통해 또는 https://start.spring.io를 통해 https://docs.spring.io/initializr/docs/current/reference/html/[Spring Initializr]를 사용하는 것입니다.
+또는 다음 예시와 같이 수동으로 스타터를 추가할 수 있습니다:
 
 .pom.xml
 [source,xml,subs="verbatim,attributes"]
 ----
 <dependencies>
-	<!-- ... other dependency elements ... -->
+	<!-- ... 다른 의존성 요소들 ... -->
 	<dependency>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-security</artifactId>
@@ -40,8 +38,8 @@ Alternatively, you can manually add the starter, as the following example shows:
 </dependencies>
 ----
 
-Since Spring Boot provides a Maven BOM to manage dependency versions, you do not need to specify a version.
-If you wish to override the Spring Security version, you can do so by providing a Maven property:
+Spring Boot는 의존성 버전을 관리하기 위해 Maven BOM(Bill of Materials)을 제공하므로 버전을 지정할 필요가 없습니다.
+Spring Security 버전을 재정의하려면 Maven 속성을 제공하여 수행할 수 있습니다:
 
 .pom.xml
 [source,xml,subs="verbatim,attributes"]
@@ -52,9 +50,9 @@ If you wish to override the Spring Security version, you can do so by providing 
 </properties>
 ----
 
-Since Spring Security makes breaking changes only in major releases, you can safely use a newer version of Spring Security with Spring Boot.
-However, at times, you may need to update the version of Spring Framework as well.
-You can do so by adding a Maven property:
+Spring Security는 주요 릴리스에서만 호환성이 깨지는 변경을 하므로 Spring Boot와 함께 더 새로운 버전의 Spring Security를 안전하게 사용할 수 있습니다.
+그러나 때로는 Spring Framework의 버전도 업데이트해야 할 수 있습니다.
+다음과 같이 Maven 속성을 추가하여 이를 수행할 수 있습니다:
 
 .pom.xml
 [source,xml,subs="verbatim,attributes"]
@@ -65,19 +63,19 @@ You can do so by adding a Maven property:
 </properties>
 ----
 
-If you use additional features (such as LDAP, OAuth 2, and others), you need to also include the appropriate xref:modules.adoc#modules[Project Modules and Dependencies].
+추가 기능(LDAP, OAuth 2 등)을 사용하는 경우 적절한 xref:modules.adoc#modules[프로젝트 모듈 및 의존성]도 포함해야 합니다.
 
 [[getting-maven-no-boot]]
-=== Maven Without Spring Boot
+=== Spring Boot 없이 Maven 사용하기
 
-When you use Spring Security without Spring Boot, the preferred way is to use Spring Security's BOM to ensure that a consistent version of Spring Security is used throughout the entire project. The following example shows how to do so:
+Spring Boot 없이 Spring Security를 사용할 때는 전체 프로젝트에서 일관된 버전의 Spring Security를 사용하도록 하기 위해 Spring Security의 BOM을 사용하는 것이 선호됩니다. 다음 예시는 이를 수행하는 방법을 보여줍니다:
 
 .pom.xml
 [source,xml,ubs="verbatim,attributes"]
 ----
 <dependencyManagement>
 	<dependencies>
-		<!-- ... other dependency elements ... -->
+		<!-- ... 다른 의존성 요소들 ... -->
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-bom</artifactId>
@@ -89,13 +87,13 @@ When you use Spring Security without Spring Boot, the preferred way is to use Sp
 </dependencyManagement>
 ----
 
-A minimal Spring Security Maven set of dependencies typically looks like the following example:
+최소한의 Spring Security Maven 의존성 세트는 일반적으로 다음 예시와 같습니다:
 
 .pom.xml
 [source,xml,subs="verbatim,attributes"]
 ----
 <dependencies>
-	<!-- ... other dependency elements ... -->
+	<!-- ... 다른 의존성 요소들 ... -->
 	<dependency>
 		<groupId>org.springframework.security</groupId>
 		<artifactId>spring-security-web</artifactId>
@@ -107,18 +105,18 @@ A minimal Spring Security Maven set of dependencies typically looks like the fol
 </dependencies>
 ----
 
-If you use additional features (such as LDAP, OAuth 2, and others), you need to also include the appropriate xref:modules.adoc#modules[Project Modules and Dependencies].
+추가 기능(LDAP, OAuth 2 등)을 사용하는 경우 적절한 xref:modules.adoc#modules[프로젝트 모듈 및 의존성]도 포함해야 합니다.
 
-Spring Security builds against Spring Framework {spring-core-version} but should generally work with any newer version of Spring Framework 5.x.
-Many users are likely to run afoul of the fact that Spring Security's transitive dependencies resolve Spring Framework {spring-core-version}, which can cause strange classpath problems.
-The easiest way to resolve this is to use the `spring-framework-bom` within the `<dependencyManagement>` section of your `pom.xml`:
+Spring Security는 Spring Framework {spring-core-version}에 대해 빌드되지만 일반적으로 Spring Framework 5.x의 더 새로운 버전과 함께 작동해야 합니다.
+많은 사용자들이 Spring Security의 전이적 의존성이 Spring Framework {spring-core-version}을 해결하여 이상한 클래스패스 문제를 일으킬 수 있다는 사실을 간과하기 쉽습니다.
+이를 해결하는 가장 쉬운 방법은 ``pom.xml``의 `<dependencyManagement>` 섹션 내에 ``spring-framework-bom``을 사용하는 것입니다:
 
 .pom.xml
 [source,xml,subs="verbatim,attributes"]
 ----
 <dependencyManagement>
 	<dependencies>
-		<!-- ... other dependency elements ... -->
+		<!-- ... 다른 의존성 요소들 ... -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-framework-bom</artifactId>
@@ -130,25 +128,25 @@ The easiest way to resolve this is to use the `spring-framework-bom` within the 
 </dependencyManagement>
 ----
 
-The preceding example ensures that all the transitive dependencies of Spring Security use the Spring {spring-core-version} modules.
+위의 예시는 Spring Security의 모든 전이적 의존성이 Spring {spring-core-version} 모듈을 사용하도록 보장합니다.
 
 [NOTE]
 ====
-This approach uses Maven's "`bill of materials`" (BOM) concept and is only available in Maven 2.0.9+.
-For additional details about how dependencies are resolved, see https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html[Maven's Introduction to the Dependency Mechanism documentation].
+이 접근 방식은 Maven의 "자재 명세서" (BOM) 개념을 사용하며 Maven 2.0.9+ 에서만 사용 가능합니다.
+의존성 해결 방식에 대한 추가 세부 정보는 https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html[Maven의 의존성 메커니즘 소개 문서]를 참조하세요.
 ====
 
 [[maven-repositories]]
-=== Maven Repositories
-All GA releases (that is, versions ending in .RELEASE) are deployed to Maven Central, so you need not declare additional Maven repositories in your pom.
+=== Maven 저장소
+모든 GA 릴리스(즉, .RELEASE로 끝나는 버전)는 Maven Central에 배포되므로 pom에 추가 Maven 저장소를 선언할 필요가 없습니다.
 
-If you use a SNAPSHOT version, you need to ensure that you have the Spring Snapshot repository defined:
+SNAPSHOT 버전을 사용하는 경우 Spring Snapshot 저장소가 정의되어 있는지 확인해야 합니다:
 
 .pom.xml
 [source,xml]
 ----
 <repositories>
-	<!-- ... possibly other repository elements ... -->
+	<!-- ... 다른 저장소 요소들이 있을 수 있음 ... -->
 	<repository>
 		<id>spring-snapshot</id>
 		<name>Spring Snapshot Repository</name>
@@ -157,13 +155,13 @@ If you use a SNAPSHOT version, you need to ensure that you have the Spring Snaps
 </repositories>
 ----
 
-If you use a milestone or release candidate version, you need to ensure that you have the Spring Milestone repository defined, as the following example shows:
+마일스톤이나 릴리스 후보 버전을 사용하는 경우 다음 예시와 같이 Spring Milestone 저장소가 정의되어 있는지 확인해야 합니다:
 
 .pom.xml
 [source,xml]
 ----
 <repositories>
-	<!-- ... possibly other repository elements ... -->
+	<!-- ... 다른 저장소 요소들이 있을 수 있음 ... -->
 	<repository>
 		<id>spring-milestone</id>
 		<name>Spring Milestone Repository</name>
@@ -175,16 +173,16 @@ If you use a milestone or release candidate version, you need to ensure that you
 [[getting-gradle]]
 == Gradle
 
-As most open source projects, Spring Security deploys its dependencies as Maven artifacts, which allows for first-class Gradle support.
-The following topics describe how to consume Spring Security when using Gradle.
+대부분의 오픈 소스 프로젝트와 마찬가지로 Spring Security는 의존성을 Maven 아티팩트로 배포하여 Gradle에 대한 완전한 지원을 가능하게 합니다.
+다음 주제들은 Gradle을 사용할 때 Spring Security를 사용하는 방법을 설명합니다.
 
 [[getting-gradle-boot]]
-=== Spring Boot with Gradle
+=== Gradle과 함께 Spring Boot 사용하기
 
-Spring Boot provides a `spring-boot-starter-security` starter that aggregates Spring Security related dependencies.
-The simplest and preferred method to use the starter is to use https://docs.spring.io/initializr/docs/current/reference/html/[Spring Initializr] by using an IDE integration in (https://joshlong.com/jl/blogPost/tech_tip_geting_started_with_spring_boot.html[Eclipse] or https://www.jetbrains.com/help/idea/spring-boot.html#d1489567e2[IntelliJ], https://github.com/AlexFalappa/nb-springboot/wiki/Quick-Tour[NetBeans]) or through https://start.spring.io.
+Spring Boot는 Spring Security 관련 의존성을 모아놓은 `spring-boot-starter-security` 스타터를 제공합니다.
+스타터를 사용하는 가장 간단하고 선호되는 방법은 IDE 통합 (https://joshlong.com/jl/blogPost/tech_tip_geting_started_with_spring_boot.html[Eclipse] 또는 https://www.jetbrains.com/help/idea/spring-boot.html#d1489567e2[IntelliJ], https://github.com/AlexFalappa/nb-springboot/wiki/Quick-Tour[NetBeans])을 통해 또는 link:[https://start.spring.io]를 통해 https://docs.spring.io/initializr/docs/current/reference/html/[Spring Initializr]를 사용하는 것입니다.
 
-Alternatively, you can manually add the starter:
+또는 수동으로 스타터를 추가할 수 있습니다:
 
 .build.gradle
 [source,groovy]
@@ -195,8 +193,8 @@ dependencies {
 }
 ----
 
-Since Spring Boot provides a Maven BOM to manage dependency versions, you need not specify a version.
-If you wish to override the Spring Security version, you can do so by providing a Gradle property:
+Spring Boot는 의존성 버전을 관리하기 위해 Maven BOM을 제공하므로 버전을 지정할 필요가 없습니다.
+Spring Security 버전을 재정의하려면 Gradle 속성을 제공하여 수행할 수 있습니다:
 
 .build.gradle
 [source,groovy]
@@ -205,9 +203,9 @@ If you wish to override the Spring Security version, you can do so by providing 
 ext['spring-security.version']='{spring-security-version}'
 ----
 
-Since Spring Security makes breaking changes only in major releases, you can safely use a newer version of Spring Security with Spring Boot.
-However, at times, you may need to update the version of Spring Framework as well.
-You can do so by adding a Gradle property:
+Spring Security는 주요 릴리스에서만 호환성이 깨지는 변경을 하므로 Spring Boot와 함께 더 새로운 버전의 Spring Security를 안전하게 사용할 수 있습니다.
+그러나 때로는 Spring Framework의 버전도 업데이트해야 할 수 있습니다.
+다음과 같이 Gradle 속성을 추가하여 이를 수행할 수 있습니다:
 
 .build.gradle
 [source,groovy]
@@ -216,12 +214,12 @@ You can do so by adding a Gradle property:
 ext['spring.version']='{spring-core-version}'
 ----
 
-If you use additional features (such as LDAP, OAuth 2, and others), you need to also include the appropriate xref:modules.adoc#modules[Project Modules and Dependencies].
+추가 기능(LDAP, OAuth 2 등)을 사용하는 경우 적절한 xref:modules.adoc#modules[프로젝트 모듈 및 의존성]도 포함해야 합니다.
 
-=== Gradle Without Spring Boot
+=== Spring Boot 없이 Gradle 사용하기
 
-When you use Spring Security without Spring Boot, the preferred way is to use Spring Security's BOM to ensure a consistent version of Spring Security is used throughout the entire project.
-You can do so by using the https://github.com/spring-gradle-plugins/dependency-management-plugin[Dependency Management Plugin]:
+Spring Boot 없이 Spring Security를 사용할 때는 전체 프로젝트에서 일관된 버전의 Spring Security를 사용하도록 하기 위해 Spring Security의 BOM을 사용하는 것이 선호됩니다.
+https://github.com/spring-gradle-plugins/dependency-management-plugin[Dependency Management Plugin]을 사용하여 이를 수행할 수 있습니다:
 
 .build.gradle
 [source,groovy]
@@ -238,7 +236,7 @@ dependencyManagement {
 }
 ----
 
-A minimal Spring Security Maven set of dependencies typically looks like the following:
+최소한의 Spring Security Maven 의존성 세트는 일반적으로 다음과 같습니다:
 
 .build.gradle
 [source,groovy]
@@ -250,12 +248,12 @@ dependencies {
 }
 ----
 
-If you use additional features (such as LDAP, OAuth 2, and others), you need to also include the appropriate xref:modules.adoc#modules[Project Modules and Dependencies].
+추가 기능(LDAP, OAuth 2 등)을 사용하는 경우 적절한 xref:modules.adoc#modules[프로젝트 모듈 및 의존성]도 포함해야 합니다.
 
-Spring Security builds against Spring Framework {spring-core-version} but should generally work with any newer version of Spring Framework 5.x.
-Many users are likely to run afoul of the fact that Spring Security's transitive dependencies resolve Spring Framework {spring-core-version}, which can cause strange classpath problems.
-The easiest way to resolve this is to use the `spring-framework-bom` within your `dependencyManagement` section of your `build.gradle`.
-You can do so by using the https://github.com/spring-gradle-plugins/dependency-management-plugin[Dependency Management Plugin]:
+Spring Security는 Spring Framework {spring-core-version}에 대해 빌드되지만 일반적으로 Spring Framework 5.x의 더 새로운 버전과 함께 작동해야 합니다.
+많은 사용자들이 Spring Security의 전이적 의존성이 Spring Framework {spring-core-version}을 해결하여 이상한 클래스패스 문제를 일으킬 수 있다는 사실을 간과하기 쉽습니다.
+이를 해결하는 가장 쉬운 방법은 ``build.gradle``의 `dependencyManagement` 섹션 내에 ``spring-framework-bom``을 사용하는 것입니다.
+https://github.com/spring-gradle-plugins/dependency-management-plugin[Dependency Management Plugin]을 사용하여 이를 수행할 수 있습니다:
 
 .build.gradle
 [source,groovy]
@@ -272,11 +270,11 @@ dependencyManagement {
 }
 ----
 
-The preceding example ensures that all the transitive dependencies of Spring Security use the Spring {spring-core-version} modules.
+위의 예시는 Spring Security의 모든 전이적 의존성이 Spring {spring-core-version} 모듈을 사용하도록 보장합니다.
 
 [[gradle-repositories]]
-=== Gradle Repositories
-All GA releases (that is, versions ending in .RELEASE) are deployed to Maven Central, so using the `mavenCentral()` repository is sufficient for GA releases. The following example shows how to do so:
+=== Gradle 저장소
+모든 GA 릴리스(즉, .RELEASE로 끝나는 버전)는 Maven Central에 배포되므로 GA 릴리스의 경우 `mavenCentral()` 저장소를 사용하는 것으로 충분합니다. 다음 예시는 이를 수행하는 방법을 보여줍니다:
 
 .build.gradle
 [source,groovy]
@@ -286,7 +284,7 @@ repositories {
 }
 ----
 
-If you use a SNAPSHOT version, you need to ensure that you have the Spring Snapshot repository defined:
+SNAPSHOT 버전을 사용하는 경우 Spring Snapshot 저장소가 정의되어 있는지 확인해야 합니다:
 
 .build.gradle
 [source,groovy]
@@ -296,7 +294,7 @@ repositories {
 }
 ----
 
-If you use a milestone or release candidate version, you need to ensure that you have the Spring Milestone repository defined:
+마일스톤이나 릴리스 후보 버전을 사용하는 경우 Spring Milestone 저장소가 정의되어 있는지 확인해야 합니다:
 
 .build.gradle
 [source,groovy]

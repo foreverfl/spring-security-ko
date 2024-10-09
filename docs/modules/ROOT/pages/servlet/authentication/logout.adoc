@@ -1,53 +1,53 @@
 [[jc-logout]]
-= Handling Logouts
+= 로그아웃 처리
 
-In an application where end users can xref:servlet/authentication/index.adoc[login], they should also be able to logout.
+사용자가 xref:servlet/authentication/index.adoc[로그인]할 수 있는 애플리케이션에서는 로그아웃도 가능해야 합니다.
 
-By default, Spring Security stands up a `/logout` endpoint, so no additional code is necessary.
+기본적으로 Spring Security는 `/logout` 엔드포인트를 제공하므로 추가 코드가 필요하지 않습니다.
 
-The rest of this section covers a number of use cases for you to consider:
+이 섹션의 나머지 부분에서는 고려해야 할 여러 사용 사례를 다룹니다:
 
-* I want to <<logout-java-configuration,understand logout's architecture>>
-* I want to <<customizing-logout-uris, customize the logout or logout success URI>>
-* I want to know when I need to <<permit-logout-endpoints, explicitly permit the `/logout` endpoint>>
-* I want to <<clear-all-site-data, clear cookies, storage, and/or cache>> when the user logs out
-* I am using OAuth 2.0 and I want to xref:servlet/oauth2/login/advanced.adoc#oauth2login-advanced-oidc-logout[coordinate logout with an Authorization Server]
-* I am using SAML 2.0 and I want to xref:servlet/saml2/logout.adoc[coordinate logout with an Identity Provider]
-* I am using CAS and I want to xref:servlet/authentication/cas.adoc#cas-singlelogout[coordinate logout with an Identity Provider]
+* <<logout-java-configuration,로그아웃 아키텍처 이해하기>>
+* <<customizing-logout-uris, 로그아웃 또는 로그아웃 성공 URI 커스터마이징>>
+* <<permit-logout-endpoints, `/logout` 엔드포인트를 명시적으로 허용해야 하는 경우>>
+* <<clear-all-site-data, 사용자 로그아웃 시 쿠키, 스토리지 및/또는 캐시 지우기>>
+* OAuth 2.0 사용 시 xref:servlet/oauth2/login/advanced.adoc#oauth2login-advanced-oidc-logout[인증 서버와 로그아웃 조정]
+* SAML 2.0 사용 시 xref:servlet/saml2/logout.adoc[ID 제공자와 로그아웃 조정]
+* CAS 사용 시 xref:servlet/authentication/cas.adoc#cas-singlelogout[ID 제공자와 로그아웃 조정]
 
 [[logout-architecture]]
 [[logout-java-configuration]]
-== Understanding Logout's Architecture
+== 로그아웃 아키텍처 이해하기
 
-When you include {spring-boot-reference-url}using.html#using.build-systems.starters[the `spring-boot-starter-security` dependency] or use the `@EnableWebSecurity` annotation, Spring Security will add its logout support and by default respond both to `GET /logout` and `POST /logout`.
+{spring-boot-reference-url}using.html#using.build-systems.starters[`spring-boot-starter-security` 의존성]을 포함하거나 `@EnableWebSecurity` 어노테이션을 사용하면, Spring Security는 로그아웃 지원을 추가하고 기본적으로 ``GET /logout``과 ``POST /logout`` 모두에 응답합니다.
 
-If you request `GET /logout`, then Spring Security displays a logout confirmation page.
-Aside from providing a valuable double-checking mechanism for the user, it also provides a simple way to provide xref:servlet/exploits/csrf.adoc[the needed CSRF token] to `POST /logout`.
+``GET /logout``을 요청하면 Spring Security는 로그아웃 확인 페이지를 표시합니다.
+이는 사용자에게 유용한 이중 확인 메커니즘을 제공할 뿐만 아니라, ``POST /logout``에 필요한 xref:servlet/exploits/csrf.adoc[CSRF 토큰]을 제공하는 간단한 방법도 제공합니다.
 
-Please note that if xref:servlet/exploits/csrf.adoc[CSRF protection] is disabled in configuration, no logout confirmation page is shown to the user and the logout is performed directly.
+xref:servlet/exploits/csrf.adoc[CSRF 보호]가 구성에서 비활성화된 경우, 사용자에게 로그아웃 확인 페이지가 표시되지 않고 로그아웃이 직접 수행됨을 주의하세요.
 
 [TIP]
-In your application it is not necessary to use `GET /logout` to perform a logout.
-So long as xref:servlet/exploits/csrf.adoc[the needed CSRF token] is present in the request, your application can simply `POST /logout` to induce a logout.
+애플리케이션에서 로그아웃을 수행하기 위해 ``GET /logout``을 사용할 필요는 없습니다.
+xref:servlet/exploits/csrf.adoc[필요한 CSRF 토큰]이 요청에 있는 한, 애플리케이션은 단순히 ``POST /logout``을 수행하여 로그아웃을 유도할 수 있습니다.
 
-If you request `POST /logout`, then it will perform the following default operations using a series of {security-api-url}org/springframework/security/web/authentication/logout/LogoutHandler.html[``LogoutHandler``]s:
+``POST /logout``을 요청하면 일련의 {security-api-url}org/springframework/security/web/authentication/logout/LogoutHandler.html[``LogoutHandler``]를 사용하여 다음과 같은 기본 작업을 수행합니다:
 
-- Invalidate the HTTP session ({security-api-url}org/springframework/security/web/authentication/logout/SecurityContextLogoutHandler.html[`SecurityContextLogoutHandler`])
-- Clear the xref:servlet/authentication/session-management.adoc#use-securitycontextholderstrategy[`SecurityContextHolderStrategy`] ({security-api-url}org/springframework/security/web/authentication/logout/SecurityContextLogoutHandler.html[`SecurityContextLogoutHandler`])
-- Clear the xref:servlet/authentication/persistence.adoc#securitycontextrepository[`SecurityContextRepository`] ({security-api-url}org/springframework/security/web/authentication/logout/SecurityContextLogoutHandler.html[`SecurityContextLogoutHandler`])
-- Clean up any xref:servlet/authentication/rememberme.adoc[RememberMe authentication] (`TokenRememberMeServices` / `PersistentTokenRememberMeServices`)
-- Clear out any saved xref:servlet/exploits/csrf.adoc[CSRF token] ({security-api-url}org/springframework/security/web/csrf/CsrfLogoutHandler.html[`CsrfLogoutHandler`])
-- xref:servlet/authentication/events.adoc[Fire] a `LogoutSuccessEvent` ({security-api-url}org/springframework/security/web/authentication/logout/LogoutSuccessEventPublishingLogoutHandler.html[`LogoutSuccessEventPublishingLogoutHandler`])
+- HTTP 세션 무효화 ({security-api-url}org/springframework/security/web/authentication/logout/SecurityContextLogoutHandler.html[`SecurityContextLogoutHandler`])
+- xref:servlet/authentication/session-management.adoc#use-securitycontextholderstrategy[`SecurityContextHolderStrategy`] 지우기 ({security-api-url}org/springframework/security/web/authentication/logout/SecurityContextLogoutHandler.html[`SecurityContextLogoutHandler`])
+- xref:servlet/authentication/persistence.adoc#securitycontextrepository[`SecurityContextRepository`] 지우기 ({security-api-url}org/springframework/security/web/authentication/logout/SecurityContextLogoutHandler.html[`SecurityContextLogoutHandler`])
+- xref:servlet/authentication/rememberme.adoc[RememberMe 인증] 정리 (`TokenRememberMeServices` / `PersistentTokenRememberMeServices`)
+- 저장된 xref:servlet/exploits/csrf.adoc[CSRF 토큰] 지우기 ({security-api-url}org/springframework/security/web/csrf/CsrfLogoutHandler.html[`CsrfLogoutHandler`])
+- `LogoutSuccessEvent` xref:servlet/authentication/events.adoc[발생] ({security-api-url}org/springframework/security/web/authentication/logout/LogoutSuccessEventPublishingLogoutHandler.html[`LogoutSuccessEventPublishingLogoutHandler`])
 
-Once completed, then it will exercise its default {security-api-url}org/springframework/security/web/authentication/logout/LogoutSuccessHandler.html[`LogoutSuccessHandler`] which redirects to `/login?logout`.
+완료되면 기본 {security-api-url}org/springframework/security/web/authentication/logout/LogoutSuccessHandler.html[`LogoutSuccessHandler`]를 실행하여 ``/login?logout``으로 리다이렉트합니다.
 
 [[customizing-logout-uris]]
-== Customizing Logout URIs
+== 로그아웃 URI 커스터마이징
 
-Since the `LogoutFilter` appears before xref:servlet/authorization/authorize-http-requests.adoc[the `AuthorizationFilter`] in xref:servlet/architecture.adoc#servlet-filterchain-figure[the filter chain], it is not necessary by default to explicitly permit the `/logout` endpoint.
-Thus, only <<permit-logout-endpoints,custom logout endpoints>> that you create yourself generally require a `permitAll` configuration to be reachable.
+``LogoutFilter``가 xref:servlet/architecture.adoc#servlet-filterchain-figure[필터 체인]에서 xref:servlet/authorization/authorize-http-requests.adoc[`AuthorizationFilter`] 앞에 위치하기 때문에, 기본적으로 `/logout` 엔드포인트를 명시적으로 허용할 필요가 없습니다.
+따라서 일반적으로 직접 생성한 <<permit-logout-endpoints,사용자 정의 로그아웃 엔드포인트>>만 접근 가능하도록 `permitAll` 구성이 필요합니다.
 
-For example, if you want to simply change the URI that Spring Security is matching, you can do so in the `logout` DSL in following way:
+예를 들어, Spring Security가 일치시키는 URI를 단순히 변경하려면 `logout` DSL에서 다음과 같이 할 수 있습니다:
 
 .Custom Logout Uri
 [tabs]
@@ -79,13 +79,13 @@ Xml::
 ----
 ======
 
-and no authorization changes are necessary since it simply adjusts the `LogoutFilter`.
+이는 단순히 ``LogoutFilter``를 조정하므로 권한 변경이 필요하지 않습니다.
 
 [[permit-logout-endpoints]]
-However, if you stand up your own logout success endpoint (or in a rare case, <<creating-custom-logout-endpoint, your own logout endpoint>>), say using {spring-framework-reference-url}web.html#spring-web[Spring MVC], you will need to permit it in Spring Security.
-This is because Spring MVC processes your request after Spring Security does.
+그러나 자체 로그아웃 성공 엔드포인트(또는 드물게 <<creating-custom-logout-endpoint, 자체 로그아웃 엔드포인트>>)를 설정하는 경우, 예를 들어 {spring-framework-reference-url}web.html#spring-web[Spring MVC]를 사용하는 경우, Spring Security에서 이를 허용해야 합니다.
+이는 Spring MVC가 Spring Security 이후에 요청을 처리하기 때문입니다.
 
-You can do this using `authorizeHttpRequests` or `<intercept-url>` like so:
+`authorizeHttpRequests` 또는 ``<intercept-url>``을 사용하여 다음과 같이 할 수 있습니다:
 
 .Custom Logout Endpoint
 [tabs]
@@ -127,11 +127,11 @@ Xml::
 ----
 ======
 
-In this example, you tell the `LogoutFilter` to redirect to `/my/success/endpoint` when it is done.
-And, you explicitly permit the `/my/success/endpoint` endpoint in xref:servlet/authorization/authorize-http-requests.adoc[the `AuthorizationFilter`].
+이 예에서는 ``LogoutFilter``에게 완료되면 ``/my/success/endpoint``로 리다이렉트하도록 지시합니다.
+그리고 xref:servlet/authorization/authorize-http-requests.adoc[`AuthorizationFilter`]에서 ``/my/success/endpoint`` 엔드포인트를 명시적으로 허용합니다.
 
-Specifying it twice can be cumbersome, though.
-If you are using Java configuration, you can instead set the `permitAll` property in the logout DSL like so:
+두 번 지정하는 것이 번거로울 수 있습니다.
+Java 구성을 사용하는 경우 대신 로그아웃 DSL에서 ``permitAll`` 속성을 다음과 같이 설정할 수 있습니다:
 
 .Permitting Custom Logout Endpoints
 [tabs]
@@ -165,12 +165,12 @@ http
 ----
 ======
 
-which will add all logout URIs to the permit list for you.
+이렇게 하면 모든 로그아웃 URI를 허용 목록에 자동으로 추가합니다.
 
 [[add-logout-handler]]
-== Adding Clean-up Actions
+== 정리 작업 추가하기
 
-If you are using Java configuration, you can add clean up actions of your own by calling the `addLogoutHandler` method in the `logout` DSL, like so:
+Java 구성을 사용하는 경우, `logout` DSL에서 `addLogoutHandler` 메서드를 호출하여 자체 정리 작업을 추가할 수 있습니다:
 
 .Custom Logout Handler
 [tabs]
@@ -197,18 +197,18 @@ http {
 ======
 
 [NOTE]
-Because {security-api-url}org/springframework/security/web/authentication/logout/LogoutHandler.html[``LogoutHandler``]s are for the purposes of cleanup, they should not throw exceptions.
+{security-api-url}org/springframework/security/web/authentication/logout/LogoutHandler.html[``LogoutHandler``]는 정리 목적이므로 예외를 던지면 안 됩니다.
 
 [TIP]
-Since {security-api-url}org/springframework/security/web/authentication/logout/LogoutHandler.html[`LogoutHandler`] is a functional interface, you can provide a custom one as a lambda.
+{security-api-url}org/springframework/security/web/authentication/logout/LogoutHandler.html[`LogoutHandler`]는 함수형 인터페이스이므로 람다로 제공할 수 있습니다.
 
-Some logout handler configurations are common enough that they are exposed directly in the `logout` DSL and `<logout>` element.
-One example is configuring session invalidation and another is which additional cookies should be deleted.
+일부 로그아웃 핸들러 구성은 일반적이어서 `logout` DSL과 `<logout>` 요소에 직접 노출됩니다.
+한 예는 세션 무효화를 구성하는 것이고 다른 예는 삭제해야 할 추가 쿠키를 지정하는 것입니다.
 
-For example, you can configure the {security-api-url}org/springframework/security/web/authentication/logout/CookieClearingLogoutHandler.html[`CookieClearingLogoutHandler`] as seen above.
+예를 들어, 위에서 본 것처럼 {security-api-url}org/springframework/security/web/authentication/logout/CookieClearingLogoutHandler.html[`CookieClearingLogoutHandler`]를 구성할 수 있습니다.
 
 [[delete-cookies]]
-Or you can instead set the appropriate configuration value like so:
+또는 다음과 같이 적절한 구성 값을 설정할 수 있습니다:
 
 [tabs]
 ======
@@ -242,15 +242,15 @@ Xml::
 ======
 
 [NOTE]
-Specifying that the `JSESSIONID` cookie is not necessary since {security-api-url}/org/springframework/security/web/authentication/logout/SecurityContextLogoutHandler.html[`SecurityContextLogoutHandler`] removes it by virtue of invalidating the session.
+`JSESSIONID` 쿠키를 지정할 필요는 없습니다. {security-api-url}/org/springframework/security/web/authentication/logout/SecurityContextLogoutHandler.html[`SecurityContextLogoutHandler`]가 세션을 무효화함으로써 이를 제거하기 때문입니다.
 
 [[clear-all-site-data]]
-=== Using Clear-Site-Data to Log Out the User
+=== Clear-Site-Data를 사용하여 사용자 로그아웃하기
 
-The `Clear-Site-Data` HTTP header is one that browsers support as an instruction to clear cookies, storage, and cache that belong to the owning website.
-This is a handy and secure way to ensure that everything, including the session cookie, is cleaned up on logout.
+`Clear-Site-Data` HTTP 헤더는 브라우저가 소유 웹사이트에 속하는 쿠키, 스토리지, 캐시를 지우라는 지시로 지원하는 헤더입니다.
+이는 세션 쿠키를 포함한 모든 것이 로그아웃 시 정리되도록 하는 편리하고 안전한 방법입니다.
 
-You can add configure Spring Security to write the `Clear-Site-Data` header on logout like so:
+다음과 같이 Spring Security를 구성하여 로그아웃 시 `Clear-Site-Data` 헤더를 작성하도록 할 수 있습니다:
 
 .Using Clear-Site-Data
 [tabs]
@@ -277,9 +277,9 @@ http {
 ----
 ======
 
-You give the `ClearSiteDataHeaderWriter` constructor the list of things that you want to be cleared out.
+`ClearSiteDataHeaderWriter` 생성자에 지우고 싶은 항목 목록을 제공합니다.
 
-The above configuration clears out all site data, but you can also configure it to remove just cookies like so:
+위의 구성은 모든 사이트 데이터를 지우지만, 다음과 같이 쿠키만 제거하도록 구성할 수도 있습니다:
 
 .Using Clear-Site-Data to Clear Cookies
 [tabs]
@@ -307,15 +307,14 @@ http {
 ======
 
 [[customizing-logout-success]]
-== Customizing Logout Success
+== 로그아웃 성공 커스터마이징
 
-While using `logoutSuccessUrl` will suffice for most cases, you may need to do something different from redirecting to a URL once logout is complete.
-{security-api-url}org/springframework/security/web/authentication/logout/LogoutSuccessHandler.html[`LogoutSuccessHandler`] is the Spring Security component for customizing logout success actions.
+``logoutSuccessUrl``을 사용하는 것이 대부분의 경우에 충분하지만, 로그아웃이 완료된 후 URL로 리다이렉트하는 것 외에 다른 작업을 수행해야 할 수도 있습니다.
+{security-api-url}org/springframework/security/web/authentication/logout/LogoutSuccessHandler.html[`LogoutSuccessHandler`]는 로그아웃 성공 동작을 커스터마이징하기 위한 Spring Security 컴포넌트입니다.
 
-For example, instead of redirecting, you may want to only return a status code.
-In this case, you can provide a success handler instance, like so:
+예를 들어, 리다이렉트 대신 상태 코드만 반환하고 싶을 수 있습니다. 이 경우 다음과 같이 성공 핸들러 인스턴스를 제공할 수 있습니다:
 
-.Using Clear-Site-Data to Clear Cookies
+.상태 코드 반환 로그아웃 성공 핸들러 사용
 [tabs]
 ======
 Java::
@@ -349,17 +348,17 @@ Xml::
 ======
 
 [TIP]
-Since {security-api-url}org/springframework/security/web/authentication/logout/LogoutSuccessHandler.html[`LogoutSuccessHandler`] is a functional interface, you can provide a custom one as a lambda.
+{security-api-url}org/springframework/security/web/authentication/logout/LogoutSuccessHandler.html[`LogoutSuccessHandler`]는 함수형 인터페이스이므로 람다로 커스텀 핸들러를 제공할 수 있습니다.
 
 [[creating-custom-logout-endpoint]]
-== Creating a Custom Logout Endpoint
+== 커스텀 로그아웃 엔드포인트 생성하기
 
-It is strongly recommended that you use the provided `logout` DSL to configure logout.
-One reason is that its easy to forget to call the needed Spring Security components to ensure a proper and complete logout.
+로그아웃을 구성하기 위해 제공된 `logout` DSL을 사용하는 것이 강력히 권장됩니다.
+한 가지 이유는 적절하고 완전한 로그아웃을 보장하기 위해 필요한 Spring Security 컴포넌트를 호출하는 것을 잊기 쉽기 때문입니다.
 
-In fact, it is often simpler to <<add-logout-handler, register a custom `LogoutHandler`>> than create a {spring-framework-reference-url}web.html#spring-web[Spring MVC] endpoint for performing logout.
+사실, 로그아웃을 수행하기 위한 {spring-framework-reference-url}web.html#spring-web[Spring MVC] 엔드포인트를 만드는 것보다 <<add-logout-handler, 커스텀 ``LogoutHandler``를 등록>>하는 것이 종종 더 간단합니다.
 
-That said, if you find yourself in a circumstance where a custom logout endpoint is needed, like the following one:
+그럼에도 불구하고 커스텀 로그아웃 엔드포인트가 필요한 상황이 있다면, 다음과 같은 엔드포인트를 만들 수 있습니다:
 
 .Custom Logout Endpoint
 [tabs]
@@ -370,7 +369,7 @@ Java::
 ----
 @PostMapping("/my/logout")
 public String performLogout() {
-    // .. perform logout
+    // .. 로그아웃 수행
     return "redirect:/home";
 }
 ----
@@ -381,14 +380,14 @@ Kotlin::
 ----
 @PostMapping("/my/logout")
 fun performLogout(): String {
-    // .. perform logout
+    // .. 로그아웃 수행
     return "redirect:/home"
 }
 ----
 ======
 
-then you will need to have that endpoint invoke Spring Security's {security-api-url}/org/springframework/security/web/authentication/logout/SecurityContextLogoutHandler.html[`SecurityContextLogoutHandler`] to ensure a secure and complete logout.
-Something like the following is needed at a minimum:
+이 경우, 해당 엔드포인트에서 안전하고 완전한 로그아웃을 보장하기 위해 Spring Security의 {security-api-url}/org/springframework/security/web/authentication/logout/SecurityContextLogoutHandler.html[`SecurityContextLogoutHandler`]를 호출해야 합니다.
+최소한 다음과 같은 작업이 필요합니다:
 
 .Custom Logout Endpoint
 [tabs]
@@ -401,7 +400,7 @@ SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
 
 @PostMapping("/my/logout")
 public String performLogout(Authentication authentication, HttpServletRequest request, HttpServletResponse response) {
-    // .. perform logout
+    // .. 로그아웃 수행
     this.logoutHandler.doLogout(request, response, authentication);
     return "redirect:/home";
 }
@@ -415,30 +414,30 @@ val logoutHandler = SecurityContextLogoutHandler()
 
 @PostMapping("/my/logout")
 fun performLogout(val authentication: Authentication, val request: HttpServletRequest, val response: HttpServletResponse): String {
-    // .. perform logout
+    // .. 로그아웃 수행
     this.logoutHandler.doLogout(request, response, authentication)
     return "redirect:/home"
 }
 ----
 ======
 
-Such will clear out the {security-api-url}/org/springframework/security/core/context/SecurityContextHolderStrategy.html[`SecurityContextHolderStrategy`] and {security-api-url}/org/springframework/security/web/context/SecurityContextRepository.html[`SecurityContextRepository`] as needed.
+이렇게 하면 필요에 따라 {security-api-url}/org/springframework/security/core/context/SecurityContextHolderStrategy.html[`SecurityContextHolderStrategy`]와 {security-api-url}/org/springframework/security/web/context/SecurityContextRepository.html[`SecurityContextRepository`]를 정리합니다.
 
-Also, you'll need to <<permit-logout-endpoints, explicitly permit the endpoint>>.
+또한 <<permit-logout-endpoints, 해당 엔드포인트를 명시적으로 허용>>해야 합니다.
 
 [WARNING]
-Failing to call {security-api-url}/org/springframework/security/web/authentication/logout/SecurityContextLogoutHandler.html[`SecurityContextLogoutHandler`] means that xref:servlet/authentication/architecture.adoc#servlet-authentication-securitycontext[the `SecurityContext`] could still be available on subsequent requests, meaning that the user is not actually logged out.
+{security-api-url}/org/springframework/security/web/authentication/logout/SecurityContextLogoutHandler.html[`SecurityContextLogoutHandler`]를 호출하지 않으면 xref:servlet/authentication/architecture.adoc#servlet-authentication-securitycontext[`SecurityContext`]가 후속 요청에서 여전히 사용 가능할 수 있어 사용자가 실제로 로그아웃되지 않을 수 있습니다.
 
 [[testing-logout]]
-== Testing Logout
-Once you have logout configured you can test it using xref:servlet/test/mockmvc/logout.adoc[Spring Security's MockMvc support].
+== 로그아웃 테스트하기
+로그아웃을 구성한 후에는 xref:servlet/test/mockmvc/logout.adoc[Spring Security의 MockMvc 지원]을 사용하여 테스트할 수 있습니다.
 
 [[jc-logout-references]]
-== Further Logout-Related References
+== 추가 로그아웃 관련 참조
 
-- xref:servlet/test/mockmvc/logout.adoc#test-logout[Testing Logout]
+- xref:servlet/test/mockmvc/logout.adoc#test-logout[로그아웃 테스트하기]
 - xref:servlet/integrations/servlet-api.adoc#servletapi-logout[HttpServletRequest.logout()]
-- xref:servlet/authentication/rememberme.adoc#remember-me-impls[Remember-Me Interfaces and Implementations]
-- xref:servlet/exploits/csrf.adoc#csrf-considerations-logout[Logging Out] in section CSRF Caveats
-- Section xref:servlet/authentication/cas.adoc#cas-singlelogout[Single Logout] (CAS protocol)
-- Documentation for the xref:servlet/appendix/namespace/http.adoc#nsa-logout[logout element] in the Spring Security XML Namespace section
+- xref:servlet/authentication/rememberme.adoc#remember-me-impls[Remember-Me 인터페이스 및 구현]
+- xref:servlet/exploits/csrf.adoc#csrf-considerations-logout[로그아웃] (CSRF 주의사항 섹션)
+- xref:servlet/authentication/cas.adoc#cas-singlelogout[단일 로그아웃] (CAS 프로토콜)
+- Spring Security XML 네임스페이스 섹션의 xref:servlet/appendix/namespace/http.adoc#nsa-logout[logout 요소] 문서

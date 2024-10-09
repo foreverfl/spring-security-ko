@@ -1,72 +1,67 @@
 [[servlet-jaas]]
-= Java Authentication and Authorization Service (JAAS) Provider
+= Java 인증 및 인가 서비스(JAAS) 제공자
 
-Spring Security provides a package to delegate authentication requests to the Java Authentication and Authorization Service (JAAS).
-This section discusses that package.
-
+Spring Security는 인증 요청을 Java 인증 및 인가 서비스(JAAS)에 위임하기 위한 패키지를 제공합니다.
+이 섹션에서는 해당 패키지에 대해 설명합니다.
 
 [[jaas-abstractjaasauthenticationprovider]]
 == AbstractJaasAuthenticationProvider
-The `AbstractJaasAuthenticationProvider` class is the basis for the provided JAAS `AuthenticationProvider` implementations.
-Subclasses must implement a method that creates the `LoginContext`.
-The `AbstractJaasAuthenticationProvider` has a number of dependencies that can be injected into it, as discussed in the remainder of this section.
-
+`AbstractJaasAuthenticationProvider` 클래스는 제공된 JAAS `AuthenticationProvider` 구현의 기초입니다.
+하위 클래스는 ``LoginContext``를 생성하는 메서드를 구현해야 합니다.
+``AbstractJaasAuthenticationProvider``는 이 섹션의 나머지 부분에서 설명하는 여러 의존성을 주입할 수 있습니다.
 
 [[jaas-callbackhandler]]
 === JAAS CallbackHandler
-Most JAAS `LoginModule` instances require a callback of some sort.
-These callbacks are usually used to obtain the username and password from the user.
+대부분의 JAAS `LoginModule` 인스턴스는 어떤 형태의 콜백을 필요로 합니다.
+이러한 콜백은 주로 사용자로부터 사용자 이름과 비밀번호를 얻는 데 사용됩니다.
 
-In a Spring Security deployment, Spring Security is responsible for this user interaction (through the authentication mechanism).
-Thus, by the time the authentication request is delegated through to JAAS, Spring Security's authentication mechanism has already fully populated an `Authentication` object that contains all the information required by the JAAS `LoginModule`.
+Spring Security 배포에서는 Spring Security가 이러한 사용자 상호작용을 담당합니다(인증 메커니즘을 통해).
+따라서 인증 요청이 JAAS로 위임되는 시점에는 Spring Security의 인증 메커니즘이 이미 JAAS ``LoginModule``에 필요한 모든 정보를 포함하는 `Authentication` 객체를 완전히 채웠습니다.
 
-Therefore, the JAAS package for Spring Security provides two default callback handlers: `JaasNameCallbackHandler` and `JaasPasswordCallbackHandler`.
-Each of these callback handlers implements `JaasAuthenticationCallbackHandler`.
-In most cases, these callback handlers can be used without understanding the internal mechanics.
+따라서 Spring Security용 JAAS 패키지는 두 가지 기본 콜백 핸들러를 제공합니다: ``JaasNameCallbackHandler``와 ``JaasPasswordCallbackHandler``입니다.
+이 콜백 핸들러들은 각각 ``JaasAuthenticationCallbackHandler``를 구현합니다.
+대부분의 경우 내부 메커니즘을 이해하지 않고도 이러한 콜백 핸들러를 사용할 수 있습니다.
 
-For those needing full control over the callback behavior, `AbstractJaasAuthenticationProvider` internally wraps these `JaasAuthenticationCallbackHandler` instances with an `InternalCallbackHandler`.
-The `InternalCallbackHandler` is the class that actually implements the JAAS normal `CallbackHandler` interface.
-Any time that the JAAS `LoginModule` is used, it is passed a list of application contexts configured `InternalCallbackHandler` instances.
-If the `LoginModule` requests a callback against the `InternalCallbackHandler` instances, the callback is, in turn, passed to the `JaasAuthenticationCallbackHandler` instances being wrapped.
+콜백 동작을 완전히 제어해야 하는 경우, ``AbstractJaasAuthenticationProvider``는 내부적으로 이러한 ``JaasAuthenticationCallbackHandler`` 인스턴스를 ``InternalCallbackHandler``로 래핑합니다.
+``InternalCallbackHandler``는 실제로 JAAS의 일반적인 `CallbackHandler` 인터페이스를 구현하는 클래스입니다.
+JAAS ``LoginModule``이 사용될 때마다 구성된 애플리케이션 컨텍스트의 ``InternalCallbackHandler`` 인스턴스 목록이 전달됩니다.
+``LoginModule``이 ``InternalCallbackHandler`` 인스턴스에 대해 콜백을 요청하면, 그 콜백은 차례로 래핑된 ``JaasAuthenticationCallbackHandler`` 인스턴스로 전달됩니다.
 
 [[jaas-authoritygranter]]
 === JAAS AuthorityGranter
-JAAS works with principals.
-Even "`roles`" are represented as principals in JAAS.
-Spring Security, on the other hand, works with `Authentication` objects.
-Each `Authentication` object contains a single principal and multiple `GrantedAuthority` instances.
-To facilitate mapping between these different concepts, Spring Security's JAAS package includes an `AuthorityGranter` interface.
+JAAS는 주체(principal)와 함께 작동합니다.
+JAAS에서는 "역할"조차도 주체로 표현됩니다.
+반면 Spring Security는 `Authentication` 객체와 함께 작동합니다.
+각 `Authentication` 객체는 단일 주체와 여러 `GrantedAuthority` 인스턴스를 포함합니다.
+이러한 서로 다른 개념 간의 매핑을 용이하게 하기 위해 Spring Security의 JAAS 패키지는 `AuthorityGranter` 인터페이스를 포함합니다.
 
-An `AuthorityGranter` is responsible for inspecting a JAAS principal and returning a set of `String` objects that represent the authorities assigned to the principal.
-For each returned authority string, the `AbstractJaasAuthenticationProvider` creates a `JaasGrantedAuthority` (which implements Spring Security's `GrantedAuthority` interface) that contains the authority string and the JAAS principal that the `AuthorityGranter` was passed.
-The `AbstractJaasAuthenticationProvider` obtains the JAAS principals by first successfully authenticating the user's credentials by using the JAAS `LoginModule` and then accessing the `LoginContext` it returns.
-A call to `LoginContext.getSubject().getPrincipals()` is made, with each resulting principal passed to each `AuthorityGranter` defined against the `AbstractJaasAuthenticationProvider.setAuthorityGranters(List)` property.
+``AuthorityGranter``는 JAAS 주체를 검사하고 해당 주체에 할당된 권한을 나타내는 `String` 객체 집합을 반환합니다.
+반환된 각 권한 문자열에 대해 ``AbstractJaasAuthenticationProvider``는 권한 문자열과 ``AuthorityGranter``에 전달된 JAAS 주체를 포함하는 ``JaasGrantedAuthority``(Spring Security의 `GrantedAuthority` 인터페이스를 구현)를 생성합니다.
+``AbstractJaasAuthenticationProvider``는 먼저 JAAS ``LoginModule``을 사용하여 사용자의 자격 증명을 성공적으로 인증한 다음 반환된 ``LoginContext``에 접근하여 JAAS 주체를 얻습니다.
+`LoginContext.getSubject().getPrincipals()` 호출이 이루어지며, 결과로 나온 각 주체는 `AbstractJaasAuthenticationProvider.setAuthorityGranters(List)` 속성에 정의된 각 ``AuthorityGranter``에 전달됩니다.
 
-Spring Security does not include any production `AuthorityGranter` instances, given that every JAAS principal has an implementation-specific meaning.
-However, there is a `TestAuthorityGranter` in the unit tests that demonstrates a simple `AuthorityGranter` implementation.
-
+모든 JAAS 주체가 구현별로 특정한 의미를 가지기 때문에 Spring Security는 프로덕션 `AuthorityGranter` 인스턴스를 포함하지 않습니다.
+그러나 단위 테스트에 간단한 `AuthorityGranter` 구현을 보여주는 ``TestAuthorityGranter``가 있습니다.
 
 [[jaas-defaultjaasauthenticationprovider]]
 == DefaultJaasAuthenticationProvider
-The `DefaultJaasAuthenticationProvider` lets a JAAS `Configuration` object be injected into it as a dependency.
-It then creates a `LoginContext` by using the injected JAAS `Configuration`.
-This means that `DefaultJaasAuthenticationProvider` is not bound to any particular implementation of `Configuration`, as `JaasAuthenticationProvider` is.
-
+``DefaultJaasAuthenticationProvider``는 JAAS ``Configuration`` 객체를 의존성으로 주입할 수 있게 합니다.
+그런 다음 주입된 JAAS ``Configuration``을 사용하여 ``LoginContext``를 생성합니다.
+이는 ``DefaultJaasAuthenticationProvider``가 ``JaasAuthenticationProvider``와 달리 특정 `Configuration` 구현에 묶이지 않음을 의미합니다.
 
 [[jaas-inmemoryconfiguration]]
 === InMemoryConfiguration
-To make it easy to inject a `Configuration` into `DefaultJaasAuthenticationProvider`, a default in-memory implementation named `InMemoryConfiguration` is provided.
-The implementation constructor accepts a `Map` where each key represents a login configuration name, and the value represents an `Array` of `AppConfigurationEntry` instances.
-`InMemoryConfiguration` also supports a default `Array` of `AppConfigurationEntry` objects that is used if no mapping is found within the provided `Map`.
-For details, see the {security-api-url}org/springframework/security/authentication/jaas/memory/InMemoryConfiguration.html[Javadoc of `InMemoryConfiguration`].
-
+``DefaultJaasAuthenticationProvider``에 ``Configuration``을 쉽게 주입할 수 있도록 ``InMemoryConfiguration``이라는 기본 인메모리 구현이 제공됩니다.
+이 구현의 생성자는 각 키가 로그인 구성 이름을 나타내고 값이 `AppConfigurationEntry` 인스턴스의 ``Array``를 나타내는 ``Map``을 받습니다.
+``InMemoryConfiguration``은 또한 제공된 ``Map``에서 매핑을 찾을 수 없을 때 사용되는 기본 `AppConfigurationEntry` 객체의 ``Array``를 지원합니다.
+자세한 내용은 {security-api-url}org/springframework/security/authentication/jaas/memory/InMemoryConfiguration.html[``InMemoryConfiguration``의 Javadoc]을 참조하세요.
 
 [[jaas-djap-config]]
-=== DefaultJaasAuthenticationProvider Example Configuration
-While the Spring configuration for `InMemoryConfiguration` can be more verbose than the standard JAAS configuration files, using it in conjunction with `DefaultJaasAuthenticationProvider` is more flexible than `JaasAuthenticationProvider`, since it not dependent on the default `Configuration` implementation.
+=== DefaultJaasAuthenticationProvider 예제 구성
+``InMemoryConfiguration``에 대한 Spring 구성이 표준 JAAS 구성 파일보다 더 장황할 수 있지만, ``DefaultJaasAuthenticationProvider``와 함께 사용하면 기본 ``Configuration`` 구현에 의존하지 않기 때문에 `JaasAuthenticationProvider`보다 더 유연합니다.
 
-The next example provides a configuration of `DefaultJaasAuthenticationProvider` that uses `InMemoryConfiguration`.
-Note that custom implementations of `Configuration` can easily be injected into `DefaultJaasAuthenticationProvider` as well.
+다음 예제는 ``InMemoryConfiguration``을 사용하는 ``DefaultJaasAuthenticationProvider``의 구성을 제공합니다.
+사용자 정의 ``Configuration`` 구현도 쉽게 ``DefaultJaasAuthenticationProvider``에 주입할 수 있습니다.
 
 [source,xml]
 ----
@@ -77,8 +72,8 @@ class="org.springframework.security.authentication.jaas.DefaultJaasAuthenticatio
 <constructor-arg>
 	<map>
 	<!--
-	SPRINGSECURITY is the default loginContextName
-	for AbstractJaasAuthenticationProvider
+	SPRINGSECURITY는 AbstractJaasAuthenticationProvider의
+	기본 loginContextName입니다
 	-->
 	<entry key="SPRINGSECURITY">
 	<array>
@@ -100,21 +95,20 @@ class="org.springframework.security.authentication.jaas.DefaultJaasAuthenticatio
 </property>
 <property name="authorityGranters">
 <list>
-	<!-- You will need to write your own implementation of AuthorityGranter -->
+	<!-- AuthorityGranter의 자체 구현을 작성해야 합니다 -->
 	<bean class="org.springframework.security.authentication.jaas.TestAuthorityGranter"/>
 </list>
 </property>
 </bean>
 ----
 
-
 [[jaas-jaasauthenticationprovider]]
 == JaasAuthenticationProvider
-The `JaasAuthenticationProvider` assumes that the default `Configuration` is an instance of https://docs.oracle.com/javase/8/docs/jre/api/security/jaas/spec/com/sun/security/auth/login/ConfigFile.html[`ConfigFile`].
-This assumption is made in order to try to update the `Configuration`.
-The `JaasAuthenticationProvider` then uses the default `Configuration` to create the `LoginContext`.
+``JaasAuthenticationProvider``는 기본 ``Configuration``이 https://docs.oracle.com/javase/8/docs/jre/api/security/jaas/spec/com/sun/security/auth/login/ConfigFile.html[`ConfigFile`]의 인스턴스라고 가정합니다.
+이 가정은 ``Configuration``을 업데이트하려고 시도하기 위해 이루어집니다.
+그런 다음 ``JaasAuthenticationProvider``는 기본 ``Configuration``을 사용하여 ``LoginContext``를 생성합니다.
 
-Assume that we have a JAAS login configuration file, `/WEB-INF/login.conf`, with the following contents:
+다음과 같은 내용의 JAAS 로그인 구성 파일 ``/WEB-INF/login.conf``가 있다고 가정해봅시다:
 
 [source,txt]
 ----
@@ -123,8 +117,8 @@ JAASTest {
 };
 ----
 
-Like all Spring Security beans, the `JaasAuthenticationProvider` is configured through the application context.
-The following definitions would correspond to the above JAAS login configuration file:
+모든 Spring Security 빈과 마찬가지로 ``JaasAuthenticationProvider``는 애플리케이션 컨텍스트를 통해 구성됩니다.
+다음 정의는 위의 JAAS 로그인 구성 파일에 해당합니다:
 
 [source,xml]
 ----
@@ -150,14 +144,14 @@ class="org.springframework.security.authentication.jaas.JaasAuthenticationProvid
 ----
 
 [[jaas-apiprovision]]
-== Running as a Subject
-If configured, the `JaasApiIntegrationFilter` tries to run as the `Subject` on the `JaasAuthenticationToken`.
-This means that the `Subject` can be accessed using:
+== Subject로 실행하기
+구성된 경우, ``JaasApiIntegrationFilter``는 ``JaasAuthenticationToken``의 ``Subject``로 실행을 시도합니다.
+이는 ``Subject``에 다음과 같이 접근할 수 있음을 의미합니다:
 
 [source,java]
 ----
 Subject subject = Subject.getSubject(AccessController.getContext());
 ----
 
-You can configure this integration by using the xref:servlet/appendix/namespace/http.adoc#nsa-http-jaas-api-provision[jaas-api-provision] attribute.
-This feature is useful when integrating with legacy or external API's that rely on the JAAS Subject being populated.
+xref:servlet/appendix/namespace/http.adoc#nsa-http-jaas-api-provision[jaas-api-provision] 속성을 사용하여 이 통합을 구성할 수 있습니다.
+이 기능은 JAAS Subject가 채워져 있어야 하는 레거시 또는 외부 API와 통합할 때 유용합니다.

@@ -1,41 +1,40 @@
 [[servlet-rememberme]]
-= Remember-Me Authentication
+= 자동 로그인(Remember-Me) 인증
 
 [[remember-me-overview]]
-Remember-me or persistent-login authentication refers to web sites being able to remember the identity of a principal between sessions.
-This is typically accomplished by sending a cookie to the browser, with the cookie being detected during future sessions and causing automated login to take place.
-Spring Security provides the necessary hooks for these operations to take place and has two concrete remember-me implementations.
-One uses hashing to preserve the security of cookie-based tokens and the other uses a database or other persistent storage mechanism to store the generated tokens.
+자동 로그인(Remember-me) 또는 지속적인 로그인 인증은 웹사이트가 세션 간에 사용자의 신원을 기억할 수 있는 기능을 말합니다.
+이는 일반적으로 브라우저에 쿠키를 전송하고, 이후 세션에서 이 쿠키를 감지하여 자동 로그인을 수행하는 방식으로 이루어집니다.
+Spring Security는 이러한 작업에 필요한 훅을 제공하며, 두 가지 구체적인 자동 로그인 구현을 제공합니다.
+하나는 해싱을 사용하여 쿠키 기반 토큰의 보안을 유지하고, 다른 하나는 데이터베이스나 다른 영구 저장소 메커니즘을 사용하여 생성된 토큰을 저장합니다.
 
-Note that both implementations require a `UserDetailsService`.
-If you use an authentication provider that does not use a `UserDetailsService` (for example, the LDAP provider), it does not work unless you also have a `UserDetailsService` bean in your application context.
-
+두 구현 모두 ``UserDetailsService``가 필요하다는 점에 유의하세요.
+``UserDetailsService``를 사용하지 않는 인증 제공자(예: LDAP 제공자)를 사용하는 경우, 애플리케이션 컨텍스트에 `UserDetailsService` 빈이 있지 않으면 작동하지 않습니다.
 
 [[remember-me-hash-token]]
-== Simple Hash-Based Token Approach
-This approach uses hashing to achieve a useful remember-me strategy.
-In essence, a cookie is sent to the browser upon successful interactive authentication, with the cookie being composed as follows:
+== 간단한 해시 기반 토큰 접근 방식
+이 접근 방식은 해싱을 사용하여 유용한 자동 로그인 전략을 구현합니다.
+본질적으로, 성공적인 대화형 인증(사용자가 직접 로그인 정보를 입력하고 인증을 수행) 후 브라우저에 쿠키가 전송되며, 이 쿠키는 다음과 같이 구성됩니다:
 
 [source,txt]
 ----
 base64(username + ":" + expirationTime + ":" + algorithmName + ":"
 algorithmHex(username + ":" + expirationTime + ":" password + ":" + key))
 
-username:          As identifiable to the UserDetailsService
-password:          That matches the one in the retrieved UserDetails
-expirationTime:    The date and time when the remember-me token expires, expressed in milliseconds
-key:               A private key to prevent modification of the remember-me token
-algorithmName:     The algorithm used to generate and to verify the remember-me token signature
+username:          UserDetailsService에서 식별 가능한 사용자 이름
+password:          검색된 UserDetails의 비밀번호와 일치하는 값
+expirationTime:    자동 로그인 토큰의 만료 날짜와 시간(밀리초 단위)
+key:               자동 로그인 토큰 변조를 방지하기 위한 개인 키
+algorithmName:     자동 로그인 토큰 서명을 생성하고 검증하는 데 사용된 알고리즘
 ----
 
-The remember-me token is valid only for the period specified and only if the username, password, and key do not change.
-Notably, this has a potential security issue, in that a captured remember-me token is usable from any user agent until such time as the token expires.
-This is the same issue as with digest authentication.
-If a principal is aware that a token has been captured, they can easily change their password and immediately invalidate all remember-me tokens on issue.
-If more significant security is needed, you should use the approach described in the next section.
-Alternatively, remember-me services should not be used at all.
+자동 로그인 토큰은 지정된 기간 동안만 유효하며, 사용자 이름, 비밀번호, 키가 변경되지 않은 경우에만 유효합니다.
+주목할 점은 캡처된 자동 로그인 토큰이 토큰이 만료될 때까지 어떤 사용자 에이전트에서도 사용 가능하다는 잠재적인 보안 문제가 있다는 것입니다.
+이는 다이제스트 인증과 동일한 문제입니다.
+사용자가 토큰이 캡처되었다는 것을 알게 되면, 비밀번호를 쉽게 변경하여 발급된 모든 자동 로그인 토큰을 즉시 무효화할 수 있습니다.
+더 높은 수준의 보안이 필요한 경우, 다음 섹션에서 설명하는 접근 방식을 사용해야 합니다.
+또는 자동 로그인 서비스를 전혀 사용하지 않아야 합니다.
 
-If you are familiar with the topics discussed in the chapter on xref:servlet/configuration/xml-namespace.adoc#ns-config[namespace configuration], you can enable remember-me authentication by adding the `<remember-me>` element:
+xref:servlet/configuration/xml-namespace.adoc#ns-config[네임스페이스 구성] 장에서 논의된 주제에 익숙하다면, `<remember-me>` 요소를 추가하여 자동 로그인 인증을 활성화할 수 있습니다:
 
 [source,xml]
 ----
@@ -45,14 +44,13 @@ If you are familiar with the topics discussed in the chapter on xref:servlet/con
 </http>
 ----
 
-The `UserDetailsService` is normally selected automatically.
-If you have more than one in your application context, you need to specify which one should be used with the `user-service-ref` attribute, where the value is the name of your `UserDetailsService` bean.
+``UserDetailsService``는 일반적으로 자동으로 선택됩니다.
+애플리케이션 컨텍스트에 둘 이상의 ``UserDetailsService``가 있는 경우, `user-service-ref` 속성을 사용하여 사용할 `UserDetailsService` 빈의 이름을 지정해야 합니다.
 
 [[remember-me-persistent-token]]
-== Persistent Token Approach
-This approach is based on the article https://web.archive.org/web/20180819014446/http://jaspan.com/improved_persistent_login_cookie_best_practice[Improved Persistent Login Cookie Best Practice] with some minor modifications  footnote:[Essentially, the username is not included in the cookie, to prevent exposing a valid login name unecessarily.
-There is a discussion on this in the comments section of this article.].
-To use this approach with namespace configuration, you would supply a datasource reference:
+== 영구 토큰 접근 방식
+이 접근 방식은 https://web.archive.org/web/20180819014446/http://jaspan.com/improved_persistent_login_cookie_best_practice[Improved Persistent Login Cookie Best Practice] 문서를 기반으로 하며 약간의 수정이 있습니다 footnote:[기본적으로 사용자 이름이 쿠키에 포함되지 않아 불필요하게 유효한 로그인 이름을 노출하지 않습니다. 이에 대한 논의는 이 문서의 댓글 섹션에서 볼 수 있습니다.].
+네임스페이스 구성에서 이 접근 방식을 사용하려면 데이터소스 참조를 제공해야 합니다:
 
 [source,xml]
 ----
@@ -62,7 +60,7 @@ To use this approach with namespace configuration, you would supply a datasource
 </http>
 ----
 
-The database should contain a `persistent_logins` table, created by using the following SQL (or equivalent):
+데이터베이스에는 다음 SQL(또는 이와 동등한 것)을 사용하여 생성된 `persistent_logins` 테이블이 포함되어야 합니다:
 
 [source,ddl]
 ----
@@ -73,11 +71,11 @@ create table persistent_logins (username varchar(64) not null,
 ----
 
 [[remember-me-impls]]
-== Remember-Me Interfaces and Implementations
-Remember-me is used with `UsernamePasswordAuthenticationFilter` and is implemented through hooks in the `AbstractAuthenticationProcessingFilter` superclass.
-It is also used within `BasicAuthenticationFilter`.
-The hooks invoke a concrete `RememberMeServices` at the appropriate times.
-The following listing shows the interface:
+== 자동 로그인 인터페이스 및 구현
+자동 로그인은 ``UsernamePasswordAuthenticationFilter``와 함께 사용되며 ``AbstractAuthenticationProcessingFilter`` 상위 클래스의 훅을 통해 구현됩니다.
+또한 ``BasicAuthenticationFilter`` 내에서도 사용됩니다.
+이 훅은 적절한 시점에 구체적인 ``RememberMeServices``를 호출합니다.
+다음은 인터페이스를 보여줍니다:
 
 [source,java]
 ----
@@ -89,26 +87,26 @@ void loginSuccess(HttpServletRequest request, HttpServletResponse response,
 	Authentication successfulAuthentication);
 ----
 
-See the Javadoc for {security-api-url}org/springframework/security/web/authentication/RememberMeServices.html[`RememberMeServices`] for a fuller discussion on what the methods do, although note that, at this stage, `AbstractAuthenticationProcessingFilter` calls only the `loginFail()` and `loginSuccess()` methods.
-The `autoLogin()` method is called by `RememberMeAuthenticationFilter` whenever the `SecurityContextHolder` does not contain an `Authentication`.
-This interface, therefore, provides the underlying remember-me implementation with sufficient notification of authentication-related events and delegates to the implementation whenever a candidate web request might contain a cookie and wish to be remembered.
-This design allows any number of remember-me implementation strategies.
+메서드가 수행하는 작업에 대한 자세한 설명은 {security-api-url}org/springframework/security/web/authentication/RememberMeServices.html[`RememberMeServices`]의 Javadoc을 참조하세요. 단, 이 단계에서 ``AbstractAuthenticationProcessingFilter``는 `loginFail()` 및 `loginSuccess()` 메서드만 호출한다는 점에 유의하세요.
+`autoLogin()` 메서드는 ``SecurityContextHolder``에 ``Authentication``이 포함되어 있지 않을 때마다 ``RememberMeAuthenticationFilter``에 의해 호출됩니다.
+따라서 이 인터페이스는 기본 자동 로그인 구현에 인증 관련 이벤트에 대한 충분한 알림을 제공하고, 후보 웹 요청에 쿠키가 포함되어 있고 기억되기를 원할 때마다 구현에 위임합니다.
+이 설계를 통해 다양한 자동 로그인 구현 전략을 사용할 수 있습니다.
 
-We have seen earlier that Spring Security provides two implementations.
-We look at each of these in turn.
+앞서 Spring Security가 두 가지 구현을 제공한다는 것을 보았습니다.
+이제 각각을 살펴보겠습니다.
 
 === TokenBasedRememberMeServices
-This implementation supports the simpler approach described in <<remember-me-hash-token>>.
-`TokenBasedRememberMeServices` generates a `RememberMeAuthenticationToken`, which is processed by `RememberMeAuthenticationProvider`.
-A `key` is shared between this authentication provider and the `TokenBasedRememberMeServices`.
-In addition, `TokenBasedRememberMeServices` requires a `UserDetailsService`, from which it can retrieve the username and password for signature comparison purposes and generate the `RememberMeAuthenticationToken` to contain the correct `GrantedAuthority` instances.
-`TokenBasedRememberMeServices` also implements Spring Security's `LogoutHandler` interface so that it can be used with `LogoutFilter` to have the cookie cleared automatically.
+이 구현은 <<remember-me-hash-token>>에서 설명한 더 간단한 접근 방식을 지원합니다.
+``TokenBasedRememberMeServices``는 ``RememberMeAuthenticationProvider``에 의해 처리되는 ``RememberMeAuthenticationToken``을 생성합니다.
+키는 이 인증 제공자와 ``TokenBasedRememberMeServices`` 사이에서 공유됩니다.
+또한 ``TokenBasedRememberMeServices``는 ``UserDetailsService``가 필요합니다. 이를 통해 서명 비교를 위한 사용자 이름과 비밀번호를 검색하고 올바른 ``GrantedAuthority`` 인스턴스를 포함하는 ``RememberMeAuthenticationToken``을 생성할 수 있습니다.
+``TokenBasedRememberMeServices``는 Spring Security의 ``LogoutHandler`` 인터페이스도 구현하므로 ``LogoutFilter``와 함께 사용하여 쿠키를 자동으로 지울 수 있습니다.
 
-By default, this implementation uses the SHA-256 algorithm to encode the token signature.
-To verify the token signature, the algorithm retrieved from `algorithmName` is parsed and used.
-If no `algorithmName` is present, the default matching algorithm will be used, which is SHA-256.
-You can specify different algorithms for signature encoding and for signature matching, this allows users to safely upgrade to a different encoding algorithm while still able to verify old ones if there is no `algorithmName` present.
-To do that you can specify your customized `TokenBasedRememberMeServices` as a Bean and use it in the configuration.
+기본적으로 이 구현은 SHA-256 알고리즘을 사용하여 토큰 서명을 인코딩합니다.
+토큰 서명을 확인하기 위해 ``algorithmName``에서 검색한 알고리즘이 파싱되어 사용됩니다.
+``algorithmName``이 없으면 기본 일치 알고리즘인 SHA-256이 사용됩니다.
+서명 인코딩과 서명 일치를 위해 다른 알고리즘을 지정할 수 있습니다. 이를 통해 사용자는 ``algorithmName``이 없는 경우에도 이전 알고리즘을 계속 확인할 수 있으면서 안전하게 다른 인코딩 알고리즘으로 업그레이드할 수 있습니다.
+이를 위해 사용자 정의 ``TokenBasedRememberMeServices``를 Bean으로 지정하고 구성에서 사용할 수 있습니다.
 
 [tabs]
 ======
@@ -155,7 +153,7 @@ XML::
 ----
 ======
 
-The following beans are required in an application context to enable remember-me services:
+자동 로그인 서비스를 활성화하려면 애플리케이션 컨텍스트에 다음 빈이 필요합니다:
 
 [tabs]
 ======
@@ -210,13 +208,13 @@ XML::
 ----
 ======
 
-Remember to add your `RememberMeServices` implementation to your `UsernamePasswordAuthenticationFilter.setRememberMeServices()` property, include the `RememberMeAuthenticationProvider` in your `AuthenticationManager.setProviders()` list, and add `RememberMeAuthenticationFilter` into your `FilterChainProxy` (typically immediately after your `UsernamePasswordAuthenticationFilter`).
-
+``RememberMeServices`` 구현을 `UsernamePasswordAuthenticationFilter.setRememberMeServices()` 속성에 추가하고, ``RememberMeAuthenticationProvider``를 `AuthenticationManager.setProviders()` 목록에 포함시키고, ``RememberMeAuthenticationFilter``를 ``FilterChainProxy``에 추가하는 것을 잊지 마세요(일반적으로 `UsernamePasswordAuthenticationFilter` 바로 다음에 위치).
 
 === PersistentTokenBasedRememberMeServices
-You can use this class in the same way as `TokenBasedRememberMeServices`, but it additionally needs to be configured with a `PersistentTokenRepository` to store the tokens.
 
-* `InMemoryTokenRepositoryImpl` which is intended for testing only.
-* `JdbcTokenRepositoryImpl` which stores the tokens in a database.
+이 클래스는 ``TokenBasedRememberMeServices``와 같은 방식으로 사용할 수 있지만, 토큰을 저장하기 위한 ``PersistentTokenRepository``를 추가로 구성해야 합니다.
 
-See <<remember-me-persistent-token>> for the database schema.
+* ``InMemoryTokenRepositoryImpl``: 테스트용으로만 사용됩니다.
+* ``JdbcTokenRepositoryImpl``: 토큰을 데이터베이스에 저장합니다.
+
+데이터베이스 스키마는 <<remember-me-persistent-token>>을 참조하세요.
