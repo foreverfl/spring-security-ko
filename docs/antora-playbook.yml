@@ -6,6 +6,7 @@ site:
   title: Spring Security
   url: https://spring-security-ko.mogumogu.dev/
   robots: allow
+  start_page: security::index.adoc
 git:
   ensure_git_suffix: false
 content:
@@ -43,7 +44,7 @@ urls:
   redirect_facility: httpd
 ui:
   bundle:
-    url: https://blog_workers.forever-fl.workers.dev/spring-ui-bundle.zip
+    url: https://blog_workers.forever-fl.workers.dev/spring-ui-bundle-01.zip
     snapshot: true
 runtime:
   log:
