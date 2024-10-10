@@ -1,12 +1,11 @@
-
 [[jc-method]]
-= Method Security
+= 메서드 보안
 :figures: servlet/authorization
 
-In addition to xref:servlet/authorization/authorize-http-requests.adoc[modeling authorization at the request level], Spring Security also supports modeling at the method level.
+요청 레벨에서 xref:servlet/authorization/authorize-http-requests.adoc[권한 부여를 설정]하는 것 외에도, Spring Security는 메서드 레벨에서의 설정도 지원합니다.
 
 [[activate-method-security]]
-You can activate it in your application by annotating any `@Configuration` class with `@EnableMethodSecurity` or adding `<method-security>` to any  XML configuration file, like so:
+애플리케이션에서 메서드 보안을 활성화하려면 `@Configuration` 클래스에 `@EnableMethodSecurity` 어노테이션을 추가하거나 XML 구성 파일에 ``<method-security>``를 추가하면 됩니다:
 
 [tabs]
 ======
@@ -32,59 +31,59 @@ Xml::
 ----
 ======
 
-Then, you are immediately able to annotate any Spring-managed class or method with <<use-preauthorize, `@PreAuthorize`>>, <<use-postauthorize,`@PostAuthorize`>>, <<use-prefilter,`@PreFilter`>>, and <<use-postfilter,`@PostFilter`>> to authorize method invocations, including the input parameters and return values.
+그러면 즉시 Spring 관리 클래스나 메서드에 <<use-preauthorize, `@PreAuthorize`>>, <<use-postauthorize,`@PostAuthorize`>>, <<use-prefilter,`@PreFilter`>>, <<use-postfilter,`@PostFilter`>> 어노테이션을 사용하여 메서드 호출, 입력 매개변수, 반환 값을 권한 부여할 수 있습니다.
 
 [NOTE]
-{spring-boot-reference-url}using.html#using.build-systems.starters[Spring Boot Starter Security] does not activate method-level authorization by default.
+{spring-boot-reference-url}using.html#using.build-systems.starters[Spring Boot Starter Security]는 기본적으로 메서드 레벨 권한 부여를 활성화하지 않습니다.
 
-Method Security supports many other use cases as well including <<use-aspectj, AspectJ support>>, <<use-programmatic-authorization,custom annotations>>, and several configuration points.
-Consider learning about the following use cases:
+메서드 보안은 <<use-aspectj, AspectJ 지원>>, <<use-programmatic-authorization,사용자 정의 어노테이션>>, 그리고 여러 구성 포인트를 포함한 다양한 사용 사례를 지원합니다.
+다음과 같은 사용 사례에 대해 알아보는 것이 좋습니다:
 
-* <<migration-enableglobalmethodsecurity, Migrating from `@EnableGlobalMethodSecurity`>>
-* Understanding <<method-security-architecture,how method security works>> and reasons to use it
-* Comparing <<request-vs-method,request-level and method-level authorization>>
-* Authorizing methods with <<use-preauthorize,`@PreAuthorize`>> and <<use-postauthorize,`@PostAuthorize`>>
-* Providing <<fallback-values-authorization-denied,fallback values when authorization is denied>>
-* Filtering methods with <<use-prefilter,`@PreFilter`>> and <<use-postfilter,`@PostFilter`>>
-* Authorizing methods with <<use-jsr250,JSR-250 annotations>>
-* Authorizing methods with <<use-aspectj,AspectJ expressions>>
-* Integrating with <<weave-aspectj,AspectJ byte-code weaving>>
-* Coordinating with <<changing-the-order,@Transactional and other AOP-based annotations>>
-* Customizing <<customizing-expression-handling,SpEL expression handling>>
-* Integrating with <<custom-authorization-managers,custom authorization systems>>
+* <<migration-enableglobalmethodsecurity, ``@EnableGlobalMethodSecurity``에서 마이그레이션>>
+* <<method-security-architecture,메서드 보안의 작동 방식>> 이해 및 사용 이유
+* <<request-vs-method,요청 레벨과 메서드 레벨 권한 부여 비교>>
+* <<use-preauthorize,``@PreAuthorize``>>와 <<use-postauthorize,``@PostAuthorize``>>를 사용한 메서드 권한 부여
+* <<fallback-values-authorization-denied,권한 부여가 거부된 경우 대체 값 제공>>
+* <<use-prefilter,``@PreFilter``>>와 <<use-postfilter,``@PostFilter``>>를 사용한 메서드 필터링
+* <<use-jsr250,JSR-250 어노테이션>>을 사용한 메서드 권한 부여
+* <<use-aspectj,AspectJ 표현식>>을 사용한 메서드 권한 부여
+* <<weave-aspectj,AspectJ 바이트코드 위빙>>과 통합
+* <<changing-the-order,@Transactional 및 기타 AOP 기반 어노테이션과 조정>>
+* <<customizing-expression-handling,SpEL 표현식 처리 사용자 정의>>
+* <<custom-authorization-managers,사용자 정의 권한 부여 시스템>>과 통합
 
 [[method-security-architecture]]
-== How Method Security Works
+== 메서드 보안의 작동 방식
 
-Spring Security's method authorization support is handy for:
+Spring Security의 메서드 권한 부여 지원은 다음과 같은 경우에 유용합니다:
 
-* Extracting fine-grained authorization logic; for example, when the method parameters and return values contribute to the authorization decision.
-* Enforcing security at the service layer
-* Stylistically favoring annotation-based over `HttpSecurity`-based configuration
+* 세분화된 권한 부여 로직 추출. 예를 들어, 메서드 매개변수와 반환 값이 권한 부여 결정에 기여하는 경우
+* 서비스 계층에서 보안 강제
+* 스타일적으로 `HttpSecurity` 기반 구성보다 어노테이션 기반 구성 선호
 
-And since Method Security is built using {spring-framework-reference-url}core.html#aop-api[Spring AOP], you have access to all its expressive power to override Spring Security's defaults as needed.
+그리고 메서드 보안이 {spring-framework-reference-url}core.html#aop-api[Spring AOP]를 사용하여 설계되었기 때문에, 필요에 따라 Spring Security의 기본값을 재정의하기 위해 모든 표현력 있는 기능에 접근할 수 있습니다.
 
-As already mentioned, you begin by adding `@EnableMethodSecurity` to a `@Configuration` class or `<sec:method-security/>` in a Spring XML configuration file.
+이미 언급했듯이, `@Configuration` 클래스에 ``@EnableMethodSecurity``를 추가하거나 Spring XML 구성 파일에 ``<sec:method-security/>``를 추가하여 시작합니다.
 
 [[use-method-security]]
 [NOTE]
 ====
-This annotation and XML element supercede `@EnableGlobalMethodSecurity` and `<sec:global-method-security/>`, respectively.
-They offer the following improvements:
+이 어노테이션과 XML 요소는 각각 ``@EnableGlobalMethodSecurity``와 ``<sec:global-method-security/>``를 대체합니다.
+이들은 다음과 같은 개선 사항을 제공합니다:
 
-1. Uses the simplified `AuthorizationManager` API instead of metadata sources, config attributes, decision managers, and voters.
-This simplifies reuse and customization.
-2. Favors direct bean-based configuration, instead of requiring extending `GlobalMethodSecurityConfiguration` to customize beans
-3. Is built using native Spring AOP, removing abstractions and allowing you to use Spring AOP building blocks to customize
-4. Checks for conflicting annotations to ensure an unambiguous security configuration
-5. Complies with JSR-250
-6. Enables `@PreAuthorize`, `@PostAuthorize`, `@PreFilter`, and `@PostFilter` by default
+1. 메타데이터 소스, 구성 속성, 결정 관리자, 투표자 대신 단순화된 `AuthorizationManager` API를 사용합니다.
+이는 재사용과 사용자 정의를 단순화합니다.
+2. 빈 구성을 직접 사용하며, ``GlobalMethodSecurityConfiguration``을 확장하여 빈을 사용자 정의할 필요가 없습니다.
+3. 네이티브 Spring AOP를 사용하여 설계되어 추상화를 제거하고 사용자 정의를 위해 Spring AOP 빌딩 블록을 사용할 수 있습니다.
+4. 모호하지 않은 보안 구성을 보장하기 위해 충돌하는 어노테이션을 확인합니다.
+5. JSR-250을 준수합니다.
+6. 기본적으로 `@PreAuthorize`, `@PostAuthorize`, `@PreFilter`, ``@PostFilter``를 활성화합니다.
 
-If you are using `@EnableGlobalMethodSecurity` or `<global-method-security/>`, these are now deprecated, and you are encouraged to migrate.
+`@EnableGlobalMethodSecurity` 또는 ``<global-method-security/>``를 사용 중이라면, 이제 이들은 deprecated 되었으므로 마이그레이션을 권장합니다.
 ====
 
-Method authorization is a combination of before- and after-method authorization.
-Consider a service bean that is annotated in the following way:
+메서드 권한 부여는 메서드 전과 후의 권한 부여 조합입니다.
+다음과 같이 어노테이션이 달린 서비스 빈을 고려해 보세요:
 
 [tabs]
 ======
@@ -113,62 +112,62 @@ open class MyCustomerService {
 ----
 ======
 
-A given invocation to `MyCustomerService#readCustomer` may look something like this when Method Security <<activate-method-security,is activated>>:
+메서드 보안이 <<activate-method-security,활성화>>되면 ``MyCustomerService#readCustomer``에 대한 특정 호출은 다음과 같이 보일 수 있습니다:
 
 image::{figures}/methodsecurity.png[]
 
-1. Spring AOP invokes its proxy method for `readCustomer`. Among the proxy's other advisors, it invokes an {security-api-url}org/springframework/security/authorization/method/AuthorizationManagerBeforeMethodInterceptor.html[`AuthorizationManagerBeforeMethodInterceptor`] that matches <<annotation-method-pointcuts,the `@PreAuthorize` pointcut>>
-2. The interceptor invokes {security-api-url}org/springframework/security/authorization/method/PreAuthorizeAuthorizationManager.html[`PreAuthorizeAuthorizationManager#check`]
-3. The authorization manager uses a `MethodSecurityExpressionHandler` to parse the annotation's <<authorization-expressions,SpEL expression>> and constructs a corresponding `EvaluationContext` from a `MethodSecurityExpressionRoot` containing xref:servlet/authentication/architecture.adoc#servlet-authentication-authentication[a `Supplier<Authentication>`] and `MethodInvocation`.
-4. The interceptor uses this context to evaluate the expression; specifically, it reads xref:servlet/authentication/architecture.adoc#servlet-authentication-authentication[the `Authentication`] from the `Supplier` and checks whether it has `permission:read` in its collection of xref:servlet/authorization/architecture.adoc#authz-authorities[authorities]
-5. If the evaluation passes, then Spring AOP proceeds to invoke the method.
-6. If not, the interceptor publishes an `AuthorizationDeniedEvent` and throws an {security-api-url}org/springframework/security/access/AccessDeniedException.html[`AccessDeniedException`] which xref:servlet/architecture.adoc#servlet-exceptiontranslationfilter[the `ExceptionTranslationFilter`] catches and returns a 403 status code to the response
-7. After the method returns, Spring AOP invokes an {security-api-url}org/springframework/security/authorization/method/AuthorizationManagerAfterMethodInterceptor.html[`AuthorizationManagerAfterMethodInterceptor`] that matches <<annotation-method-pointcuts,the `@PostAuthorize` pointcut>>, operating the same as above, but with {security-api-url}org/springframework/security/authorization/method/PostAuthorizeAuthorizationManager.html[`PostAuthorizeAuthorizationManager`]
-8. If the evaluation passes (in this case, the return value belongs to the logged-in user), processing continues normally
-9. If not, the interceptor publishes an `AuthorizationDeniedEvent` and throws an {security-api-url}org/springframework/security/access/AccessDeniedException.html[`AccessDeniedException`], which xref:servlet/architecture.adoc#servlet-exceptiontranslationfilter[the `ExceptionTranslationFilter`] catches and returns a 403 status code to the response
+1. Spring AOP는 ``readCustomer``에 대한 프록시 메서드를 호출합니다. 프록시의 다른 어드바이저 중에서 <<annotation-method-pointcuts,`@PreAuthorize` 포인트컷>>과 일치하는 {security-api-url}org/springframework/security/authorization/method/AuthorizationManagerBeforeMethodInterceptor.html[`AuthorizationManagerBeforeMethodInterceptor`]를 호출합니다.
+2. 인터셉터는 {security-api-url}org/springframework/security/authorization/method/PreAuthorizeAuthorizationManager.html[`PreAuthorizeAuthorizationManager#check`]를 호출합니다.
+3. 권한 부여 관리자는 ``MethodSecurityExpressionHandler``를 사용하여 어노테이션의 <<authorization-expressions,SpEL 표현식>>을 파싱하고 xref:servlet/authentication/architecture.adoc#servlet-authentication-authentication[`Supplier<Authentication>`]과 ``MethodInvocation``을 포함하는 ``MethodSecurityExpressionRoot``에서 해당하는 ``EvaluationContext``를 구성합니다.
+4. 인터셉터는 이 컨텍스트를 사용하여 표현식을 평가합니다. 구체적으로, ``Supplier``에서 xref:servlet/authentication/architecture.adoc#servlet-authentication-authentication[`Authentication`]을 읽고 xref:servlet/authorization/architecture.adoc#authz-authorities[권한] 컬렉션에 ``permission:read``가 있는지 확인합니다.
+5. 평가가 통과되면 Spring AOP는 메서드 호출을 진행합니다.
+6. 그렇지 않으면 인터셉터는 ``AuthorizationDeniedEvent``를 발행하고 {security-api-url}org/springframework/security/access/AccessDeniedException.html[`AccessDeniedException`]을 던집니다. 이는 xref:servlet/architecture.adoc#servlet-exceptiontranslationfilter[`ExceptionTranslationFilter`]가 잡아서 응답에 403 상태 코드를 반환합니다.
+7. 메서드가 반환된 후, Spring AOP는 <<annotation-method-pointcuts,`@PostAuthorize` 포인트컷>>과 일치하는 {security-api-url}org/springframework/security/authorization/method/AuthorizationManagerAfterMethodInterceptor.html[`AuthorizationManagerAfterMethodInterceptor`]를 호출합니다. 이는 위와 동일하게 작동하지만 {security-api-url}org/springframework/security/authorization/method/PostAuthorizeAuthorizationManager.html[`PostAuthorizeAuthorizationManager`]를 사용합니다.
+8. 평가가 통과되면 (이 경우 반환 값이 로그인한 사용자에게 속함) 처리가 정상적으로 계속됩니다.
+9. 그렇지 않으면 인터셉터는 ``AuthorizationDeniedEvent``를 발행하고 {security-api-url}org/springframework/security/access/AccessDeniedException.html[`AccessDeniedException`]을 던집니다. 이는 xref:servlet/architecture.adoc#servlet-exceptiontranslationfilter[`ExceptionTranslationFilter`]가 잡아서 응답에 403 상태 코드를 반환합니다.
 
 [NOTE]
-If the method is not being called in the context of an HTTP request, you will likely need to handle the `AccessDeniedException` yourself
+메서드가 HTTP 요청의 컨텍스트에서 호출되지 않는 경우, ``AccessDeniedException``을 직접 처리해야 할 가능성이 높습니다.
 
 [[unanimous-based-authorization-decisions]]
-=== Multiple Annotations Are Computed In Series
+=== 여러 어노테이션은 순차적으로 계산됨
 
-As demonstrated above, if a method invocation involves multiple <<authorizing-with-annotations,Method Security annotations>>, each of those is processed one at a time.
-This means that they can collectively be thought of as being "anded" together.
-In other words, for an invocation to be authorized, all annotation inspections need to pass authorization.
+위에서 설명한 대로, 메서드 호출에 여러 <<authorizing-with-annotations,메서드 보안 어노테이션>>이 포함된 경우 각각이 한 번에 하나씩 처리됩니다.
+이는 집합적으로 "그리고(and)"로 묶여 있다고 생각할 수 있습니다.
+다시 말해, 호출이 권한 부여되려면 모든 어노테이션 검사가 권한 부여를 통과해야 합니다.
 
 [[repeated-annotations]]
-=== Repeated Annotations Are Not Supported
+=== 반복 어노테이션은 지원되지 않음
 
-That said, it is not supported to repeat the same annotation on the same method.
-For example, you cannot place `@PreAuthorize` twice on the same method.
+단, 동일한 메서드에 같은 어노테이션을 반복하는 것은 지원되지 않습니다.
+예를 들어, 동일한 메서드에 ``@PreAuthorize``를 두 번 배치할 수 없습니다.
 
-Instead, use SpEL's boolean support or its support for delegating to a separate bean.
+대신 SpEL의 boolean 지원이나 별도의 빈에 위임하는 지원을 사용하세요.
 
 [[annotation-method-pointcuts]]
-=== Each Annotation Has Its Own Pointcut
+=== 각 어노테이션에는 자체 포인트컷이 있음
 
-Each annotation has its own pointcut instance that looks for that annotation or its <<meta-annotations,meta-annotation>> counterparts across the entire object hierarchy, starting at <<class-or-interface-annotations,the method and its enclosing class>>.
+각 어노테이션에는 <<class-or-interface-annotations,메서드와 그 포함 클래스>>에서 시작하여 전체 객체 계층 구조에서 해당 어노테이션이나 <<meta-annotations,메타 어노테이션>> 대응물을 찾는 자체 포인트컷 인스턴스가 있습니다.
 
-You can see the specifics of this in {security-api-url}org/springframework/security/authorization/method/AuthorizationMethodPointcuts.html[`AuthorizationMethodPointcuts`].
+이에 대한 세부 사항은 {security-api-url}org/springframework/security/authorization/method/AuthorizationMethodPointcuts.html[`AuthorizationMethodPointcuts`]에서 확인할 수 있습니다.
 
 [[annotation-method-interceptors]]
-=== Each Annotation Has Its Own Method Interceptor
+=== 각 어노테이션에는 자체 메서드 인터셉터가 있음
 
-Each annotation has its own dedicated method interceptor.
-The reason for this is to make things more composable.
-For example, if needed, you can disable the Spring Security defaults and <<_enabling_certain_annotations,publish only the `@PostAuthorize` method interceptor>>.
+각 어노테이션에는 전용 메서드 인터셉터가 있습니다.
+이는 구성 요소를 더 조립 가능하게 만들기 위함입니다.
+예를 들어, 필요한 경우 Spring Security 기본값을 비활성화하고 <<_enabling_certain_annotations,`@PostAuthorize` 메서드 인터셉터만 게시>>할 수 있습니다.
 
-The method interceptors are as follows:
+메서드 인터셉터는 다음과 같습니다:
 
-* For <<use-preauthorize,`@PreAuthorize`>>, Spring Security uses {security-api-url}org/springframework/security/authorization/method/AuthorizationManagerBeforeMethodInterceptor.html[`AuthorizationManagerBeforeMethodInterceptor#preAuthorize`], which in turn uses {security-api-url}org/springframework/security/authorization/method/PreAuthorizeAuthorizationManager.html[`PreAuthorizeAuthorizationManager`]
-* For <<use-postauthorize,`@PostAuthorize`>>, Spring Security uses {security-api-url}org/springframework/security/authorization/method/AuthorizationManagerAfterMethodInterceptor.html[`AuthorizationManagerBeforeMethodInterceptor#postAuthorize`], which in turn uses {security-api-url}org/springframework/security/authorization/method/PostAuthorizeAuthorizationManager.html[`PostAuthorizeAuthorizationManager`]
-* For <<use-prefilter,`@PreFilter`>>, Spring Security uses {security-api-url}org/springframework/security/authorization/method/PreFilterAuthorizationMethodInterceptor.html[`PreFilterAuthorizationMethodInterceptor`]
-* For <<use-postfilter,`@PostFilter`>>, Spring Security uses {security-api-url}org/springframework/security/authorization/method/PostFilterAuthorizationMethodInterceptor.html[`PostFilterAuthorizationMethodInterceptor`]
-* For <<use-secured,`@Secured`>>, Spring Security uses {security-api-url}org/springframework/security/authorization/method/AuthorizationManagerBeforeMethodInterceptor.html[`AuthorizationManagerBeforeMethodInterceptor#secured`], which in turn uses {security-api-url}org/springframework/security/authorization/method/SecuredAuthorizationManager.html[`SecuredAuthorizationManager`]
-* For JSR-250 annotations, Spring Security uses {security-api-url}org/springframework/security/authorization/method/AuthorizationManagerBeforeMethodInterceptor.html[`AuthorizationManagerBeforeMethodInterceptor#jsr250`], which in turn uses {security-api-url}org/springframework/security/authorization/method/Jsr250AuthorizationManager.html[`Jsr250AuthorizationManager`]
+* <<use-preauthorize,`@PreAuthorize`>>의 경우, Spring Security는 {security-api-url}org/springframework/security/authorization/method/AuthorizationManagerBeforeMethodInterceptor.html[`AuthorizationManagerBeforeMethodInterceptor#preAuthorize`]를 사용하며, 이는 {security-api-url}org/springframework/security/authorization/method/PreAuthorizeAuthorizationManager.html[`PreAuthorizeAuthorizationManager`]를 사용합니다.
+* <<use-postauthorize,`@PostAuthorize`>>의 경우, Spring Security는 {security-api-url}org/springframework/security/authorization/method/AuthorizationManagerAfterMethodInterceptor.html[`AuthorizationManagerBeforeMethodInterceptor#postAuthorize`]를 사용하며, 이는 {security-api-url}org/springframework/security/authorization/method/PostAuthorizeAuthorizationManager.html[`PostAuthorizeAuthorizationManager`]를 사용합니다.
+* <<use-prefilter,`@PreFilter`>>의 경우, Spring Security는 {security-api-url}org/springframework/security/authorization/method/PreFilterAuthorizationMethodInterceptor.html[`PreFilterAuthorizationMethodInterceptor`]를 사용합니다.
+* <<use-postfilter,`@PostFilter`>>의 경우, Spring Security는 {security-api-url}org/springframework/security/authorization/method/PostFilterAuthorizationMethodInterceptor.html[`PostFilterAuthorizationMethodInterceptor`]를 사용합니다.
+* <<use-secured,`@Secured`>>의 경우, Spring Security는 {security-api-url}org/springframework/security/authorization/method/AuthorizationManagerBeforeMethodInterceptor.html[`AuthorizationManagerBeforeMethodInterceptor#secured`]를 사용하며, 이는 {security-api-url}org/springframework/security/authorization/method/SecuredAuthorizationManager.html[`SecuredAuthorizationManager`]를 사용합니다.
+* JSR-250 어노테이션의 경우, Spring Security는 {security-api-url}org/springframework/security/authorization/method/AuthorizationManagerBeforeMethodInterceptor.html[`AuthorizationManagerBeforeMethodInterceptor#jsr250`]를 사용하며, 이는 {security-api-url}org/springframework/security/authorization/method/Jsr250AuthorizationManager.html[`Jsr250AuthorizationManager`]를 사용합니다.
 
-Generally speaking, you can consider the following listing as representative of what interceptors Spring Security publishes when you add `@EnableMethodSecurity`:
+일반적으로 ``@EnableMethodSecurity``를 추가할 때 Spring Security가 게시하는 인터셉터는 다음과 같습니다:
 
 [tabs]
 ======
@@ -203,9 +202,9 @@ static Advisor postFilterMethodInterceptor() {
 ======
 
 [[favor-granting-authorities]]
-=== Favor Granting Authorities Over Complicated SpEL Expressions
+=== 복잡한 SpEL 표현식보다 권한 부여를 선호
 
-Quite often it can be tempting to introduce a complicated SpEL expression like the following:
+종종 다음과 같은 복잡한 SpEL 표현식을 도입하고 싶을 수 있습니다:
 
 [tabs]
 ======
@@ -215,16 +214,17 @@ Java::
 ----
 @PreAuthorize("hasAuthority('permission:read') || hasRole('ADMIN')")
 ----
-======
 
-.Kotlin
-[source,kotlin,role="kotlin"]
+Kotlin::
++
+[source,kotlin,role="secondary"]
 ----
 @PreAuthorize("hasAuthority('permission:read') || hasRole('ADMIN')")
 ----
+======
 
-However, you could instead grant `permission:read` to those with `ROLE_ADMIN`.
-One way to do this is with a `RoleHierarchy` like so:
+하지만 대신 ``ROLE_ADMIN``을 가진 사용자에게 ``permission:read``를 부여할 수 있습니다.
+이를 위한 한 가지 방법은 다음과 같이 ``RoleHierarchy``를 사용하는 것입니다:
 
 [tabs]
 ======
@@ -261,8 +261,8 @@ Xml::
 ----
 ======
 
-and then <<customizing-expression-handling,set that in a `MethodSecurityExpressionHandler` instance>>.
-This then allows you to have a simpler <<use-preauthorize,`@PreAuthorize`>> expression like this one:
+그런 다음 <<customizing-expression-handling,`MethodSecurityExpressionHandler` 인스턴스에 이를 설정>>합니다.
+이렇게 하면 다음과 같이 더 간단한 <<use-preauthorize,`@PreAuthorize`>> 표현식을 사용할 수 있습니다:
 
 [tabs]
 ======
@@ -281,37 +281,37 @@ Kotlin::
 ----
 ======
 
-Or, where possible, adapt application-specific authorization logic into granted authorities at login time.
+또는 가능한 경우 로그인 시 애플리케이션별 권한 부여 로직을 부여된 권한으로 조정하세요.
 
 [[request-vs-method]]
-== Comparing Request-level vs Method-level Authorization
+== 요청 레벨과 메서드 레벨 권한 부여 비교
 
-When should you favor method-level authorization over xref:servlet/authorization/authorize-http-requests.adoc[request-level authorization]?
-Some of it comes down to taste; however, consider the following strengths list of each to help you decide.
+언제 xref:servlet/authorization/authorize-http-requests.adoc[요청 레벨 권한 부여] 대신 메서드 레벨 권한 부여를 선호해야 할까요?
+일부는 취향의 문제이지만, 각각의 장점 목록을 고려하여 결정하는 데 도움을 받을 수 있습니다.
 
 |===
-|| *request-level* | *method-level*
-| *authorization type* | coarse-grained | fine-grained
-| *configuration location* | declared in a config class | local to method declaration
-| *configuration style* | DSL | Annotations
-| *authorization definitions* | programmatic | SpEL
+|| *요청 레벨* | *메서드 레벨*
+| *권한 부여 유형* | 대략적 | 세부적
+| *구성 위치* | 구성 클래스에 선언 | 메서드 선언에 로컬
+| *구성 스타일* | DSL | 어노테이션
+| *권한 부여 정의* | 프로그래밍 방식 | SpEL
 |===
 
-The main tradeoff seems to be where you want your authorization rules to live.
+주요 트레이드오프는 권한 부여 규칙을 어디에 두고 싶은지입니다.
 
 [NOTE]
-It's important to remember that when you use annotation-based Method Security, then unannotated methods are not secured.
-To protect against this, declare xref:servlet/authorization/authorize-http-requests.adoc#activate-request-security[a catch-all authorization rule] in your xref:servlet/configuration/java.adoc#jc-httpsecurity[`HttpSecurity`] instance.
+어노테이션 기반 메서드 보안을 사용할 때 어노테이션이 없는 메서드는 보안되지 않는다는 점을 기억하는 것이 중요합니다.
+이를 방지하기 위해 xref:servlet/configuration/java.adoc#jc-httpsecurity[`HttpSecurity`] 인스턴스에 xref:servlet/authorization/authorize-http-requests.adoc#activate-request-security[포괄적인 권한 부여 규칙]을 선언하세요.
 
 [[authorizing-with-annotations]]
-== Authorizing with Annotations
+== 어노테이션을 사용한 권한 부여
 
-The primary way Spring Security enables method-level authorization support is through annotations that you can add to methods, classes, and interfaces.
+Spring Security가 메서드 레벨 권한 부여 지원을 활성화하는 주요 방법은 메서드, 클래스, 인터페이스에 추가할 수 있는 어노테이션을 통해서입니다.
 
 [[use-preauthorize]]
-=== Authorizing Method Invocation with `@PreAuthorize`
+=== ``@PreAuthorize``를 사용한 메서드 호출 권한 부여
 
-When <<activate-method-security,Method Security is active>>, you can annotate a method with the {security-api-url}org/springframework/security/access/prepost/PreAuthorize.html[`@PreAuthorize`] annotation like so:
+<<activate-method-security,메서드 보안이 활성화>>되면 다음과 같이 메서드에 {security-api-url}org/springframework/security/access/prepost/PreAuthorize.html[`@PreAuthorize`] 어노테이션을 달 수 있습니다:
 
 [tabs]
 ======
@@ -323,7 +323,7 @@ Java::
 public class BankService {
 	@PreAuthorize("hasRole('ADMIN')")
 	public Account readAccount(Long id) {
-        // ... is only invoked if the `Authentication` has the `ROLE_ADMIN` authority
+        // ... `Authentication`에 `ROLE_ADMIN` 권한이 있는 경우에만 호출됨
 	}
 }
 ----
@@ -336,15 +336,15 @@ Kotlin::
 open class BankService {
 	@PreAuthorize("hasRole('ADMIN')")
 	fun readAccount(val id: Long): Account {
-        // ... is only invoked if the `Authentication` has the `ROLE_ADMIN` authority
+        // ... `Authentication`에 `ROLE_ADMIN` 권한이 있는 경우에만 호출됨
 	}
 }
 ----
 ======
 
-This is meant to indicate that the method can only be invoked if the provided expression `hasRole('ADMIN')` passes.
+이는 제공된 표현식 ``hasRole('ADMIN')``이 통과하는 경우에만 메서드를 호출할 수 있음을 나타냅니다.
 
-You can then xref:servlet/test/method.adoc[test the class] to confirm it is enforcing the authorization rule like so:
+그런 다음 xref:servlet/test/method.adoc[클래스를 테스트]하여 권한 부여 규칙을 적용하고 있는지 확인할 수 있습니다:
 
 [tabs]
 ======
@@ -359,7 +359,7 @@ BankService bankService;
 @Test
 void readAccountWithAdminRoleThenInvokes() {
     Account account = this.bankService.readAccount("12345678");
-    // ... assertions
+    // ... 결과를 검증
 }
 
 @WithMockUser(roles="WRONG")
@@ -378,7 +378,7 @@ Kotlin::
 @Test
 fun readAccountWithAdminRoleThenInvokes() {
     val account: Account = this.bankService.readAccount("12345678")
-    // ... assertions
+    // ... 결과를 검증
 }
 
 @WithMockUser(roles="WRONG")
@@ -392,14 +392,14 @@ fun readAccountWithWrongRoleThenAccessDenied() {
 ======
 
 [TIP]
-`@PreAuthorize` also can be a <<meta-annotations, meta-annotation>>, be defined <<class-or-interface-annotations,at the class or interface level>>, and use <<authorization-expressions, SpEL Authorization Expressions>>.
+``@PreAuthorize``는 <<meta-annotations, 메타 어노테이션>>이 될 수 있고, <<class-or-interface-annotations,클래스나 인터페이스 레벨>>에서 정의될 수 있으며, <<authorization-expressions, SpEL 권한 부여 표현식>>을 사용할 수 있습니다.
 
-While `@PreAuthorize` is quite helpful for declaring needed authorities, it can also be used to evaluate more complex <<using_method_parameters,expressions that involve the method parameters>>.
+``@PreAuthorize``는 필요한 권한을 선언하는 데 매우 유용하지만, <<using_method_parameters,메서드 매개변수와 관련된 더 복잡한 표현식을 평가>>하는 데도 사용할 수 있습니다.
 
 [[use-postauthorize]]
-=== Authorization Method Results with `@PostAuthorize`
+=== ``@PostAuthorize``를 사용한 메서드 결과 권한 부여
 
-When Method Security is active, you can annotate a method with the {security-api-url}org/springframework/security/access/prepost/PostAuthorize.html[`@PostAuthorize`] annotation like so:
+메서드 보안이 활성화되면 다음과 같이 메서드에 {security-api-url}org/springframework/security/access/prepost/PostAuthorize.html[`@PostAuthorize`] 어노테이션을 달 수 있습니다:
 
 [tabs]
 ======
@@ -411,7 +411,7 @@ Java::
 public class BankService {
 	@PostAuthorize("returnObject.owner == authentication.name")
 	public Account readAccount(Long id) {
-        // ... is only returned if the `Account` belongs to the logged in user
+        // ... `Account`가 로그인한 사용자에게 속한 경우에만 반환됨
 	}
 }
 ----
@@ -424,16 +424,16 @@ Kotlin::
 open class BankService {
 	@PostAuthorize("returnObject.owner == authentication.name")
 	fun readAccount(val id: Long): Account {
-        // ... is only returned if the `Account` belongs to the logged in user
+        // ... `Account`가 로그인한 사용자에게 속한 경우에만 반환됨
 	}
 }
 ----
 ======
 
-This is meant to indicate that the method can only return the value if the provided expression `returnObject.owner == authentication.name` passes.
-`returnObject` represents the `Account` object to be returned.
+이는 제공된 표현식 ``returnObject.owner == authentication.name``이 통과하는 경우에만 메서드가 값을 반환할 수 있음을 나타냅니다.
+``returnObject``는 반환될 `Account` 객체를 나타냅니다.
 
-You can then xref:servlet/test/method.adoc[test the class] to confirm it is enforcing the authorization rule:
+그런 다음 xref:servlet/test/method.adoc[클래스를 테스트]하여 권한 부여 규칙을 적용하고 있는지 확인할 수 있습니다:
 
 [tabs]
 ======
@@ -448,7 +448,7 @@ BankService bankService;
 @Test
 void readAccountWhenOwnedThenReturns() {
     Account account = this.bankService.readAccount("12345678");
-    // ... assertions
+    // ... 결과를 검증
 }
 
 @WithMockUser(username="wrong")
@@ -467,7 +467,7 @@ Kotlin::
 @Test
 fun readAccountWhenOwnedThenReturns() {
     val account: Account = this.bankService.readAccount("12345678")
-    // ... assertions
+    // ... 결과를 검증
 }
 
 @WithMockUser(username="wrong")
@@ -481,10 +481,10 @@ fun readAccountWhenNotOwnedThenAccessDenied() {
 ======
 
 [TIP]
-`@PostAuthorize` also can be a <<meta-annotations,meta-annotation>>, be defined <<class-or-interface-annotations,at the class or interface level>>, and use <<authorization-expressions, SpEL Authorization Expressions>>.
+``@PostAuthorize``는 <<meta-annotations,메타 어노테이션>>이 될 수 있고, <<class-or-interface-annotations,클래스나 인터페이스 레벨>>에서 정의될 수 있으며, <<authorization-expressions, SpEL 권한 부여 표현식>>을 사용할 수 있습니다.
 
-`@PostAuthorize` is particularly helpful when defending against https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html[Insecure Direct Object Reference].
-In fact, it can be defined as a <<meta-annotations,meta-annotation>> like so:
+``@PostAuthorize``는 https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html[안전하지 않은 직접 객체 참조]를 방어할 때 특히 유용합니다.
+실제로 다음과 같이 <<meta-annotations,메타 어노테이션>>으로 정의할 수 있습니다:
 
 [tabs]
 ======
@@ -509,7 +509,7 @@ annotation class RequireOwnership
 ----
 ======
 
-Allowing you to instead annotate the service in the following way:
+이를 통해 서비스에 다음과 같이 어노테이션을 달 수 있습니다:
 
 [tabs]
 ======
@@ -521,7 +521,7 @@ Java::
 public class BankService {
 	@RequireOwnership
 	public Account readAccount(Long id) {
-        // ... is only returned if the `Account` belongs to the logged in user
+        // ... `Account`가 로그인한 사용자에게 속한 경우에만 반환됨
 	}
 }
 ----
@@ -534,22 +534,22 @@ Kotlin::
 open class BankService {
 	@RequireOwnership
 	fun readAccount(val id: Long): Account {
-        // ... is only returned if the `Account` belongs to the logged in user
+        // ... `Account`가 로그인한 사용자에게 속한 경우에만 반환됨
 	}
 }
 ----
 ======
 
-The result is that the above method will only return the `Account` if its `owner` attribute matches the logged-in user's `name`.
-If not, Spring Security will throw an `AccessDeniedException` and return a 403 status code.
+결과적으로 위 메서드는 ``Account``의 `owner` 속성이 로그인한 사용자의 ``name``과 일치하는 경우에만 ``Account``를 반환합니다.
+그렇지 않으면 Spring Security는 ``AccessDeniedException``을 던지고 403 상태 코드를 반환합니다.
 
 [[use-prefilter]]
-=== Filtering Method Parameters with `@PreFilter`
+=== ``@PreFilter``를 사용한 메서드 매개변수 필터링
 
 [NOTE]
-`@PreFilter` is not yet supported for Kotlin-specific data types; for that reason, only Java snippets are shown
+``@PreFilter``는 아직 Kotlin 특정 데이터 타입에 대해 지원되지 않습니다. 따라서 Java 스니펫만 표시됩니다.
 
-When Method Security is active, you can annotate a method with the {security-api-url}org/springframework/security/access/prepost/PreFilter.html[`@PreFilter`] annotation like so:
+메서드 보안이 활성화되면 다음과 같이 메서드에 {security-api-url}org/springframework/security/access/prepost/PreFilter.html[`@PreFilter`] 어노테이션을 달 수 있습니다:
 
 [tabs]
 ======
@@ -561,17 +561,17 @@ Java::
 public class BankService {
 	@PreFilter("filterObject.owner == authentication.name")
 	public Collection<Account> updateAccounts(Account... accounts) {
-        // ... `accounts` will only contain the accounts owned by the logged-in user
+        // ... `accounts`는 로그인한 사용자가 소유한 계좌만 포함합니다
         return updated;
 	}
 }
 ----
 ======
 
-This is meant to filter out any values from `accounts` where the expression `filterObject.owner == authentication.name` fails.
-`filterObject` represents each `account` in `accounts` and is used to test each `account`.
+이는 `filterObject.owner == authentication.name` 표현식이 실패하는 ``accounts``의 모든 값을 필터링하기 위한 것입니다.
+``filterObject``는 ``accounts``의 각 ``account``를 나타내며 각 ``account``를 테스트하는 데 사용됩니다.
 
-You can then test the class in the following way to confirm it is enforcing the authorization rule:
+그런 다음 다음과 같이 클래스를 테스트하여 권한 부여 규칙을 적용하고 있는지 확인할 수 있습니다:
 
 [tabs]
 ======
@@ -594,11 +594,11 @@ void updateAccountsWhenOwnedThenReturns() {
 ======
 
 [TIP]
-`@PreFilter` also can be a <<meta-annotations,meta-annotation>>, be defined <<class-or-interface-annotations,at the class or interface level>>, and use <<authorization-expressions, SpEL Authorization Expressions>>.
+``@PreFilter``도 <<meta-annotations,메타 어노테이션>>이 될 수 있고, <<class-or-interface-annotations,클래스나 인터페이스 레벨>>에서 정의될 수 있으며, <<authorization-expressions, SpEL 권한 부여 표현식>>을 사용할 수 있습니다.
 
-`@PreFilter` supports arrays, collections, maps, and streams (so long as the stream is still open).
+``@PreFilter``는 배열, 컬렉션, 맵, 스트림(스트림이 여전히 열려있는 한)을 지원합니다.
 
-For example, the above `updateAccounts` declaration will function the same way as the following other four:
+예를 들어, 위의 ``updateAccounts`` 선언은 다음 네 가지와 동일하게 작동합니다:
 
 [tabs]
 ======
@@ -620,15 +620,15 @@ public Collection<Account> updateAccounts(Stream<Account> accounts)
 ----
 ======
 
-The result is that the above method will only have the `Account` instances where their `owner` attribute matches the logged-in user's `name`.
+결과적으로 위 메서드는 `owner` 속성이 로그인한 사용자의 ``name``과 일치하는 `Account` 인스턴스만 가지게 됩니다.
 
 [[use-postfilter]]
-=== Filtering Method Results with `@PostFilter`
+=== ``@PostFilter``를 사용한 메서드 결과 필터링
 
 [NOTE]
-`@PostFilter` is not yet supported for Kotlin-specific data types; for that reason, only Java snippets are shown
+``@PostFilter``는 아직 Kotlin 특정 데이터 타입에 대해 지원되지 않습니다. 따라서 Java 스니펫만 표시됩니다.
 
-When Method Security is active, you can annotate a method with the {security-api-url}org/springframework/security/access/prepost/PostFilter.html[`@PostFilter`] annotation like so:
+메서드 보안이 활성화되면 다음과 같이 메서드에 {security-api-url}org/springframework/security/access/prepost/PostFilter.html[`@PostFilter`] 어노테이션을 달 수 있습니다:
 
 [tabs]
 ======
@@ -640,17 +640,17 @@ Java::
 public class BankService {
 	@PostFilter("filterObject.owner == authentication.name")
 	public Collection<Account> readAccounts(String... ids) {
-        // ... the return value will be filtered to only contain the accounts owned by the logged-in user
+        // ... 반환 값은 로그인한 사용자가 소유한 계좌만 포함하도록 필터링됩니다
         return accounts;
 	}
 }
 ----
 ======
 
-This is meant to filter out any values from the return value where the expression `filterObject.owner == authentication.name` fails.
-`filterObject` represents each `account` in `accounts` and is used to test each `account`.
+이는 `filterObject.owner == authentication.name` 표현식이 실패하는 반환 값의 모든 값을 필터링하기 위한 것입니다.
+``filterObject``는 ``accounts``의 각 ``account``를 나타내며 각 ``account``를 테스트하는 데 사용됩니다.
 
-You can then test the class like so to confirm it is enforcing the authorization rule:
+그런 다음 다음과 같이 클래스를 테스트하여 권한 부여 규칙을 적용하고 있는지 확인할 수 있습니다:
 
 [tabs]
 ======
@@ -672,11 +672,11 @@ void readAccountsWhenOwnedThenReturns() {
 ======
 
 [TIP]
-`@PostFilter` also can be a <<meta-annotations,meta-annotation>>, be defined <<class-or-interface-annotations,at the class or interface level>>, and use <<authorization-expressions, SpEL Authorization Expressions>>.
+``@PostFilter``도 <<meta-annotations,메타 어노테이션>>이 될 수 있고, <<class-or-interface-annotations,클래스나 인터페이스 레벨>>에서 정의될 수 있으며, <<authorization-expressions, SpEL 권한 부여 표현식>>을 사용할 수 있습니다.
 
-`@PostFilter` supports arrays, collections, maps, and streams (so long as the stream is still open).
+``@PostFilter``는 배열, 컬렉션, 맵, 스트림(스트림이 여전히 열려있는 한)을 지원합니다.
 
-For example, the above `readAccounts` declaration will function the same way as the following other three:
+예를 들어, 위의 `readAccounts` 선언은 다음 세 가지와 동일하게 작동합니다:
 
 ```java
 @PostFilter("filterObject.owner == authentication.name")
@@ -689,18 +689,18 @@ public Map<String, Account> readAccounts(String... ids)
 public Stream<Account> readAccounts(String... ids)
 ```
 
-The result is that the above method will return the `Account` instances where their `owner` attribute matches the logged-in user's `name`.
+결과적으로 위 메서드는 `owner` 속성이 로그인한 사용자의 ``name``과 일치하는 `Account` 인스턴스를 반환합니다.
 
 [NOTE]
-In-memory filtering can obviously be expensive, and so be considerate of whether it is better to xref:servlet/integrations/data.adoc[filter the data in the data layer] instead.
+메모리 내 필터링은 분명히 비용이 많이 들 수 있으므로 xref:servlet/integrations/data.adoc[데이터 계층에서 데이터를 필터링]하는 것이 더 나은지 고려해야 합니다.
 
 [[use-secured]]
-=== Authorizing Method Invocation with `@Secured`
+=== ``@Secured``를 사용한 메서드 호출 권한 부여
 
-{security-api-url}org/springframework/security/access/annotation/Secured.html[`@Secured`] is a legacy option for authorizing invocations.
-<<use-preauthorize,`@PreAuthorize`>> supercedes it and is recommended instead.
+{security-api-url}org/springframework/security/access/annotation/Secured.html[`@Secured`]는 호출을 권한 부여하기 위한 레거시 옵션입니다.
+<<use-preauthorize,`@PreAuthorize`>>가 이를 대체하며 권장됩니다.
 
-To use the `@Secured` annotation, you should first change your Method Security declaration to enable it like so:
+`@Secured` 어노테이션을 사용하려면 먼저 다음과 같이 메서드 보안 선언을 변경하여 활성화해야 합니다:
 
 [tabs]
 ======
@@ -726,15 +726,15 @@ Xml::
 ----
 ======
 
-This will cause Spring Security to publish <<annotation-method-interceptors,the corresponding method interceptor>> that authorizes methods, classes, and interfaces annotated with `@Secured`.
+이렇게 하면 Spring Security가 ``@Secured``로 어노테이션이 달린 메서드, 클래스, 인터페이스를 권한 부여하는 <<annotation-method-interceptors,해당 메서드 인터셉터>>를 게시합니다.
 
 [[use-jsr250]]
-=== Authorizing Method Invocation with JSR-250 Annotations
+=== JSR-250 어노테이션을 사용한 메서드 호출 권한 부여
 
-In case you would like to use https://jcp.org/en/jsr/detail?id=250[JSR-250] annotations, Spring Security also supports that.
-<<use-preauthorize,`@PreAuthorize`>> has more expressive power and is thus recommended.
+https://jcp.org/en/jsr/detail?id=250[JSR-250] 어노테이션을 사용하고 싶은 경우 Spring Security도 이를 지원합니다.
+<<use-preauthorize,`@PreAuthorize`>>가 더 강력한 표현력을 가지고 있어 권장됩니다.
 
-To use the JSR-250 annotations, you should first change your Method Security declaration to enable them like so:
+JSR-250 어노테이션을 사용하려면 먼저 다음과 같이 메서드 보안 선언을 변경하여 활성화해야 합니다:
 
 [tabs]
 ======
@@ -760,15 +760,14 @@ Xml::
 ----
 ======
 
-This will cause Spring Security to publish <<annotation-method-interceptors,the corresponding method interceptor>> that authorizes methods, classes, and interfaces annotated with `@RolesAllowed`, `@PermitAll`, and `@DenyAll`.
-
+이렇게 하면 Spring Security가 `@RolesAllowed`, `@PermitAll`, ``@DenyAll``로 어노테이션이 달린 메서드, 클래스, 인터페이스를 권한 부여하는 <<annotation-method-interceptors,해당 메서드 인터셉터>>를 게시합니다.
 
 [[class-or-interface-annotations]]
-=== Declaring Annotations at the Class or Interface Level
+=== 클래스나 인터페이스 레벨에서 어노테이션 선언
 
-It's also supported to have Method Security annotations at the class and interface level.
+메서드 보안 어노테이션을 클래스와 인터페이스 레벨에서 사용하는 것도 지원됩니다.
 
-If it is at the class level like so:
+클래스 레벨에서 다음과 같이 사용하면:
 
 [tabs]
 ======
@@ -797,9 +796,9 @@ open class MyController {
 ----
 ======
 
-then all methods inherit the class-level behavior.
+모든 메서드가 클래스 레벨의 동작을 상속받습니다.
 
-Or, if it's declared like the following at both the class and method level:
+또는 클래스와 메서드 레벨 모두에서 다음과 같이 선언된 경우:
 
 [tabs]
 ======
@@ -830,20 +829,20 @@ open class MyController {
 ----
 ======
 
-then methods declaring the annotation override the class-level annotation.
+어노테이션을 선언하는 메서드는 클래스 레벨 어노테이션을 재정의합니다.
 
-The same is true for interfaces, with the exception that if a class inherits the annotation from two different interfaces, then startup will fail.
-This is because Spring Security has no way to tell which one you want to use.
+인터페이스에도 동일한 원칙이 적용되지만, 클래스가 두 개의 다른 인터페이스에서 어노테이션을 상속받는 경우 시작이 실패합니다.
+이는 Spring Security가 어떤 것을 사용해야 할지 알 수 없기 때문입니다.
 
-In cases like this, you can resolve the ambiguity by adding the annotation to the concrete method.
+이런 경우에는 구체적인 메서드에 어노테이션을 추가하여 모호성을 해결할 수 있습니다.
 
 [[meta-annotations]]
-=== Using Meta Annotations
+=== 메타 어노테이션 사용
 
-Method Security supports meta annotations.
-This means that you can take any annotation and improve readability based on your application-specific use cases.
+메서드 보안은 메타 어노테이션을 지원합니다.
+이는 애플리케이션별 사용 사례에 따라 가독성을 향상시키기 위해 모든 어노테이션을 사용할 수 있다는 의미입니다.
 
-For example, you can simplify `@PreAuthorize("hasRole('ADMIN')")` to `@IsAdmin` like so:
+예를 들어, ``@PreAuthorize("hasRole('ADMIN')")``을 다음과 같이 ``@IsAdmin``으로 단순화할 수 있습니다:
 
 [tabs]
 ======
@@ -868,7 +867,7 @@ annotation class IsAdmin
 ----
 ======
 
-And the result is that on your secured methods you can now do the following instead:
+그 결과 보안이 적용된 메서드에서 이제 다음과 같이 할 수 있습니다:
 
 [tabs]
 ======
@@ -880,7 +879,7 @@ Java::
 public class BankService {
 	@IsAdmin
 	public Account readAccount(Long id) {
-        // ... is only returned if the `Account` belongs to the logged in user
+        // ... 로그인한 사용자에게 `Account`가 속한 경우에만 반환됨
 	}
 }
 ----
@@ -893,19 +892,19 @@ Kotlin::
 open class BankService {
 	@IsAdmin
 	fun readAccount(val id: Long): Account {
-        // ... is only returned if the `Account` belongs to the logged in user
+        // ... 로그인한 사용자에게 `Account`가 속한 경우에만 반환됨
 	}
 }
 ----
 ======
 
-This results in more readable method definitions.
+이렇게 하면 메서드 정의의 가독성이 향상됩니다.
 
-==== Templating Meta-Annotation Expressions
+==== 메타 어노테이션 표현식 템플릿 사용
 
-You can also opt into using meta-annotation templates, which allow for much more powerful annotation definitions.
+메타 어노테이션 템플릿을 사용할 수도 있습니다. 이를 통해 더욱 강력한 어노테이션 정의가 가능합니다.
 
-First, publish the following bean:
+먼저 다음 빈을 게시합니다:
 
 [tabs]
 ======
@@ -932,7 +931,7 @@ companion object {
 ----
 ======
 
-Now instead of `@IsAdmin`, you can create something more powerful like `@HasRole` like so:
+이제 `@IsAdmin` 대신 다음과 같이 더 강력한 ``@HasRole``을 만들 수 있습니다:
 
 [tabs]
 ======
@@ -959,7 +958,7 @@ annotation class HasRole(val value: String)
 ----
 ======
 
-And the result is that on your secured methods you can now do the following instead:
+그 결과 보안이 적용된 메서드에서 이제 다음과 같이 할 수 있습니다:
 
 [tabs]
 ======
@@ -971,7 +970,7 @@ Java::
 public class BankService {
 	@HasRole("ADMIN")
 	public Account readAccount(Long id) {
-        // ... is only returned if the `Account` belongs to the logged in user
+        // ... 로그인한 사용자에게 `Account`가 속한 경우에만 반환됨
 	}
 }
 ----
@@ -984,15 +983,15 @@ Kotlin::
 open class BankService {
 	@HasRole("ADMIN")
 	fun readAccount(val id: Long): Account {
-        // ... is only returned if the `Account` belongs to the logged in user
+        // ... 로그인한 사용자에게 `Account`가 속한 경우에만 반환됨
 	}
 }
 ----
 ======
 
-Note that this works with method variables and all annotation types, too, though you will want to be careful to correctly take care of quotation marks so the resulting SpEL expression is correct.
+이는 메서드 변수와 모든 어노테이션 유형에서도 작동하지만, 결과 SpEL 표현식이 올바르도록 인용 부호를 주의 깊게 처리해야 합니다.
 
-For example, consider the following `@HasAnyRole` annotation:
+예를 들어, 다음과 같은 `@HasAnyRole` 어노테이션을 고려해보세요:
 
 [tabs]
 ======
@@ -1019,7 +1018,7 @@ annotation class HasAnyRole(val roles: Array<String>)
 ----
 ======
 
-In that case, you'll notice that you should not use the quotation marks in the expression, but instead in the parameter value like so:
+이 경우, 표현식에서 따옴표를 사용하지 않고 대신 매개변수 값에 다음과 같이 따옴표를 사용해야 합니다:
 
 [tabs]
 ======
@@ -1031,7 +1030,7 @@ Java::
 public class BankService {
 	@HasAnyRole(roles = { "'USER'", "'ADMIN'" })
 	public Account readAccount(Long id) {
-        // ... is only returned if the `Account` belongs to the logged in user
+        // ... 로그인한 사용자에게 `Account`가 속한 경우에만 반환됨
 	}
 }
 ----
@@ -1044,24 +1043,24 @@ Kotlin::
 open class BankService {
 	@HasAnyRole(roles = arrayOf("'USER'", "'ADMIN'"))
 	fun readAccount(val id: Long): Account {
-        // ... is only returned if the `Account` belongs to the logged in user
+        // ... 로그인한 사용자에게 `Account`가 속한 경우에만 반환됨
 	}
 }
 ----
 ======
 
-so that, once replaced, the expression becomes `@PreAuthorize("hasAnyRole('USER', 'ADMIN')")`.
+이렇게 하면 대체된 후 표현식이 ``@PreAuthorize("hasAnyRole('USER', 'ADMIN')")``가 됩니다.
 
 [[enable-annotation]]
-=== Enabling Certain Annotations
+=== 특정 어노테이션 활성화하기
 
-You can turn off ``@EnableMethodSecurity``'s pre-configuration and replace it with you own.
-You may choose to do this if you want to <<custom-authorization-managers,customize the `AuthorizationManager`>> or `Pointcut`.
-Or you may simply want to only enable a specific annotation, like `@PostAuthorize`.
+``@EnableMethodSecurity``의 사전 구성을 끄고 자체 구성으로 대체할 수 있습니다.
+<<custom-authorization-managers,`AuthorizationManager`>>나 ``Pointcut``을 커스터마이즈하려는 경우 이렇게 할 수 있습니다.
+또는 단순히 ``@PostAuthorize``와 같은 특정 어노테이션만 활성화하려고 할 수 있습니다.
 
-You can do this in the following way:
+다음과 같은 방식으로 이를 수행할 수 있습니다:
 
-.Only @PostAuthorize Configuration
+.@PostAuthorize만 구성
 [tabs]
 ======
 Java::
@@ -1108,14 +1107,14 @@ Xml::
 ----
 ======
 
-The above snippet achieves this by first disabling Method Security's pre-configurations and then publishing <<annotation-method-interceptors, the `@PostAuthorize` interceptor>> itself.
+위 스니펫은 먼저 Method Security의 사전 구성을 비활성화한 다음 <<annotation-method-interceptors, `@PostAuthorize` 인터셉터>>를 직접 게시함으로써 이를 달성합니다.
 
 [[use-intercept-methods]]
-== Authorizing with `<intercept-methods>`
+== ``<intercept-methods>``를 사용한 권한 부여
 
-While using Spring Security's <<authorizing-with-annotations,annotation-based support>> is preferred for method security, you can also use XML to declare bean authorization rules.
+메서드 보안을 위해 Spring Security의 <<authorizing-with-annotations,어노테이션 기반 지원>>을 사용하는 것이 선호되지만, XML을 사용하여 빈 권한 부여 규칙을 선언할 수도 있습니다.
 
-If you need to declare it in your XML configuration instead, you can use xref:servlet/appendix/namespace/method-security.adoc#nsa-intercept-methods[`<intercept-methods>`] like so:
+XML 구성에서 선언해야 하는 경우, xref:servlet/appendix/namespace/method-security.adoc#nsa-intercept-methods[`<intercept-methods>`]를 다음과 같이 사용할 수 있습니다:
 
 [tabs]
 ======
@@ -1133,22 +1132,22 @@ Xml::
 ======
 
 [NOTE]
-This only supports matching method by prefix or by name.
-If your needs are more complex than that, <<authorizing-with-annotations,use annotation support>> instead.
+이는 접두사나 이름으로만 메서드를 일치시키는 것을 지원합니다.
+더 복잡한 요구사항이 있다면, <<authorizing-with-annotations,어노테이션 지원을 사용>>하세요.
 
 [[use-programmatic-authorization]]
-== Authorizing Methods Programmatically
+== 프로그래밍 방식으로 메서드 권한 부여
 
-As you've already seen, there are several ways that you can specify non-trivial authorization rules using <<authorization-expressions, Method Security SpEL expressions>>.
+이미 보셨듯이, <<authorization-expressions, 메서드 보안 SpEL 표현식>>을 사용하여 복잡한 권한 부여 규칙을 지정하는 여러 방법이 있습니다.
 
-There are a number of ways that you can instead allow your logic to be Java-based instead of SpEL-based.
-This gives use access the entire Java language for increased testability and flow control.
+대신 논리를 Java 기반으로 만들 수 있는 여러 방법이 있습니다.
+이를 통해 향상된 테스트 가능성과 흐름 제어를 위해 전체 Java 언어에 접근할 수 있습니다.
 
-=== Using a Custom Bean in SpEL
+=== SpEL에서 사용자 정의 빈 사용
 
-The first way to authorize a method programmatically is a two-step process.
+메서드를 프로그래밍 방식으로 권한 부여하는 첫 번째 방법은 두 단계 과정입니다.
 
-First, declare a bean that has a method that takes a `MethodSecurityExpressionOperations` instance like the following:
+먼저 `MethodSecurityExpressionOperations` 인스턴스를 받는 메서드가 있는 빈을 다음과 같이 선언합니다:
 
 [tabs]
 ======
@@ -1159,7 +1158,7 @@ Java::
 @Component("authz")
 public class AuthorizationLogic {
     public boolean decide(MethodSecurityExpressionOperations operations) {
-        // ... authorization logic
+        // ... 권한 부여 로직
     }
 }
 ----
@@ -1171,13 +1170,13 @@ Kotlin::
 @Component("authz")
 open class AuthorizationLogic {
     fun decide(val operations: MethodSecurityExpressionOperations): boolean {
-        // ... authorization logic
+        // ... 권한 부여 로직
     }
 }
 ----
 ======
 
-Then, reference that bean in your annotations in the following way:
+그런 다음 어노테이션에서 다음과 같이 해당 빈을 참조합니다:
 
 [tabs]
 ======
@@ -1210,15 +1209,15 @@ open class MyController {
 ----
 ======
 
-Spring Security will invoke the given method on that bean for each method invocation.
+Spring Security는 각 메서드 호출에 대해 해당 빈의 주어진 메서드를 호출합니다.
 
-What's nice about this is all your authorization logic is in a separate class that can be independently unit tested and verified for correctness.
-It also has access to the full Java language.
+이 방식의 좋은 점은 모든 권한 부여 로직이 독립적으로 단위 테스트하고 정확성을 확인할 수 있는 별도의 클래스에 있다는 것입니다.
+또한 전체 Java 언어에 접근할 수 있습니다.
 
 [TIP]
-In addition to returning a `Boolean`, you can also return `null` to indicate that the code abstains from making a decision.
+``Boolean``을 반환하는 것 외에도 ``null``을 반환하여 결정을 내리지 않겠다고 표시할 수 있습니다.
 
-If you want to include more information about the nature of the decision, you can instead return a custom `AuthorizationDecision` like this:
+권한 부여 결정에 대한 추가 정보를 포함하고 싶다면, 다음과 같이 사용자 정의 ``AuthorizationDecision``을 반환할 수 있습니다:
 
 [tabs]
 ======
@@ -1229,7 +1228,7 @@ Java::
 @Component("authz")
 public class AuthorizationLogic {
     public AuthorizationDecision decide(MethodSecurityExpressionOperations operations) {
-        // ... authorization logic
+        // ... 권한 부여 로직
         return new MyAuthorizationDecision(false, details);
     }
 }
@@ -1242,24 +1241,24 @@ Kotlin::
 @Component("authz")
 open class AuthorizationLogic {
     fun decide(val operations: MethodSecurityExpressionOperations): AuthorizationDecision {
-        // ... authorization logic
+        // ... 권한 부여 로직
         return MyAuthorizationDecision(false, details)
     }
 }
 ----
 ======
 
-Or throw a custom `AuthorizationDeniedException` instance.
-Note, though, that returning an object is preferred as this doesn't incur the expense of generating a stacktrace.
+또는 사용자 정의 `AuthorizationDeniedException` 인스턴스를 던질 수 있습니다.
+단, 객체를 반환하는 것이 스택 트레이스 생성 비용을 피할 수 있으므로 선호됩니다.
 
-Then, you can access the custom details when you <<fallback-values-authorization-denied, customize how the authorization result is handled>>.
+그런 다음 <<fallback-values-authorization-denied, 권한 부여 결과 처리 방식을 사용자 정의>>할 때 사용자 정의 세부 정보에 접근할 수 있습니다.
 
 [[custom-authorization-managers]]
-=== Using a Custom Authorization Manager
+=== 사용자 정의 권한 부여 관리자 사용
 
-The second way to authorize a method programmatically is to create a custom xref:servlet/authorization/architecture.adoc#_the_authorizationmanager[`AuthorizationManager`].
+메서드를 프로그래밍 방식으로 권한 부여하는 두 번째 방법은 사용자 정의 xref:servlet/authorization/architecture.adoc#_the_authorizationmanager[`AuthorizationManager`]를 생성하는 것입니다.
 
-First, declare an authorization manager instance, perhaps like this one:
+먼저 다음과 같은 권한 부여 관리자 인스턴스를 선언합니다:
 
 [tabs]
 ======
@@ -1271,12 +1270,12 @@ Java::
 public class MyAuthorizationManager implements AuthorizationManager<MethodInvocation>, AuthorizationManager<MethodInvocationResult> {
     @Override
     public AuthorizationDecision check(Supplier<Authentication> authentication, MethodInvocation invocation) {
-        // ... authorization logic
+        // ... 권한 부여 로직
     }
 
     @Override
     public AuthorizationDecision check(Supplier<Authentication> authentication, MethodInvocationResult invocation) {
-        // ... authorization logic
+        // ... 권한 부여 로직
     }
 }
 ----
@@ -1288,20 +1287,20 @@ Kotlin::
 @Component
 class MyAuthorizationManager : AuthorizationManager<MethodInvocation>, AuthorizationManager<MethodInvocationResult> {
     override fun check(authentication: Supplier<Authentication>, invocation: MethodInvocation): AuthorizationDecision {
-        // ... authorization logic
+        // ... 권한 부여 로직
     }
 
     override fun check(authentication: Supplier<Authentication>, invocation: MethodInvocationResult): AuthorizationDecision {
-        // ... authorization logic
+        // ... 권한 부여 로직
     }
 }
 ----
 ======
 
-Then, publish the method interceptor with a pointcut that corresponds to when you want that `AuthorizationManager` to run.
-For example, you could replace how `@PreAuthorize` and `@PostAuthorize` work like so:
+그런 다음 해당 ``AuthorizationManager``를 실행하려는 시기에 해당하는 포인트컷과 함께 메서드 인터셉터를 게시합니다.
+예를 들어, ``@PreAuthorize``와 ``@PostAuthorize``의 작동 방식을 다음과 같이 대체할 수 있습니다:
 
-.Only @PreAuthorize and @PostAuthorize Configuration
+.@PreAuthorize와 @PostAuthorize만 구성
 [tabs]
 ======
 Java::
@@ -1370,16 +1369,16 @@ Xml::
 
 [TIP]
 ====
-You can place your interceptor in between Spring Security method interceptors using the order constants specified in `AuthorizationInterceptorsOrder`.
+``AuthorizationInterceptorsOrder``에 지정된 순서 상수를 사용하여 인터셉터를 Spring Security 메서드 인터셉터 사이에 배치할 수 있습니다.
 ====
 
 [[customizing-expression-handling]]
-=== Customizing Expression Handling
+=== 표현식 처리 사용자 정의
 
-Or, third, you can customize how each SpEL expression is handled.
-To do that, you can expose a custom {security-api-url}org.springframework.security.access.expression.method.MethodSecurityExpressionHandler.html[`MethodSecurityExpressionHandler`], like so:
+또는 세 번째로, 각 SpEL 표현식이 처리되는 방식을 사용자 정의할 수 있습니다.
+이를 위해 다음과 같이 사용자 정의 {security-api-url}org.springframework.security.access.expression.method.MethodSecurityExpressionHandler.html[`MethodSecurityExpressionHandler`]를 노출할 수 있습니다:
 
-.Custom MethodSecurityExpressionHandler
+.사용자 정의 MethodSecurityExpressionHandler
 [tabs]
 ======
 Java::
@@ -1400,7 +1399,9 @@ Kotlin::
 ----
 companion object {
 	@Bean
-	fun methodSecurityExpressionHandler(val roleHierarchy: RoleHierarchy) : MethodSecurityExpressionHandler {
+	fun methodSecurityEx
+
+pressionHandler(val roleHierarchy: RoleHierarchy) : MethodSecurityExpressionHandler {
 		val handler = DefaultMethodSecurityExpressionHandler()
 		handler.setRoleHierarchy(roleHierarchy)
 		return handler
@@ -1425,21 +1426,21 @@ Xml::
 
 [TIP]
 ====
-We expose `MethodSecurityExpressionHandler` using a `static` method to ensure that Spring publishes it before it initializes Spring Security's method security `@Configuration` classes
+Spring이 Spring Security의 메서드 보안 `@Configuration` 클래스를 초기화하기 전에 ``MethodSecurityExpressionHandler``를 게시하도록 `static` 메서드를 사용하여 노출합니다.
 ====
 
-You can also <<subclass-defaultmethodsecurityexpressionhandler,subclass `DefaultMessageSecurityExpressionHandler`>> to add your own custom authorization expressions beyond the defaults.
+또한 <<subclass-defaultmethodsecurityexpressionhandler,``DefaultMessageSecurityExpressionHandler``를 서브클래싱>>하여 기본값 외에 자체 사용자 정의 권한 부여 표현식을 추가할 수 있습니다.
 
 [[use-aspectj]]
-== Authorizing with AspectJ
+== AspectJ를 사용한 권한 부여
 
 [[match-by-pointcut]]
-=== Matching Methods with Custom Pointcuts
+=== 사용자 정의 포인트컷으로 메서드 일치
 
-Being built on Spring AOP, you can declare patterns that are not related to annotations, similar to xref:servlet/authorization/authorize-http-requests.adoc[request-level authorization].
-This has the potential advantage of centralizing method-level authorization rules.
+Spring AOP를 기반으로 설계되어 있어 xref:servlet/authorization/authorize-http-requests.adoc[요청 레벨 권한 부여]와 유사하게 어노테이션과 관련되지 않은 패턴을 선언할 수 있습니다.
+이는 메서드 레벨 권한 부여 규칙을 중앙 집중화할 수 있는 잠재적인 장점이 있습니다.
 
-For example, you can use publish your own `Advisor` or use xref:servlet/appendix/namespace/method-security.adoc#nsa-protect-pointcut[`<protect-pointcut>`] to match AOP expressions to authorization rules for your service layer like so:
+예를 들어, 자체 ``Advisor``를 게시하거나 xref:servlet/appendix/namespace/method-security.adoc#nsa-protect-pointcut[`<protect-pointcut>`]을 사용하여 서비스 계층에 대한 AOP 표현식을 권한 부여 규칙과 일치시킬 수 있습니다:
 
 [tabs]
 ======
@@ -1486,11 +1487,11 @@ Xml::
 ======
 
 [[weave-aspectj]]
-=== Integrate with AspectJ Byte-weaving
+=== AspectJ 바이트코드 위빙과 통합
 
-Performance can at times be enhanced by using AspectJ to weave Spring Security advice into the byte code of your beans.
+때때로 AspectJ를 사용하여 Spring Security 어드바이스를 빈의 바이트코드로 위빙하면 성능이 향상될 수 있습니다.
 
-After setting up AspectJ, you can quite simply state in the `@EnableMethodSecurity` annotation or `<method-security>` element that you are using AspectJ:
+AspectJ를 설정한 후, `@EnableMethodSecurity` 어노테이션이나 `<method-security>` 요소에서 AspectJ를 사용한다고 간단히 명시할 수 있습니다:
 
 [tabs]
 ======
@@ -1516,22 +1517,22 @@ Xml::
 ----
 ======
 
-And the result will be that Spring Security will publish its advisors as AspectJ advice so that they can be woven in accordingly.
+그 결과 Spring Security는 어드바이저를 AspectJ 어드바이스로 게시하여 적절하게 위빙될 수 있도록 합니다.
 
 [[changing-the-order]]
-== Specifying Order
+== 순서 지정
 
-As already noted, there is a Spring AOP method interceptor for each annotation, and each of these has a location in the Spring AOP advisor chain.
+이미 언급했듯이, 각 어노테이션에 대한 Spring AOP 메서드 인터셉터가 있으며, 각각은 Spring AOP 어드바이저 체인에서 위치를 가집니다.
 
-Namely, the `@PreFilter` method interceptor's order is 100, ``@PreAuthorize``'s is 200, and so on.
+구체적으로, `@PreFilter` 메서드 인터셉터의 순서는 100, ``@PreAuthorize``의 순서는 200 등입니다.
 
-The reason this is important to note is that there are other AOP-based annotations like `@EnableTransactionManagement` that have an order of `Integer.MAX_VALUE`.
-In other words, they are located at the end of the advisor chain by default.
+이를 주목해야 하는 이유는 ``@EnableTransactionManagement``와 같은 다른 AOP 기반 어노테이션이 `Integer.MAX_VALUE` 순서를 가지고 있기 때문입니다.
+즉, 기본적으로 어드바이저 체인의 끝에 위치합니다.
 
-At times, it can be valuable to have other advice execute before Spring Security.
-For example, if you have a method annotated with `@Transactional` and `@PostAuthorize`, you might want the transaction to still be open when `@PostAuthorize` runs so that an `AccessDeniedException` will cause a rollback.
+때때로 다른 어드바이스가 Spring Security보다 먼저 실행되도록 하는 것이 가치 있을 수 있습니다.
+예를 들어, ``@Transactional``과 ``@PostAuthorize``로 어노테이션이 달린 메서드가 있는 경우, ``@PostAuthorize``가 실행될 때 트랜잭션이 여전히 열려있어 ``AccessDeniedException``이 롤백을 유발하도록 할 수 있습니다.
 
-To get `@EnableTransactionManagement` to open a transaction before method authorization advice runs, you can set ``@EnableTransactionManagement``'s order like so:
+메서드 권한 부여 어드바이스가 실행되기 전에 ``@EnableTransactionManagement``가 트랜잭션을 열도록 하려면 다음과 같이 ``@EnableTransactionManagement``의 순서를 설정할 수 있습니다:
 
 [tabs]
 ======
@@ -1557,39 +1558,39 @@ Xml::
 ----
 ======
 
-Since the earliest method interceptor (`@PreFilter`) is set to an order of 100, a setting of zero means that the transaction advice will run before all Spring Security advice.
+가장 빠른 메서드 인터셉터(`@PreFilter`)의 순서가 100으로 설정되어 있으므로, 0으로 설정하면 트랜잭션 어드바이스가 모든 Spring Security 어드바이스보다 먼저 실행됩니다.
 
 [[authorization-expressions]]
-== Expressing Authorization with SpEL
+== SpEL을 사용한 권한 부여 표현
 
-You've already seen several examples using SpEL, so now let's cover the API a bit more in depth.
+이미 SpEL을 사용한 여러 예를 보셨으므로 이제 API를 좀 더 자세히 살펴보겠습니다.
 
-Spring Security encapsulates all of its authorization fields and methods in a set of root objects.
-The most generic root object is called `SecurityExpressionRoot` and it forms the basis for `MethodSecurityExpressionRoot`.
-Spring Security supplies this root object to `MethodSecurityEvaluationContext` when preparing to evaluate an authorization expression.
+Spring Security는 모든 권한 부여 필드와 메서드를 루트 객체 세트에 캡슐화합니다.
+가장 일반적인 루트 객체는 ``SecurityExpressionRoot``라고 하며 ``MethodSecurityExpressionRoot``의 기초를 형성합니다.
+Spring Security는 권한 부여 표현식을 평가할 준비를 할 때 ``MethodSecurityEvaluationContext``에 이 루트 객체를 제공합니다.
 
 [[using-authorization-expression-fields-and-methods]]
-=== Using Authorization Expression Fields and Methods
+=== 권한 부여 표현식 필드 및 메서드 사용
 
-The first thing this provides is an enhanced set of authorization fields and methods to your SpEL expressions.
-What follows is a quick overview of the most common methods:
+이것이 제공하는 첫 번째 것은 SpEL 표현식에 대한 향상된 권한 부여 필드 및 메서드 세트입니다.
+다음은 가장 일반적인 메서드에 대한 간단한 개요입니다:
 
-* `permitAll` - The method requires no authorization to be invoked; note that in this case, xref:servlet/authentication/architecture.adoc#servlet-authentication-authentication[the `Authentication`] is never retrieved from the session
-* `denyAll` - The method is not allowed under any circumstances; note that in this case, the `Authentication` is never retrieved from the session
-* `hasAuthority` - The method requires that the `Authentication` have xref:servlet/authorization/architecture.adoc#authz-authorities[a `GrantedAuthority`] that matches the given value
-* `hasRole` - A shortcut for `hasAuthority` that prefixes `ROLE_` or whatever is configured as the default prefix
-* `hasAnyAuthority` - The method requires that the `Authentication` have a `GrantedAuthority` that matches any of the given values
-* `hasAnyRole` - A shortcut for `hasAnyAuthority` that prefixes `ROLE_` or whatever is configured as the default prefix
-* `hasPermission` - A hook into your `PermissionEvaluator` instance for doing object-level authorization
+* `permitAll` - 메서드 호출에 권한 부여가 필요하지 않습니다; 이 경우 xref:servlet/authentication/architecture.adoc#servlet-authentication-authentication[`Authentication`]은 세션에서 절대 검색되지 않습니다
+* `denyAll` - 어떤 상황에서도 메서드가 허용되지 않습니다; 이 경우 ``Authentication``은 세션에서 절대 검색되지 않습니다
+* `hasAuthority` - 메서드는 ``Authentication``이 주어진 값과 일치하는 xref:servlet/authorization/architecture.adoc#authz-authorities[`GrantedAuthority`]를 가지고 있어야 합니다
+* `hasRole` - `ROLE_` 또는 구성된 기본 접두사를 앞에 붙이는 ``hasAuthority``의 약칭입니다
+* `hasAnyAuthority` - 메서드는 ``Authentication``이 주어진 값 중 하나와 일치하는 ``GrantedAuthority``를 가지고 있어야 합니다
+* `hasAnyRole` - `ROLE_` 또는 구성된 기본 접두사를 앞에 붙이는 ``hasAnyAuthority``의 약칭입니다
+* `hasPermission` - 객체 레벨 권한 부여를 위한 ``PermissionEvaluator`` 인스턴스에 대한 후크입니다
 
-And here is a brief look at the most common fields:
+그리고 다음은 가장 일반적인 필드에 대한 간단한 개요입니다:
 
-* `authentication` - The `Authentication` instance associated with this method invocation
-* `principal` - The `Authentication#getPrincipal` associated with this method invocation
+* `authentication` - 이 메서드 호출과 관련된 `Authentication` 인스턴스
+* `principal` - 이 메서드 호출과 관련된 `Authentication#getPrincipal`
 
-Having now learned the patterns, rules, and how they can be paired together, you should be able to understand what is going on in this more complex example:
+이제 패턴, 규칙 및 이들을 어떻게 함께 사용할 수 있는지 배웠으므로 다음과 같은 더 복잡한 예제를 이해할 수 있을 것입니다:
 
-.Authorize Requests
+.요청 권한 부여
 [tabs]
 ======
 Java::
@@ -1651,27 +1652,27 @@ Xml::
 </sec:method-security>
 ----
 ======
-<1> This method may not be invoked by anyone for any reason
-<2> This method may only be invoked by ``Authentication``s granted the `ROLE_ADMIN` authority
-<3> This method may only be invoked by ``Authentication``s granted the `db` and `ROLE_ADMIN` authorities
-<4> This method may only be invoked by ``Princpal``s with an `aud` claim equal to "my-audience"
-<5> This method may only be invoked if the bean ``authz``'s `check` method returns `true`
+<1> 이 메서드는 어떤 이유로든 누구도 호출할 수 없습니다
+<2> 이 메서드는 `ROLE_ADMIN` 권한이 부여된 ``Authentication``만 호출할 수 있습니다
+<3> 이 메서드는 ``db``와 `ROLE_ADMIN` 권한이 부여된 ``Authentication``만 호출할 수 있습니다
+<4> 이 메서드는 `aud` 클레임이 "my-audience"와 같은 ``Principal``만 호출할 수 있습니다
+<5> 이 메서드는 `authz` 빈의 `check` 메서드가 ``true``를 반환하는 경우에만 호출할 수 있습니다
 
 [TIP]
 ====
-You can use a bean like `authz` above to <<_using_a_custom_bean_in_spel, add programmatic authorization>>.
+위의 ``authz``와 같은 빈을 사용하여 <<_using_a_custom_bean_in_spel, 프로그래밍 방식 권한 부여를 추가>>할 수 있습니다.
 ====
 
 [[using_method_parameters]]
-=== Using Method Parameters
+=== 메서드 매개변수 사용
 
-Additionally, Spring Security provides a mechanism for discovering method parameters so they can also be accessed in the SpEL expression as well.
+또한 Spring Security는 메서드 매개변수를 발견하는 메커니즘을 제공하여 SpEL 표현식에서도 접근할 수 있도록 합니다.
 
-For a complete reference, Spring Security uses `DefaultSecurityParameterNameDiscoverer` to discover the parameter names.
-By default, the following options are tried for a method.
+전체 참조를 위해 Spring Security는 ``DefaultSecurityParameterNameDiscoverer``를 사용하여 매개변수 이름을 발견합니다.
+기본적으로 메서드에 대해 다음 옵션이 시도됩니다.
 
-1. If Spring Security's `@P` annotation is present on a single argument to the method, the value is used.
-The following example uses the `@P` annotation:
+1. 메서드의 단일 인수에 Spring Security의 ``@P`` 어노테이션이 있는 경우 해당 값이 사용됩니다.
+다음 예제는 ``@P`` 어노테이션을 사용합니다:
 
 +
 
@@ -1687,6 +1688,8 @@ import org.springframework.security.access.method.P;
 
 @PreAuthorize("hasPermission(#c, 'write')")
 public void updateContact(@P("c") Contact contact);
+
+
 ----
 
 Kotlin::
@@ -1702,12 +1705,12 @@ fun doSomething(@P("c") contact: Contact?)
 ----
 ======
 +
-The intention of this expression is to require that the current `Authentication` have `write` permission specifically for this `Contact` instance.
+이 표현식의 의도는 현재 ``Authentication``이 이 특정 ``Contact`` 인스턴스에 대해 ``write`` 권한을 가지도록 요구하는 것입니다.
 +
-Behind the scenes, this is implemented by using `AnnotationParameterNameDiscoverer`, which you can customize to support the value attribute of any specified annotation.
+내부적으로 이는 ``AnnotationParameterNameDiscoverer``를 사용하여 구현되며, 지정된 모든 어노테이션의 value 속성을 지원하도록 사용자 정의할 수 있습니다.
 
-* If xref:servlet/integrations/data.adoc[Spring Data's] `@Param` annotation is present on at least one parameter for the method, the value is used.
-The following example uses the `@Param` annotation:
+* xref:servlet/integrations/data.adoc[Spring Data]의 ``@Param`` 어노테이션이 메서드의 적어도 하나의 매개변수에 있는 경우 해당 값이 사용됩니다.
+다음 예제는 ``@Param`` 어노테이션을 사용합니다:
 +
 [tabs]
 ======
@@ -1736,25 +1739,25 @@ fun findContactByName(@Param("n") name: String?): Contact?
 ----
 ======
 +
-The intention of this expression is to require that `name` be equal to `Authentication#getName` for the invocation to be authorized.
+이 표현식의 의도는 호출이 권한 부여되기 위해 ``name``이 ``Authentication#getName``과 같아야 한다는 것입니다.
 +
-Behind the scenes, this is implemented by using `AnnotationParameterNameDiscoverer`, which you can customize to support the value attribute of any specified annotation.
+내부적으로 이는 ``AnnotationParameterNameDiscoverer``를 사용하여 구현되며, 지정된 모든 어노테이션의 value 속성을 지원하도록 사용자 정의할 수 있습니다.
 
-* If you compile your code with the `-parameters` argument, the standard JDK reflection API is used to discover the parameter names.
-This works on both classes and interfaces.
+* 코드를 ``-parameters`` 인수로 컴파일하는 경우, 표준 JDK 리플렉션 API를 사용하여 매개변수 이름을 발견합니다.
+이는 클래스와 인터페이스 모두에서 작동합니다.
 
-* Finally, if you compile your code with debug symbols, the parameter names are discovered by using the debug symbols.
-This does not work for interfaces, since they do not have debug information about the parameter names.
-For interfaces, either annotations or the `-parameters` approach must be used.
+* 마지막으로, 코드를 디버그 심볼과 함께 컴파일하는 경우 디버그 심볼을 사용하여 매개변수 이름을 발견합니다.
+이는 인터페이스에서는 작동하지 않습니다. 인터페이스에는 매개변수 이름에 대한 디버그 정보가 없기 때문입니다.
+인터페이스의 경우 어노테이션이나 ``-parameters`` 접근 방식을 사용해야 합니다.
 
 [[authorize-object]]
-== Authorizing Arbitrary Objects
+== 임의의 객체 권한 부여
 
-Spring Security also supports wrapping any object that is annotated its method security annotations.
+Spring Security는 메서드 보안 어노테이션이 달린 모든 객체를 래핑하는 것도 지원합니다.
 
-The simplest way to achieve this is to mark any method that returns the object you wish to authorize with the `@AuthorizeReturnObject` annotation.
+이를 달성하는 가장 간단한 방법은 권한 부여하려는 객체를 반환하는 모든 메서드에 `@AuthorizeReturnObject` 어노테이션을 표시하는 것입니다.
 
-For example, consider the following `User` class:
+예를 들어, 다음과 같은 `User` 클래스를 고려해 보세요:
 
 [tabs]
 ======
@@ -1790,7 +1793,7 @@ class User (val name:String, @get:PreAuthorize("hasAuthority('user:read')") val 
 ----
 ======
 
-Given an interface like this one:
+다음과 같은 인터페이스가 주어진 경우:
 
 [tabs]
 ======
@@ -1819,7 +1822,7 @@ class UserRepository {
 ----
 ======
 
-Then any `User` that is returned from `findById` will be secured like other Spring Security-protected components:
+그러면 ``findById``에서 반환된 모든 ``User``는 다른 Spring Security 보호 컴포넌트처럼 보안됩니다:
 
 [tabs]
 ======
@@ -1857,12 +1860,12 @@ fun getEmailWhenProxiedThenAuthorizes() {
 ----
 ======
 
-=== Using `@AuthorizeReturnObject` at the class level
+=== 클래스 레벨에서 `@AuthorizeReturnObject` 사용
 
-`@AuthorizeReturnObject` can be placed at the class level. Note, though, that this means Spring Security will attempt to proxy any return object, including ``String``, ``Integer`` and other types.
-This is often not what you want to do.
+``@AuthorizeReturnObject``는 클래스 레벨에 배치할 수 있습니다. 그러나 이는 Spring Security가 `String`, `Integer` 및 기타 타입을 포함한 모든 반환 객체를 프록시하려고 시도한다는 것을 의미합니다.
+이는 대개 원하는 동작이 아닙니다.
 
-If you want to use `@AuthorizeReturnObject` on a class or interface whose methods return value types, like `int`, `String`, `Double` or collections of those types, then you should also publish the appropriate `AuthorizationAdvisorProxyFactory.TargetVisitor` as follows:
+`int`, `String`, `Double` 또는 이러한 타입의 컬렉션과 같은 값 타입을 반환하는 메서드가 있는 클래스나 인터페이스에서 ``@AuthorizeReturnObject``를 사용하려면 다음과 같이 적절한 ``AuthorizationAdvisorProxyFactory.TargetVisitor``를 게시해야 합니다:
 
 
 [tabs]
@@ -1890,18 +1893,18 @@ open fun skipValueTypes() = Customizer<AuthorizationAdvisorProxyFactory> {
 
 [TIP]
 ====
-You can set your own `AuthorizationAdvisorProxyFactory.TargetVisitor` to customize the proxying for any set of types
+모든 타입 세트에 대한 프록시를 사용자 정의하기 위해 자체 ``AuthorizationAdvisorProxyFactory.TargetVisitor``를 설정할 수 있습니다
 ====
 
-=== Programmatically Proxying
+=== 프로그래밍 방식 프록시
 
-You can also programmatically proxy a given object.
+주어진 객체를 프로그래밍 방식으로 프록시할 수도 있습니다.
 
-To achieve this, you can autowire the provided `AuthorizationProxyFactory` instance, which is based on which method security interceptors you have configured.
-If you are using `@EnableMethodSecurity`, then this means that it will by default have the interceptors for `@PreAuthorize`, `@PostAuthorize`, `@PreFilter`, and `@PostFilter`.
+이를 위해 구성한 메서드 보안 인터셉터를 기반으로 제공된 `AuthorizationProxyFactory` 인스턴스를 자동 연결할 수 있습니다.
+``@EnableMethodSecurity``를 사용하는 경우, 이는 기본적으로 `@PreAuthorize`, `@PostAuthorize`, `@PreFilter`, ``@PostFilter``에 대한 인터셉터를 가지게 됩니다.
 
 
-You can proxy an instance of user in the following way:
+다음과 같은 방식으로 사용자 인스턴스를 프록시할 수 있습니다:
 
 [tabs]
 ======
@@ -1938,11 +1941,11 @@ fun getEmailWhenProxiedThenAuthorizes() {
 ----
 ======
 
-=== Manual Construction
+=== 수동 구성
 
-You can also define your own instance if you need something different from the Spring Security default.
+Spring Security 기본값과 다른 것이 필요한 경우 자체 인스턴스를 정의할 수도 있습니다.
 
-For example, if you define an `AuthorizationProxyFactory` instance like so:
+예를 들어, 다음과 같이 `AuthorizationProxyFactory` 인스턴스를 정의할 수 있습니다:
 
 [tabs]
 ======
@@ -1955,7 +1958,7 @@ import static org.springframework.security.authorization.method.AuthorizationMan
 // ...
 
 AuthorizationProxyFactory proxyFactory = AuthorizationAdvisorProxyFactory.withDefaults();
-// and if needing to skip value types
+// 값 타입을 건너뛰어야 하는 경우
 proxyFactory.setTargetVisitor(TargetVisitor.defaultsSkipValueTypes());
 ----
 
@@ -1968,13 +1971,13 @@ import org.springframework.security.authorization.method.AuthorizationManagerBef
 
 // ...
 
-val proxyFactory: AuthorizationProxyFactory = AuthorizationProxyFactory(preAuthorize())
-// and if needing to skip value types
+val proxyFactory: AuthorizationProxyFactory = AuthorizationAdvisorProxyFactory(preAuthorize())
+// 값 타입을 건너뛰어야 하는 경우
 proxyFactory.setTargetVisitor(TargetVisitor.defaultsSkipValueTypes())
 ----
 ======
 
-Then you can wrap any instance of `User` as follows:
+그런 다음 다음과 같이 모든 `User` 인스턴스를 래핑할 수 있습니다:
 
 [tabs]
 ======
@@ -2009,14 +2012,14 @@ fun getEmailWhenProxiedThenAuthorizes() {
 
 [NOTE]
 ====
-This feature does not yet support Spring AOT
+이 기능은 아직 Spring AOT를 지원하지 않습니다
 ====
 
-=== Proxying Collections
+=== 컬렉션 프록시 생성
 
-`AuthorizationProxyFactory` supports Java collections, streams, arrays, optionals, and iterators by proxying the element type and maps by proxying the value type.
+``AuthorizationProxyFactory``는 Java 컬렉션, 스트림, 배열, 옵셔널, 반복자의 요소 타입을 프록시하고 맵의 경우 값 타입을 프록시합니다.
 
-This means that when proxying a `List` of objects, the following also works:
+이는 객체의 ``List``를 프록시할 때 다음과 같이 작동한다는 것을 의미합니다:
 
 [tabs]
 ======
@@ -2035,29 +2038,29 @@ void getEmailWhenProxiedThenAuthorizes() {
 ----
 ======
 
-=== Proxying Classes
+=== 클래스 프록시 생성
 
-In limited circumstances, it may be valuable to proxy a `Class` itself, and `AuthorizationProxyFactory` also supports this.
-This is roughly the equivalent of calling `ProxyFactory#getProxyClass` in Spring Framework's support for creating proxies.
+제한된 상황에서는 `Class` 자체를 프록시하는 것이 유용할 수 있으며, ``AuthorizationProxyFactory``도 이를 지원합니다.
+이는 대략 Spring Framework의 프록시 생성 지원에서 ``ProxyFactory#getProxyClass``를 호출하는 것과 동등합니다.
 
-One place where this is handy is when you need to construct the proxy class ahead-of-time, like with Spring AOT.
+이는 Spring AOT와 같이 프록시 클래스를 미리 구성해야 하는 경우에 유용합니다.
 
-=== Support for All Method Security Annotations
+=== 모든 메서드 보안 어노테이션 지원
 
-`AuthorizationProxyFactory` supports whichever method security annotations are enabled in your application.
-It is based off of whatever `AuthorizationAdvisor` classes are published as a bean.
+``AuthorizationProxyFactory``는 애플리케이션에서 활성화된 모든 메서드 보안 어노테이션을 지원합니다.
+빈으로 게시된 ``AuthorizationAdvisor`` 클래스를 기반으로 합니다.
 
-Since `@EnableMethodSecurity` publishes `@PreAuthorize`, `@PostAuthorize`, `@PreFilter`, and `@PostFilter`  advisors by default, you will typically need to do nothing to activate the ability.
+``@EnableMethodSecurity``는 기본적으로 `@PreAuthorize`, `@PostAuthorize`, `@PreFilter`, `@PostFilter` 어드바이저를 게시하므로, 일반적으로 이 기능을 활성화하기 위해 추가 작업을 할 필요가 없습니다.
 
 [NOTE]
 ====
-SpEL expressions that use `returnObject` or `filterObject` sit behind the proxy and so have full access to the object.
+`returnObject` 또는 ``filterObject``를 사용하는 SpEL 표현식은 프록시 뒤에 있으므로 객체에 완전히 접근할 수 있습니다.
 ====
 
 [#custom_advice]
-=== Custom Advice
+=== 사용자 정의 어드바이스
 
-If you have security advice that you also want applied, you can publish your own `AuthorizationAdvisor` like so:
+적용하려는 보안 어드바이스가 있다면 다음과 같이 자체 ``AuthorizationAdvisor``를 게시할 수 있습니다:
 
 [tabs]
 ======
@@ -2088,11 +2091,11 @@ internal class SecurityConfig {
 ----
 ======
 
-And Spring Security will add that advisor into the set of advice that `AuthorizationProxyFactory` adds when proxying an object.
+그러면 Spring Security는 ``AuthorizationProxyFactory``가 객체를 프록시할 때 추가하는 어드바이스 세트에 해당 어드바이저를 추가합니다.
 
-=== Working with Jackson
+=== Jackson과 함께 작업하기
 
-One powerful use of this feature is to return a secured value from a controller like so:
+이 기능의 강력한 사용 사례 중 하나는 컨트롤러에서 보안처리 된 값을 다음과 같이 반환하는 것입니다:
 
 [tabs]
 ======
@@ -2129,15 +2132,15 @@ class UserController  {
 ----
 ======
 
-If you are using Jackson, though, this may result in a serialization error like the following:
+그러나 Jackson을 사용하는 경우 다음과 같은 직렬화 오류가 발생할 수 있습니다:
 
 [source,bash]
 ====
 com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Direct self-reference leading to cycle
 ====
 
-This is due to how Jackson works with CGLIB proxies.
-To address this, add the following annotation to the top of the `User` class:
+이는 Jackson이 CGLIB 프록시와 작동하는 방식 때문입니다.
+이를 해결하려면 `User` 클래스 상단에 다음 어노테이션을 추가하세요:
 
 [tabs]
 ======
@@ -2160,7 +2163,7 @@ class User
 ----
 ======
 
-Finally, you will need to publish a <<custom_advice, custom interceptor>> to catch the `AccessDeniedException` thrown for each field, which you can do like so:
+마지막으로, 각 필드에 대해 발생하는 ``AccessDeniedException``을 잡기 위해 <<custom_advice, 사용자 정의 인터셉터>>를 게시해야 합니다. 다음과 같이 할 수 있습니다:
 
 [tabs]
 ======
@@ -2227,8 +2230,8 @@ class AccessDeniedExceptionInterceptor: AuthorizationAdvisor {
 ----
 ======
 
-Then, you'll see a different JSON serialization based on the authorization level of the user.
-If they don't have the `user:read` authority, then they'll see:
+그러면 사용자의 권한 부여 레벨에 따라 다른 JSON 직렬화가 표시됩니다.
+`user:read` 권한이 없는 경우 다음과 같이 표시됩니다:
 
 [source,json]
 ----
@@ -2238,7 +2241,7 @@ If they don't have the `user:read` authority, then they'll see:
 }
 ----
 
-And if they do have that authority, they'll see:
+그리고 해당 권한이 있는 경우 다음과 같이 표시됩니다:
 
 [source,json]
 ----
@@ -2250,19 +2253,19 @@ And if they do have that authority, they'll see:
 
 [TIP]
 ====
-You can also add the Spring Boot property `spring.jackson.default-property-inclusion=non_null` to exclude the null value, if you also don't want to reveal the JSON key to an unauthorized user.
+Spring Boot 속성 ``spring.jackson.default-property-inclusion=non_null``을 추가하여 null 값을 제외할 수도 있습니다. 이렇게 하면 권한 부여되지 않은 사용자에게 JSON 키도 노출되지 않습니다.
 ====
 
 [[fallback-values-authorization-denied]]
-== Providing Fallback Values When Authorization is Denied
+== 권한 부여가 거부된 경우 대체 값 제공
 
-There are some scenarios where you may not wish to throw an `AuthorizationDeniedException` when a method is invoked without the required permissions.
-Instead, you might wish to return a post-processed result, like a masked result, or a default value in cases where authorization denied happened before invoking the method.
+필요한 권한 없이 메서드가 호출될 때 ``AuthorizationDeniedException``을 던지고 싶지 않은 시나리오가 있을 수 있습니다.
+대신 마스킹된 결과와 같은 후처리된 결과나, 메서드 호출 전에 권한 부여가 거부된 경우 기본값을 반환하고 싶을 수 있습니다.
 
-Spring Security provides support for handling authorization denied on method invocation by using the {security-api-url}org/springframework/security/authorization/method/HandleAuthorizationDenied.html[`@HandleAuthorizationDenied`].
-The handler works for denied authorizations that happened in the <<authorizing-with-annotations,`@PreAuthorize` and `@PostAuthorize` annotations>> as well as {security-api-url}org/springframework/security/authorization/AuthorizationDeniedException.html[`AuthorizationDeniedException`] thrown from the method invocation itself.
+Spring Security는 {security-api-url}org/springframework/security/authorization/method/HandleAuthorizationDenied.html[`@HandleAuthorizationDenied`]를 사용하여 메서드 호출 시 권한 부여 거부를 처리하는 지원을 제공합니다.
+이 핸들러는 <<authorizing-with-annotations,`@PreAuthorize` 및 `@PostAuthorize` 어노테이션>>에서 발생한 권한 부여 거부와 메서드 호출 자체에서 발생한 {security-api-url}org/springframework/security/authorization/AuthorizationDeniedException.html[`AuthorizationDeniedException`]에 대해 작동합니다.
 
-Let's consider the example from the <<authorize-object,previous section>>, but instead of creating the `AccessDeniedExceptionInterceptor` to transform an `AccessDeniedException` to a `null` return value, we will use the `handlerClass` attribute from `@HandleAuthorizationDenied`:
+<<authorize-object,이전 섹션>>의 예제를 고려해 보겠습니다. 하지만 ``AccessDeniedException``을 `null` 반환 값으로 변환하는 ``AccessDeniedExceptionInterceptor``를 만드는 대신 ``@HandleAuthorizationDenied``의 ``handlerClass`` 속성을 사용하겠습니다:
 
 [tabs]
 ======
@@ -2328,15 +2331,15 @@ class User (val name:String, @PreAuthorize(value = "hasAuthority('user:read')") 
 ----
 ======
 
-<1> Create an implementation of `MethodAuthorizationDeniedHandler` that returns a `null` value
-<2> Register the `NullMethodAuthorizationDeniedHandler` as a bean
-<3> Annotate the method with `@HandleAuthorizationDenied` and pass the `NullMethodAuthorizationDeniedHandler` to the `handlerClass` attribute
+<1> `null` 값을 반환하는 `MethodAuthorizationDeniedHandler` 구현을 생성합니다
+<2> ``NullMethodAuthorizationDeniedHandler``를 빈으로 등록합니다
+<3> 메서드에 `@HandleAuthorizationDenied` 어노테이션을 달고 `handlerClass` 속성에 ``NullMethodAuthorizationDeniedHandler``를 전달합니다
 
-And then you can verify that a `null` value is returned instead of the `AccessDeniedException`:
+그리고 `AccessDeniedException` 대신 `null` 값이 반환되는지 확인할 수 있습니다:
 
 [TIP]
 ====
-You can also annotate your class with `@Component` instead of creating a `@Bean` method
+`@Bean` 메서드를 생성하는 대신 클래스에 `@Component` 어노테이션을 달 수도 있습니다
 ====
 
 [tabs]
@@ -2370,13 +2373,13 @@ fun getEmailWhenProxiedThenNullEmail() {
 ----
 ======
 
-=== Using the Denied Result From the Method Invocation
+=== 메서드 호출의 거부된 결과 사용
 
-There are some scenarios where you might want to return a secure result derived from the denied result.
-For example, if a user is not authorized to see email addresses, you might want to apply some masking on the original email address, i.e. _useremail@example.com_ would become _use\\******@example.com_.
+거부된 결과에서 파생된 안전한 결과를 반환하고 싶은 시나리오가 있을 수 있습니다.
+예를 들어, 사용자가 이메일 주소를 볼 수 있는 권한이 없는 경우 원래 이메일 주소에 일부 마스킹을 적용하고 싶을 수 있습니다. 즉, _useremail@example.com_이 _use\\******@example.com_으로 변경될 수 있습니다.
 
-For those scenarios, you can override the `handleDeniedInvocationResult` from the `MethodAuthorizationDeniedHandler`, which has the {security-api-url}org/springframework/security/authorization/method/MethodInvocationResult.html[`MethodInvocationResult`] as an argument.
-Let's continue with the previous example, but instead of returning `null`, we will return a masked value of the email:
+이러한 시나리오의 경우 {security-api-url}org/springframework/security/authorization/method/MethodInvocationResult.html[`MethodInvocationResult`]를 인수로 받는 ``MethodAuthorizationDeniedHandler``의 ``handleDeniedInvocationResult``를 재정의할 수 있습니다.
+이전 예제를 계속 사용하되, ``null``을 반환하는 대신 이메일의 마스킹된 값을 반환하겠습니다:
 
 [tabs]
 ======
@@ -2453,15 +2456,15 @@ class User (val name:String, @PostAuthorize(value = "hasAuthority('user:read')")
 ----
 ======
 
-<1> Create an implementation of `MethodAuthorizationDeniedHandler` that returns a masked value of the unauthorized result value
-<2> Register the `EmailMaskingMethodAuthorizationDeniedHandler` as a bean
-<3> Annotate the method with `@HandleAuthorizationDenied` and pass the `EmailMaskingMethodAuthorizationDeniedHandler` to the `handlerClass` attribute
+<1> 권한 부여되지 않은 결과 값의 마스킹된 값을 반환하는 `MethodAuthorizationDeniedHandler` 구현을 생성합니다
+<2> ``EmailMaskingMethodAuthorizationDeniedHandler``를 빈으로 등록합니다
+<3> 메서드에 `@HandleAuthorizationDenied` 어노테이션을 달고 `handlerClass` 속성에 ``EmailMaskingMethodAuthorizationDeniedHandler``를 전달합니다
 
-And then you can verify that a masked email is returned instead of an `AccessDeniedException`:
+그리고 `AccessDeniedException` 대신 마스킹된 이메일이 반환되는지 확인할 수 있습니다:
 
 [WARNING]
 ====
-Since you have access to the original denied value, make sure that you correctly handle it and do not return it to the caller.
+원본 거부된 값에 접근할 수 있으므로 이를 올바르게 처리하고 호출자에게 반환하지 않도록 주의하세요.
 ====
 
 [tabs]
@@ -2476,7 +2479,7 @@ UserRepository users;
 @Test
 void getEmailWhenProxiedThenMaskedEmail() {
     Optional<User> securedUser = users.findByName("name");
-    // email is useremail@example.com
+    // email은 useremail@example.com
     assertThat(securedUser.get().getEmail()).isEqualTo("use******@example.com");
 }
 ----
@@ -2491,28 +2494,28 @@ var users:UserRepository? = null
 @Test
 fun getEmailWhenProxiedThenMaskedEmail() {
     val securedUser: Optional<User> = users.findByName("name")
-    // email is useremail@example.com
+    // email은 useremail@example.com
     assertThat(securedUser.get().getEmail()).isEqualTo("use******@example.com")
 }
 ----
 ======
 
-When implementing the `MethodAuthorizationDeniedHandler` you have a few options on what type you can return:
+``MethodAuthorizationDeniedHandler``를 구현할 때 반환할 수 있는 타입에는 몇 가지 옵션이 있습니다:
 
-- A `null` value.
-- A non-null value, respecting the method's return type.
-- Throw an exception, usually an instance of `AuthorizationDeniedException`. This is the default behavior.
-- A `Mono` type for reactive applications.
+- `null` 값
+- 메서드의 반환 타입을 준수하는 null이 아닌 값
+- 예외 던지기, 일반적으로 ``AuthorizationDeniedException``의 인스턴스. 이는 기본 동작입니다.
+- 리액티브 애플리케이션을 위한 ``Mono`` 타입
 
-Note that since the handler must be registered as beans in your application context, you can inject dependencies into them if you need a more complex logic.
-In addition to that, you have available the `MethodInvocation` or the `MethodInvocationResult`, as well as the `AuthorizationResult` for more details related to the authorization decision.
+핸들러는 애플리케이션 컨텍스트에 빈으로 등록되어야 하므로 더 복잡한 로직이 필요한 경우 의존성을 주입할 수 있습니다.
+또한 ``MethodInvocation`` 또는 ``MethodInvocationResult``, 그리고 권한 부여 결정과 관련된 자세한 정보를 위한 ``AuthorizationResult``를 사용할 수 있습니다.
 
 [[deciding-return-based-parameters]]
-=== Deciding What to Return Based on Available Parameters
+=== 사용 가능한 매개변수를 기반으로 반환할 내용 결정
 
-Consider a scenario where there might be multiple mask values for different methods, it would be not so productive if we had to create a handler for each of those methods, although it is perfectly fine to do that.
-In such cases, we can use the information passed via parameters to decide what to do.
-For example, we can create a custom `@Mask` annotation and a handler that detects that annotation to decide what mask value to return:
+여러 메서드에 대해 여러 마스크 값이 있을 수 있는 시나리오를 고려해 보겠습니다. 이런 경우 각 메서드에 대해 핸들러를 만드는 것은 효율적이지 않을 수 있습니다(물론 그렇게 해도 괜찮습니다).
+이런 경우 매개변수를 통해 전달된 정보를 사용하여 무엇을 할지 결정할 수 있습니다.
+예를 들어, 사용자 정의 `@Mask` 어노테이션을 만들고 해당 어노테이션을 감지하여 어떤 마스크 값을 반환할지 결정하는 핸들러를 만들 수 있습니다:
 
 [tabs]
 ======
@@ -2622,7 +2625,7 @@ class MyService {
 ----
 ======
 
-Now the return values when access is denied will be decided based on the `@Mask` annotation:
+이제 접근이 거부될 때 반환 값은 `@Mask` 어노테이션을 기반으로 결정됩니다:
 
 [tabs]
 ======
@@ -2667,10 +2670,10 @@ fun barWhenDeniedThenReturnQuestionMarks() {
 ----
 ======
 
-=== Combining with Meta Annotation Support
+=== 메타 어노테이션 지원과 결합
 
-You can also combine the `@HandleAuthorizationDenied` with other annotations in order to reduce and simplify the annotations in a method.
-Let's consider the <<deciding-return-based-parameters,example from the previous section>> and merge `@HandleAuthorizationDenied` with `@Mask`:
+``@HandleAuthorizationDenied``를 다른 어노테이션과 결합하여 메서드의 어노테이션을 줄이고 단순화할 수 있습니다.
+<<deciding-return-based-parameters,이전 섹션의 예제>>를 고려하여 ``@HandleAuthorizationDenied``와 ``@Mask``를 병합해 보겠습니다:
 
 [tabs]
 ======
@@ -2709,21 +2712,21 @@ fun myMethod(): String {
 ----
 ======
 
-Now you do not have to remember to add both annotations when you need a mask behavior in your method.
-Make sure to read the <<meta-annotations,Meta Annotations Support>> section for more details on the usage.
+이제 메서드에 마스크 동작이 필요할 때 두 어노테이션을 모두 추가할 필요가 없습니다.
+자세한 사용법은 <<meta-annotations,메타 어노테이션 지원>> 섹션을 읽어보세요.
 
 [[migration-enableglobalmethodsecurity]]
-== Migrating from `@EnableGlobalMethodSecurity`
+== ``@EnableGlobalMethodSecurity``에서 마이그레이션
 
-If you are using `@EnableGlobalMethodSecurity`, you should migrate to `@EnableMethodSecurity`.
+``@EnableGlobalMethodSecurity``를 사용하고 있다면 ``@EnableMethodSecurity``로 마이그레이션해야 합니다.
 
 [[servlet-replace-globalmethodsecurity-with-methodsecurity]]
-=== Replace xref:servlet/authorization/method-security.adoc#jc-enable-global-method-security[global method security] with xref:servlet/authorization/method-security.adoc#jc-enable-method-security[method security]
+=== xref:servlet/authorization/method-security.adoc#jc-enable-global-method-security[전역 메서드 보안]을 xref:servlet/authorization/method-security.adoc#jc-enable-method-security[메서드 보안]으로 교체
 
-{security-api-url}org/springframework/security/config/annotation/method/configuration/EnableGlobalMethodSecurity.html[`@EnableGlobalMethodSecurity`] and xref:servlet/appendix/namespace/method-security.adoc#nsa-global-method-security[`<global-method-security>`] are deprecated in favor of {security-api-url}org/springframework/security/config/annotation/method/configuration/EnableMethodSecurity.html[`@EnableMethodSecurity`] and xref:servlet/appendix/namespace/method-security.adoc#nsa-method-security[`<method-security>`], respectively.
-The new annotation and XML element activate Spring's xref:servlet/authorization/method-security.adoc#jc-enable-method-security[pre-post annotations] by default and use `AuthorizationManager` internally.
+{security-api-url}org/springframework/security/config/annotation/method/configuration/EnableGlobalMethodSecurity.html[`@EnableGlobalMethodSecurity`]와 xref:servlet/appendix/namespace/method-security.adoc#nsa-global-method-security[`<global-method-security>`]는 각각 {security-api-url}org/springframework/security/config/annotation/method/configuration/EnableMethodSecurity.html[`@EnableMethodSecurity`]와 xref:servlet/appendix/namespace/method-security.adoc#nsa-method-security[`<method-security>`]로 대체되었습니다.
+새로운 어노테이션과 XML 요소는 기본적으로 Spring의 xref:servlet/authorization/method-security.adoc#jc-enable-method-security[사전/사후 어노테이션]을 활성화하고 내부적으로 ``AuthorizationManager``를 사용합니다.
 
-This means that the following two listings are functionally equivalent:
+이는 다음 두 목록이 기능적으로 동일하다는 것을 의미합니다:
 
 [tabs]
 ======
@@ -2749,7 +2752,7 @@ Xml::
 ----
 ======
 
-and:
+그리고:
 
 [tabs]
 ======
@@ -2775,9 +2778,9 @@ Xml::
 ----
 ======
 
-For applications not using the pre-post annotations, make sure to turn it off to avoid activating unwanted behavior.
+사전/사후 어노테이션을 사용하지 않는 애플리케이션의 경우, 원하지 않는 동작을 활성화하지 않도록 비활성화해야 합니다.
 
-For example, a listing like:
+예를 들어, 다음과 같은 목록은:
 
 [tabs]
 ======
@@ -2803,7 +2806,7 @@ Xml::
 ----
 ======
 
-should change to:
+다음과 같이 변경해야 합니다:
 
 [tabs]
 ======
@@ -2829,20 +2832,18 @@ Xml::
 ----
 ======
 
-=== Use a Custom `@Bean` instead of subclassing `DefaultMethodSecurityExpressionHandler`
+=== ``DefaultMethodSecurityExpressionHandler``를 서브클래싱하는 대신 사용자 정의 `@Bean` 사용
 
-As a performance optimization, a new method was introduced to `MethodSecurityExpressionHandler` that takes a `Supplier<Authentication>` instead of an `Authentication`.
+성능 최적화를 위해 ``MethodSecurityExpressionHandler``에 ``Authentication`` 대신 ``Supplier<Authentication>``을 받는 새로운 메서드가 도입되었습니다.
 
-This allows Spring Security to defer the lookup of the `Authentication`, and is taken advantage of automatically when you use `@EnableMethodSecurity` instead of `@EnableGlobalMethodSecurity`.
+이를 통해 Spring Security는 `Authentication` 조회를 지연시킬 수 있으며, `@EnableGlobalMethodSecurity` 대신 ``@EnableMethodSecurity``를 사용할 때 자동으로 이점을 활용합니다.
 
-However, let's say that your code extends `DefaultMethodSecurityExpressionHandler` and overrides `createSecurityExpressionRoot(Authentication, MethodInvocation)` to return a custom `SecurityExpressionRoot` instance.
-This will no longer work because the arrangement that `@EnableMethodSecurity` sets up calls `createEvaluationContext(Supplier<Authentication>, MethodInvocation)` instead.
+그러나 코드가 ``DefaultMethodSecurityExpressionHandler``를 확장하고 사용자 정의 `SecurityExpressionRoot` 인스턴스를 반환하기 위해 ``createSecurityExpressionRoot(Authentication, MethodInvocation)``을 재정의한 경우, 이는 더 이상 작동하지 않습니다. 왜냐하면 ``@EnableMethodSecurity``가 설정한 구성에서는 대신 ``createEvaluationContext(Supplier<Authentication>, MethodInvocation)``을 호출하기 때문입니다.
 
-Happily, such a level of customization is often unnecessary.
-Instead, you can create a custom bean with the authorization methods that you need.
+다행히 이러한 레벨의 사용자 정의는 종종 불필요합니다.
+대신 필요한 권한 부여 메서드가 있는 사용자 정의 빈을 생성할 수 있습니다.
 
-For example, let's say you are wanting a custom evaluation of `@PostAuthorize("hasAuthority('ADMIN')")`.
-You can create a custom `@Bean` like this one:
+예를 들어, ``@PostAuthorize("hasAuthority('ADMIN')")``의 사용자 정의 평가를 원하는 경우 다음과 같은 사용자 정의 `@Bean`을 생성할 수 있습니다:
 
 [tabs]
 ======
@@ -2853,7 +2854,7 @@ Java::
 class MyAuthorizer {
 	boolean isAdmin(MethodSecurityExpressionOperations root) {
 		boolean decision = root.hasAuthority("ADMIN");
-		// custom work ...
+		// 사용자 정의 작업 ...
         return decision;
 	}
 }
@@ -2866,14 +2867,14 @@ Kotlin::
 class MyAuthorizer {
 	fun isAdmin(val root: MethodSecurityExpressionOperations): boolean {
 		val decision = root.hasAuthority("ADMIN");
-		// custom work ...
+		// 사용자 정의 작업 ...
         return decision;
 	}
 }
 ----
 ======
 
-and then refer to it in the annotation like so:
+그리고 다음과 같이 어노테이션에서 이를 참조할 수 있습니다:
 
 [tabs]
 ======
@@ -2893,10 +2894,10 @@ Kotlin::
 ======
 
 [[subclass-defaultmethodsecurityexpressionhandler]]
-==== I'd still prefer to subclass `DefaultMethodSecurityExpressionHandler`
+==== 여전히 ``DefaultMethodSecurityExpressionHandler``를 서브클래싱하고 싶습니다
 
-If you must continue subclassing `DefaultMethodSecurityExpressionHandler`, you can still do so.
-Instead, override the `createEvaluationContext(Supplier<Authentication>, MethodInvocation)` method like so:
+여전히 ``DefaultMethodSecurityExpressionHandler``를 서브클래싱해야 한다면 그렇게 할 수 있습니다.
+대신 다음과 같이 ``createEvaluationContext(Supplier<Authentication>, MethodInvocation)`` 메서드를 재정의하세요:
 
 [tabs]
 ======
@@ -2935,7 +2936,7 @@ class MyExpressionHandler: DefaultMethodSecurityExpressionHandler {
 ----
 ======
 
-== Further Reading
+== 추가 읽기
 
-Now that you have secured your application's requests, please xref:servlet/authorization/authorize-http-requests.adoc[secure its requests] if you haven't already.
-You can also read further on xref:servlet/test/index.adoc[testing your application] or on integrating Spring Security with other aspects of you application like xref:servlet/integrations/data.adoc[the data layer] or xref:servlet/integrations/observability.adoc[tracing and metrics].
+이제 애플리케이션의 요청을 보호했으므로, 아직 하지 않았다면 xref:servlet/authorization/authorize-http-requests.adoc[요청을 보호]하세요.
+또한 xref:servlet/test/index.adoc[애플리케이션 테스트]나 Spring Security를 xref:servlet/integrations/data.adoc[데이터 계층]이나 xref:servlet/integrations/observability.adoc[추적 및 메트릭]과 같은 애플리케이션의 다른 측면과 통합하는 방법에 대해 더 읽어볼 수 있습니다.
